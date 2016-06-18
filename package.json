@@ -1,0 +1,25 @@
+{
+  "name": "phetscraper",
+  "version": "1.0.0",
+  "description": "Scraper and exporter of PHET simulations",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.0.0-rc.6",
+    "cheerio": "^0.20.0",
+    "dirsum": "^0.1.1",
+    "handlebars": "^4.0.5",
+    "request": "^2.72.0",
+    "rimraf": "^2.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "setup": "node steps/setup.js",
+    "get": "node steps/get.js",
+    "transform": "node steps/transform.js",
+    "export": "node steps/export.js",
+    "start": "npm run setup && npm run get && npm run transform && npm run export",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
