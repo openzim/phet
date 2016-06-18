@@ -1,6 +1,5 @@
 To begin, use the following:
 
 ```bash
-npm i
-npm run export
+npm i && npm start
 ```
