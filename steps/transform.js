@@ -21,7 +21,7 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         acc[language].push({
             displayName: title || fileName.split('_').slice(0, -1).join(' ').replace(/[^A-z]/g, ' '),
             url: fileName,
-            image: fileName.split('_')[0] + '-128.png'
+            image: './' + fileName.split('_')[0] + '-128.png'
         });
         return acc;
     }, {});

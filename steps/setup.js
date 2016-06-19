@@ -11,6 +11,5 @@ rimraf('state', function (err) {
             fs.mkdir('state/transform');
             fs.mkdir('state/export');
         });
-        fs.mkdir('dist');
     }
 });
