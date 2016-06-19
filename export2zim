@@ -1,0 +1,2 @@
+#!/bin/bash
+../openzim/zimwriterfs/zimwriterfs -w index.html -f favicon.ico -l ISO639-3 -t PHETSims -d PHETSims -c ColoradoUni -p PHETScraper ./state/export ./dist/$1

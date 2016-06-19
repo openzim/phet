@@ -9,7 +9,6 @@ var getLanguage = function (fileName) {
     return fileName.split('_').pop().split('.')[0];
 };
 
-
 const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() === 'html').
     reduce(function (acc, fileName) {
         var language = config.languageMapping[getLanguage(fileName)] || 'Misc';
@@ -26,5 +25,7 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         });
         return acc;
     }, {});
+
+    console.log(Object.keys(filesByLanguage))
 
 fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({ filesByLanguage }), 'utf8');

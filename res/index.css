@@ -25,7 +25,7 @@ body {
     width:100%;
 }
 
-#menu-wrapper {
+.menu-wrapper {
     margin: auto;
     width: 100%;
     background-color: white;

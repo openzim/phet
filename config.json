@@ -1,6 +1,7 @@
 {
-    "languages": ["en"],
+    "languages": ["en", "fr"],
     "languageMapping": {
-        "en": "English"
+        "en": "English",
+        "fr": "French"
     }
 }
