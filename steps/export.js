@@ -28,24 +28,6 @@ fs.writeFileSync(outDir + 'index.html', //Pretty hacky - doing a replace on the 
   templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(require(`../${inDir}catalog.json`))), 'utf8');
 
 
-console.log('Creating Zim file...');
-
-const exportProc = spawn(`./export2zim`, [`PHET-${Object.keys(config.languageMappings).join('-')}.zim`]);
-
-exportProc.stdout.on('data', function (data) {    // register one or more handlers
-  console.log('stdout: ' + data);
-});
-
-exportProc.stderr.on('data', function (data) {
-  console.log('stderr: ' + data);
-});
-
-exportProc.on('exit', function (code) {
-  console.log('child process exited with code ' + code);
-
-  console.log('View html file at state/export/index.html');
-  console.log('View ZIM file at dist/PHET-*.zim');
-});
 
 //TODO: keeping the process alive until all streams are closed (it may be that this isn't even needed)
 var checksum;
@@ -54,9 +36,31 @@ const checkState = _ => { //This is icky, but we kinda need it
   setTimeout(_ => {
     dirsum.digest(outDir, 'sha1', function (err, hashes) {
       if (!hashes) return console.log('CheckState ran into an issue, limping along anyway.');
-      console.log(hashes.hash, checksum)
-      checksum = hashes.hash;
-      checkState();
+      if (checksum === hashes.hash) {
+
+        console.log('Creating Zim file...');
+
+        const exportProc = spawn(`./export2zim`, [`PHET-${Object.keys(config.languageMappings).join('-')}.zim`]);
+
+        exportProc.stdout.on('data', function (data) {    // register one or more handlers
+          console.log('stdout: ' + data);
+        });
+
+        exportProc.stderr.on('data', function (data) {
+          console.log('stderr: ' + data);
+        });
+
+        exportProc.on('exit', function (code) {
+          console.log('child process exited with code ' + code);
+
+          console.log('View html file at state/export/index.html');
+          console.log('View ZIM file at dist/PHET-*.zim');
+        });
+      } else {
+        console.log(hashes.hash, checksum)
+        checksum = hashes.hash;
+        checkState();
+      }
     });
   }, 4000);
 }
