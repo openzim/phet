@@ -30,6 +30,17 @@ body {
     width: 100%;
     background-color: white;
 }
+
+select {
+    width: 100%;
+    max-width: 300px;
+    font-size: 1.5em;
+    padding: 10px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
 .simulation-list-item-new {
     width: 250px;
     background-color: white;

@@ -38,4 +38,4 @@ jspm_packages
 
 
 state
-dist
+dist/*

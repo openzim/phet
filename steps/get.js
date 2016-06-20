@@ -14,48 +14,84 @@ const fs = require('fs');
 const config = Object.assign(defaultConfig, require('../config.json'));
 
 
-const getDlUrls = (name, languages) => {
-    return languages.reduce((acc, language) => {
-        return acc.concat([
-            `http://phet.colorado.edu/sims/html/${name}/latest/${name}_${language}.html`, //Download Simulation itself
-            `http://phet.colorado.edu/sims/html/${name}/latest/${name}-128.png`
-        ]);
-    }, []);
-};
+//TODO: maybe implement some kind of worker system for this (genericise from below)
+async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://phet.colorado.edu/${language}/offline-access`, language })), (data, next) => {
+    console.log(`Getting urls for ${data.language}`);
+    request(data.url, function (err, res, body) {
+        if (err || !res || res.statusCode !== 200 || !body) {
+            console.error(`Failed to get urls for language ${data.language}`);
+            next(null, []); //Should probably do some error stuff here, but it's not a breaking issue
+            return;
+        }
+        
+        const $ = cheerio.load(body);
 
+        const urls = $('.oa-html5 > a').toArray().map(function (item) {
+            const href = $(item).attr('href'); // "/sims/html/acid-base-solutions/latest/acid-base-solutions_en.html?download"
+            const name = href.split('_')[0].split('/').pop(); // "acid-base-solutions"
 
-request('http://phet.colorado.edu/en/offline-access', function (err, res, body) {
-    const $ = cheerio.load(body);
+            return name; // ['acid-base-solutions', '....']
+        }).map(name => `https://phet.colorado.edu/sims/html/${name}/latest/${name}_${data.language}.html`);
+        console.log(`Got ${urls.length} urls for ${data.language}`);
+        next(null, urls);
+    });
+}, (err, results) => {
+    console.log('Beginning');
 
-    const urls = $('.oa-html5 > a').toArray().map(function (item) {
-        const href = $(item).attr('href'); // "/sims/html/acid-base-solutions/latest/acid-base-solutions_en.html?download"
-        const name = href.split('_')[0].split('/').pop(); // "acid-base-solutions"
+    const simURLs = results.reduce((acc, results) => acc.concat(results));
+    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index-1]).map(url => url + '-128.png');
 
-        return name; // ['acid-base-solutions', '....']
-    }).reduce((acc, name) => acc.concat(getDlUrls(name, config.languages)), []); //['...html', '...png', '...pdf', '...html']
+    const urls = simURLs.concat(imageURLs);
 
+    const getFile = (urls, index, step, id, handler) => {
+        const url = urls[index];
+        if (!url) return console.log(`Worker ${id} finished`);
 
+        console.log(`Worker ${id} downloading ${index}`);
 
-    urls.forEach(function (url, next) { // item: http://phet.col....solutions.html
+        return handler(request(url), url, index, step, id, handler);
+    };
+
+    const spawnWorkers = (num, urls, handler) => { //TODO, refactor again!
+        [...Array(num)].forEach((_, index) => getFile(urls, index, num, index, handler));
+    };
+
+    console.log(`Beginning download of ${urls.length}`);
+
+    spawnWorkers(5, urls, (req, url, index, step, id, handler) => {
         const fileName = url.split('/').pop();
         const writeStream = fs.createWriteStream(outDir + fileName);
 
-        request(url).pipe(writeStream);
+        req.on('response', function (response) {
+            if (response.statusCode !== 200) {
+                console.error(`${fileName} gave a ${response.statusCode}`);
 
+                fs.unlink(outDir + fileName, function (err) {
+                    if (err) console.error(`Failed to delete item: ${err}`);
+                });
+            }
+
+            getFile(urls, index + step, step, id, handler);
+        }).pipe(writeStream);
     });
 
+
+    //TODO: find a better way of exiting the process after all streams are closed (it may be that this isn't even needed)
     var checksum;
 
-    const checkState = _ => {
+    const checkState = _ => { //This is icky, but we kinda need it
         setTimeout(_ => {
             dirsum.digest(outDir, 'sha1', function (err, hashes) {
+                if(!hashes) return console.log('CheckState ran into an issue, limping along anyway.'); 
                 if (checksum === hashes.hash) process.exit(0); //Done
                 else {
+                    console.log(hashes.hash, checksum)
                     checksum = hashes.hash;
                     checkState();
                 }
             });
-        }, 1000);
+        }, 4000);
     }
     checkState();
+
 });
