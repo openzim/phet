@@ -8,6 +8,8 @@ const defaultConfig = {
     workers: 10
 };
 
+const makeArr = num => Array(num).join('').split(''); //TODO: remove when spread operator is in stable node
+
 const dirsum = require('dirsum');
 const request = require('request');
 const cheerio = require('cheerio');
@@ -69,7 +71,7 @@ syncMap(Object.keys(config.languageMappings).map(language => ({ url: `https://ph
     };
 
     const spawnWorkers = (num, urls, handler) => { //TODO, refactor again!
-        [...Array(num)].forEach((_, index) => getFile(urls, index, num, index, handler));
+        makeArr(num).forEach((_, index) => getFile(urls, index, num, index, handler));
     };
 
     log(`Beginning download of ${urls.length}`);
