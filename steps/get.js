@@ -85,7 +85,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
     });
 
 
-    //TODO: find a better way of exiting the process after all streams are closed (it may be that this isn't even needed)
+    //TODO: keeping the process alive until all streams are closed (it may be that this isn't even needed)
     var checksum;
 
     const checkState = _ => { //This is icky, but we kinda need it
