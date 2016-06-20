@@ -3,7 +3,9 @@ const outDir = 'state/get/';
 
 
 const defaultConfig = {
-    languages: ['en']
+    verbose: false,
+    languageMappings: { 'en': 'English' },
+    workers: 10
 };
 
 const dirsum = require('dirsum');
@@ -13,8 +15,8 @@ const async = require('async');
 const fs = require('fs');
 const config = Object.assign(defaultConfig, require('../config.json'));
 
-const log = function() {config.verbose && console.log(...arguments)};
-const error = function() {config.verbose && console.error(...arguments)};
+const log = function () { config.verbose && console.log(...arguments) };
+const error = function () { config.verbose && console.error(...arguments) };
 
 
 //TODO: maybe implement some kind of worker system for this (genericise from below)
@@ -26,7 +28,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
             next(null, []); //Should probably do some error stuff here, but it's not a breaking issue
             return;
         }
-        
+
         const $ = cheerio.load(body);
 
         const urls = $('.oa-html5 > a').toArray().map(function (item) {
@@ -42,7 +44,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
     console.log('Beginning');
 
     const simURLs = results.reduce((acc, results) => acc.concat(results));
-    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index-1]).map(url => url + '-128.png');
+    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + '-128.png');
 
     const urls = simURLs.concat(imageURLs);
 
@@ -64,7 +66,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
 
     log(`Beginning download of ${urls.length}`);
 
-    spawnWorkers(10, urls, (req, url, index, step, id, handler) => {
+    spawnWorkers(config.workers, urls, (req, url, index, step, id, handler) => {
         const fileName = url.split('/').pop();
         const writeStream = fs.createWriteStream(outDir + fileName);
 
@@ -89,7 +91,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
     const checkState = _ => { //This is icky, but we kinda need it
         setTimeout(_ => {
             dirsum.digest(outDir, 'sha1', function (err, hashes) {
-                if(!hashes) return console.log('CheckState ran into an issue, limping along anyway.'); 
+                if (!hashes) return console.log('CheckState ran into an issue, limping along anyway.');
                 if (checksum === hashes.hash) process.exit(0); //Done
                 else {
                     console.log(hashes.hash, checksum)

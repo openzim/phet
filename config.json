@@ -1,5 +1,6 @@
 {
     "verbose": false,
+    "workers": 10,
     "languageMappings": {
         "en": "English",
         "ar_SA": "العربية (السعودية)",
