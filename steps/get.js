@@ -8,7 +8,7 @@ const defaultConfig = {
     workers: 10
 };
 
-const makeArr = num => Array(num).join('').split(''); //TODO: remove when spread operator is in stable node
+const makeArr = num => Array(num).join(',').split(','); //TODO: remove when spread operator is in stable node
 
 const dirsum = require('dirsum');
 const request = require('request');
@@ -65,7 +65,7 @@ syncMap(Object.keys(config.languageMappings).map(language => ({ url: `https://ph
         log(`Worker ${id} downloading ${index}`);
 
         const req = request(url);
-        req.on('error', error);
+        req.on('error', err => error('Request Error', err));
 
         return handler(req, url, index, step, id, handler);
     };
