@@ -64,7 +64,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
 
     log(`Beginning download of ${urls.length}`);
 
-    spawnWorkers(5, urls, (req, url, index, step, id, handler) => {
+    spawnWorkers(10, urls, (req, url, index, step, id, handler) => {
         const fileName = url.split('/').pop();
         const writeStream = fs.createWriteStream(outDir + fileName);
 
