@@ -1,5 +1,5 @@
 {
-    "verbose": false,
+    "verbose": true,
     "workers": 10,
     "languageMappings": {
         "en": "English",

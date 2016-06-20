@@ -16,7 +16,8 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
 
         var html = fs.readFileSync(inDir + fileName, 'utf8');
         var $ = cheerio.load(html);
-        var title = ($('meta[property="og:title"]').attr('content') || '').replace(/[^A-z0-9 \-\.]/g, '');
+        var title = ($('meta[property="og:title"]').attr('content') || '')
+            .replace(/[‪‪‬‬]/g, ''); //Looks empty, but there are invisible characters in there!
 
         acc[language].push({
             displayName: title || fileName.split('_').slice(0, -1).join(' '),

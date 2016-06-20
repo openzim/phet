@@ -15,17 +15,25 @@ const async = require('async');
 const fs = require('fs');
 const config = Object.assign(defaultConfig, require('../config.json'));
 
-const log = function () { config.verbose && console.log(...arguments) };
-const error = function () { config.verbose && console.error(...arguments) };
+const log = function () { config.verbose && console.log.apply(console, arguments) };
+const error = function () { config.verbose && console.error.apply(console, arguments) };
+
+const syncMap = (arr, iterator, done, acc) => {
+    acc = acc || [];
+    if(arr.length === 0) return done(acc);
+    iterator(arr[0], val => {
+        syncMap(arr.slice(1), iterator, done, acc.concat(val));
+    });
+};
 
 
 //TODO: maybe implement some kind of worker system for this (genericise from below)
-async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://phet.colorado.edu/${language}/offline-access`, language })), (data, next) => {
+syncMap(Object.keys(config.languageMappings).map(language => ({ url: `https://phet.colorado.edu/${language}/offline-access`, language })), (data, next) => {
     log(`Getting urls for ${data.language}`);
     request(data.url, function (err, res, body) {
         if (err || !res || res.statusCode !== 200 || !body) {
             error(`Failed to get urls for language ${data.language}`);
-            next(null, []); //Should probably do some error stuff here, but it's not a breaking issue
+            next([]); //Should probably do some error stuff here, but it's not a breaking issue
             return;
         }
 
@@ -38,12 +46,12 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
             return name; // ['acid-base-solutions', '....']
         }).map(name => `https://phet.colorado.edu/sims/html/${name}/latest/${name}_${data.language}.html`);
         log(`Got ${urls.length} urls for ${data.language}`);
-        next(null, urls);
+        next(urls);
     });
-}, (err, results) => {
+}, (results) => {
     console.log('Beginning');
 
-    const simURLs = results.reduce((acc, results) => acc.concat(results));
+    const simURLs = results.reduce((acc, results) => acc.concat(results), []);
     const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + '-600.png');
 
     const urls = simURLs.concat(imageURLs);
