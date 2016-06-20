@@ -5,7 +5,8 @@ const outDir = 'state/get/';
 const defaultConfig = {
     verbose: false,
     languageMappings: { 'en': 'English' },
-    workers: 10
+    workers: 10,
+    imageResolution: 600
 };
 
 const makeArr = num => Array(num).join(',').split(','); //TODO: remove when spread operator is in stable node
@@ -54,7 +55,7 @@ syncMap(Object.keys(config.languageMappings).map(language => ({ url: `https://ph
     console.log('Beginning');
 
     const simURLs = results.reduce((acc, results) => acc.concat(results), []);
-    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + '-600.png');
+    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + `-${config.imageResolution}.png`);
 
     const urls = simURLs.concat(imageURLs);
 

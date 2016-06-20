@@ -1,6 +1,7 @@
 {
     "verbose": true,
     "workers": 10,
+    "imageResolution": 600,
     "languageMappings": {
         "en": "English",
         "ar_SA": "العربية (السعودية)",
