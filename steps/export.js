@@ -17,7 +17,7 @@ fs.readdirSync(htmlDir).forEach(fileName => { //Copy html files from state/get t
     copyFile(htmlDir + fileName, outDir + fileName);
 });
 
-fs.writeFileSync(outDir + 'index.html', 
+fs.writeFileSync(outDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways
   templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(require(`../${inDir}catalog.json`))), 'utf8');
 
 copyFile(resDir + 'ractive.js', outDir + 'ractive.js');
@@ -28,7 +28,7 @@ copyFile(resDir + 'favicon.ico', outDir + 'favicon.ico');
 
 console.log('Creating Zim file...');
 
-const exportProc = spawn(`./export2zim`, [`PHET-${config.languages.join('-')}.zim`]);
+const exportProc = spawn(`./export2zim`, [`PHET-${Object.keys(config.languageMappings).join('-')}.zim`]);
 
 exportProc.stdout.on('data', function (data) {    // register one or more handlers
   console.log('stdout: ' + data);

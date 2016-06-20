@@ -13,13 +13,16 @@ const async = require('async');
 const fs = require('fs');
 const config = Object.assign(defaultConfig, require('../config.json'));
 
+const log = function() {config.verbose && console.log(...arguments)};
+const error = function() {config.verbose && console.error(...arguments)};
+
 
 //TODO: maybe implement some kind of worker system for this (genericise from below)
 async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://phet.colorado.edu/${language}/offline-access`, language })), (data, next) => {
-    console.log(`Getting urls for ${data.language}`);
+    log(`Getting urls for ${data.language}`);
     request(data.url, function (err, res, body) {
         if (err || !res || res.statusCode !== 200 || !body) {
-            console.error(`Failed to get urls for language ${data.language}`);
+            error(`Failed to get urls for language ${data.language}`);
             next(null, []); //Should probably do some error stuff here, but it's not a breaking issue
             return;
         }
@@ -32,7 +35,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
 
             return name; // ['acid-base-solutions', '....']
         }).map(name => `https://phet.colorado.edu/sims/html/${name}/latest/${name}_${data.language}.html`);
-        console.log(`Got ${urls.length} urls for ${data.language}`);
+        log(`Got ${urls.length} urls for ${data.language}`);
         next(null, urls);
     });
 }, (err, results) => {
@@ -45,18 +48,21 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
 
     const getFile = (urls, index, step, id, handler) => {
         const url = urls[index];
-        if (!url) return console.log(`Worker ${id} finished`);
+        if (!url) return log(`Worker ${id} finished`);
 
-        console.log(`Worker ${id} downloading ${index}`);
+        log(`Worker ${id} downloading ${index}`);
 
-        return handler(request(url), url, index, step, id, handler);
+        const req = request(url);
+        req.on('error', error);
+
+        return handler(req, url, index, step, id, handler);
     };
 
     const spawnWorkers = (num, urls, handler) => { //TODO, refactor again!
         [...Array(num)].forEach((_, index) => getFile(urls, index, num, index, handler));
     };
 
-    console.log(`Beginning download of ${urls.length}`);
+    log(`Beginning download of ${urls.length}`);
 
     spawnWorkers(5, urls, (req, url, index, step, id, handler) => {
         const fileName = url.split('/').pop();
@@ -64,15 +70,16 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
 
         req.on('response', function (response) {
             if (response.statusCode !== 200) {
-                console.error(`${fileName} gave a ${response.statusCode}`);
+                error(`${fileName} gave a ${response.statusCode}`);
 
                 fs.unlink(outDir + fileName, function (err) {
-                    if (err) console.error(`Failed to delete item: ${err}`);
+                    if (err) error(`Failed to delete item: ${err}`);
                 });
             }
 
-            getFile(urls, index + step, step, id, handler);
         }).pipe(writeStream);
+
+        writeStream.on('close', _ => getFile(urls, index + step, step, id, handler));
     });
 
 

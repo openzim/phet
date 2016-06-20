@@ -19,7 +19,7 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         var title = ($('meta[property="og:title"]').attr('content') || '').replace(/[^A-z0-9 \-\.]/g, '');
 
         acc[language].push({
-            displayName: title || fileName.split('_').slice(0, -1).join(' ').replace(/[^A-z]/g, ' '),
+            displayName: title || fileName.split('_').slice(0, -1).join(' '),
             url: fileName,
             image: './' + fileName.split('_')[0] + '-128.png'
         });

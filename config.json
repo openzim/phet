@@ -1,4 +1,5 @@
 {
+    "verbose": false,
     "languageMappings": {
         "en": "English",
         "ar_SA": "العربية (السعودية)",
