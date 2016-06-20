@@ -44,7 +44,7 @@ async.map(Object.keys(config.languageMappings).map(language => ({ url: `https://
     console.log('Beginning');
 
     const simURLs = results.reduce((acc, results) => acc.concat(results));
-    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + '-128.png');
+    const imageURLs = simURLs.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + '-600.png');
 
     const urls = simURLs.concat(imageURLs);
 
