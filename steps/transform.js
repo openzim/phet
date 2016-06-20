@@ -21,9 +21,12 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         acc[language].push({
             displayName: title || fileName.split('_').slice(0, -1).join(' '),
             url: fileName,
-            image: './' + fileName.split('_')[0] + '-128.png'
+            image: '../I/' + fileName.split('_')[0] + '-128.png'
         });
         return acc;
     }, {});
 
-fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({ languageMappings: config.languageMappings, simsByLanguage: filesByLanguage }), 'utf8');
+fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({ 
+    languageMappings: config.languageMappings, 
+    simsByLanguage: filesByLanguage 
+}), 'utf8');
