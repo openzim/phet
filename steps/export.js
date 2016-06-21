@@ -1,3 +1,4 @@
+const htmlDir = 'state/get/';
 const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
@@ -19,8 +20,8 @@ copyFile(resDir + 'phet-banner.png', outDir + 'phet-banner.png');
 copyFile(resDir + 'favicon.ico', outDir + 'favicon.ico');
 
 
-fs.readdirSync(inDir).forEach(fileName => { //Copy html files from state/get to state/export
-  copyFile(inDir + fileName, outDir + fileName);
+fs.readdirSync(htmlDir).forEach(fileName => { //Copy html files from state/get to state/export
+  copyFile(htmlDir + fileName, outDir + fileName);
 });
 
 fs.writeFileSync(outDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways

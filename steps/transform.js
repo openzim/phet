@@ -5,44 +5,9 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const config = require('../config.json');
 
-const copyFile = (fromPath, toPath) => {
-  return fs.createReadStream(fromPath).pipe(fs.createWriteStream(toPath));
-};
-
-const log = function () { config.verbose && console.log.apply(console, arguments) };
-const error = function () { config.verbose && console.error.apply(console, arguments) };
-
 var getLanguage = function (fileName) {
     return fileName.split('_').pop().split('.')[0];
 };
-
-const extractBase64 = (fileName, html) => {
-    const b64files = html.match(/data:([A-Za-z-+\/]+);base64,[^"]*/g);
-
-    b64files.reduce((html, b64, index) => {
-        const split = b64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-
-        if(!split || split.length !== 3) {
-            log('No valid b64, continuing anyway.');
-            return html;
-        }
-
-        const mimeType = split[1];
-        if(!mimeType) {
-            log('No mimeType, continuing anyway.');
-            return html;
-        }
-
-        const fileExt = mimeType.split('/')[1].split('+')[0];
-
-        html = html.replace(b64, `/${fileName}_${index}.${fileExt}`);
-        fs.writeFileSync(`${outDir}${fileName}_${index}.${fileExt}`, split[2], {encoding: 'base64'});
-        fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
-
-        return html;
-    }, html);
-};
-
 
 const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() === 'html').
     reduce(function (acc, fileName) {
@@ -50,9 +15,6 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         acc[language] = acc[language] || [];
 
         var html = fs.readFileSync(inDir + fileName, 'utf8');
-
-        extractBase64(fileName, html);
-
         var $ = cheerio.load(html);
         var title = ($('meta[property="og:title"]').attr('content') || '');
 
@@ -68,7 +30,3 @@ fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({
     languageMappings: config.languageMappings, 
     simsByLanguage: filesByLanguage 
 }), 'utf8');
-
-fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() !== 'html').forEach(fileName => { //Copy html files from state/get to state/export
-  copyFile(inDir + fileName, outDir + fileName);
-});
