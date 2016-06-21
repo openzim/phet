@@ -4,7 +4,6 @@ const outDir = 'state/transform/';
 const fs = require('fs');
 const cheerio = require('cheerio');
 const config = require('../config.json');
-const dirsum = require('dirsum');
 
 const copyFile = (fromPath, toPath) => {
     return fs.createReadStream(fromPath).pipe(fs.createWriteStream(toPath));
@@ -18,9 +17,12 @@ var getLanguage = function (fileName) {
 };
 
 const extractBase64 = (fileName, html) => {
-    const b64files = html.match(/data:([A-Za-z-+\/]+);base64,[^"]*/g);
+    const b64files = html.match(/(src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
 
     b64files.reduce((html, b64, index) => {
+        const isInSrc = b64.slice(0, 5) === 'src="';
+        b64 = b64.slice(isInSrc ? 5 : 1);
+
         const split = b64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
 
         if (!split || split.length !== 3) {
@@ -34,10 +36,22 @@ const extractBase64 = (fileName, html) => {
             return html;
         }
 
-        const fileExt = mimeType.split('/')[1].split('+')[0];
+        const fileExt = mimeType.split('/').pop().split('+')[0];
 
-        html = html.replace(b64, `/${fileName}_${index}.${fileExt}`);
-        fs.writeFileSync(`${outDir}${fileName}_${index}.${fileExt}`, split[2], { encoding: 'base64' });
+        if(fileExt === 'gif') return html;
+        if(fileExt === 'ogg') return html;
+        if(fileExt === 'mpeg') return html;
+        if(fileExt === 'jpeg') return html;
+
+        const isImage = mimeType.split('/')[0] === 'image';
+
+        if(!isImage) console.log(mimeType);
+
+        const kiwixPrefix = isInSrc ? '' : 
+            isImage ? '/I/' : '/A/';
+
+        html = html.replace(b64, `${kiwixPrefix}${fileName.replace('.html', '')}_${index}.${fileExt}`);
+        fs.writeFileSync(`${outDir}${fileName.replace('.html', '')}_${index}.${fileExt}`, split[2], { encoding: 'base64' });
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
 
         return html;
@@ -73,21 +87,3 @@ fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({
 fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() !== 'html').forEach(fileName => { //Copy html files from state/get to state/export
     copyFile(inDir + fileName, outDir + fileName);
 });
-
-//TODO: keeping the process alive until all streams are closed (it may be that this isn't even needed)
-var checksum;
-
-const checkState = _ => { //This is icky, but we kinda need it
-    setTimeout(_ => {
-        dirsum.digest(outDir, 'sha1', function (err, hashes) {
-            if (!hashes) return console.log('CheckState ran into an issue, limping along anyway.');
-            if (checksum === hashes.hash) process.exit(0); //Done
-            else {
-                console.log(hashes.hash, checksum)
-                checksum = hashes.hash;
-                checkState();
-            }
-        });
-    }, 4000);
-}
-checkState();
