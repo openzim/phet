@@ -4,6 +4,7 @@ const outDir = 'state/transform/';
 const fs = require('fs');
 const cheerio = require('cheerio');
 const config = require('../config.json');
+const dirsum = require('dirsum');
 
 const copyFile = (fromPath, toPath) => {
     return fs.createReadStream(fromPath).pipe(fs.createWriteStream(toPath));
