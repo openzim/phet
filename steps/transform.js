@@ -57,6 +57,9 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         acc[language] = acc[language] || [];
 
         var html = fs.readFileSync(inDir + fileName, 'utf8');
+
+        extractBase64(fileName, html);
+
         var $ = cheerio.load(html);
         var title = ($('meta[property="og:title"]').attr('content') || '');
 
