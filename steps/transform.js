@@ -17,11 +17,11 @@ var getLanguage = function (fileName) {
 };
 
 const extractBase64 = (fileName, html) => {
-    const b64files = html.match(/(src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
+    const b64files = html.match(/( src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
 
     b64files.reduce((html, b64, index) => {
-        const isInSrc = b64.slice(0, 5) === 'src="';
-        b64 = b64.slice(isInSrc ? 5 : 1);
+        const isInSrc = b64.slice(0, 6) === ' src="';
+        b64 = b64.slice(isInSrc ? 6 : 1);
 
         const split = b64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
 
@@ -47,8 +47,7 @@ const extractBase64 = (fileName, html) => {
 
         if(!isImage) console.log(mimeType);
 
-        const kiwixPrefix = isInSrc ? '' : 
-            isImage ? '/I/' : '/A/';
+        const kiwixPrefix = isInSrc ? '' : '../I/';
 
         html = html.replace(b64, `${kiwixPrefix}${fileName.replace('.html', '')}_${index}.${fileExt}`);
         fs.writeFileSync(`${outDir}${fileName.replace('.html', '')}_${index}.${fileExt}`, split[2], { encoding: 'base64' });
