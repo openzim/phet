@@ -5,13 +5,6 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const config = require('../config.json');
 
-const copyFile = (fromPath, toPath) => {
-    return fs.createReadStream(fromPath).pipe(fs.createWriteStream(toPath));
-};
-
-const log = function () { config.verbose && console.log.apply(console, arguments) };
-const error = function () { config.verbose && console.error.apply(console, arguments) };
-
 var getLanguage = function (fileName) {
     return fileName.split('_').pop().split('.')[0];
 };
@@ -64,9 +57,6 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         acc[language] = acc[language] || [];
 
         var html = fs.readFileSync(inDir + fileName, 'utf8');
-
-        extractBase64(fileName, html);
-
         var $ = cheerio.load(html);
         var title = ($('meta[property="og:title"]').attr('content') || '');
 
@@ -78,11 +68,7 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
         return acc;
     }, {});
 
-fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({
-    languageMappings: config.languageMappings,
-    simsByLanguage: filesByLanguage
+fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({ 
+    languageMappings: config.languageMappings, 
+    simsByLanguage: filesByLanguage 
 }), 'utf8');
-
-fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() !== 'html').forEach(fileName => { //Copy html files from state/get to state/export
-    copyFile(inDir + fileName, outDir + fileName);
-});
