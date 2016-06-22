@@ -5,6 +5,10 @@ const fs = require('fs');
 const cheerio = require('cheerio');
 const config = require('../config.json');
 
+
+const log = function () { config.verbose && console.log.apply(console, arguments) };
+const error = function () { config.verbose && console.error.apply(console, arguments) };
+
 var getLanguage = function (fileName) {
     return fileName.split('_').pop().split('.')[0];
 };
