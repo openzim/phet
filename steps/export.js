@@ -19,9 +19,27 @@ copyFile(resDir + 'phet-banner.png', outDir + 'phet-banner.png');
 copyFile(resDir + 'favicon.ico', outDir + 'favicon.ico');
 
 
-fs.readdirSync(inDir).forEach(fileName => { //Copy html files from state/get to state/export
-  copyFile(inDir + fileName, outDir + fileName);
-});
+copyFileWorker = (index, step, files) => { //TODO: Refactor using highland
+  const fileName = files[index];
+  if(!fileName) return;
+  copyFile(inDir + fileName, outDir + fileName).on('close', function(){
+    copyFileWorker(index + step, step, files);
+  });
+};
+
+const files = fs.readdirSync(inDir);
+
+//This only does 10 at a time, most machines can do better
+copyFileWorker(0, 10, files); //TODO: Refactor into a workerGenerator
+copyFileWorker(1, 10, files);
+copyFileWorker(2, 10, files);
+copyFileWorker(3, 10, files);
+copyFileWorker(4, 10, files);
+copyFileWorker(5, 10, files);
+copyFileWorker(6, 10, files);
+copyFileWorker(7, 10, files);
+copyFileWorker(8, 10, files);
+copyFileWorker(9, 10, files);
 
 fs.writeFileSync(outDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways
   templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(require(`../${inDir}catalog.json`))), 'utf8');
