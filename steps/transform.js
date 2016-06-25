@@ -13,6 +13,35 @@ var getLanguage = function (fileName) {
     return fileName.split('_').pop().split('.')[0];
 };
 
+const copyFile = (fromPath, toPath) => {
+  return fs.createReadStream(fromPath).pipe(fs.createWriteStream(toPath));
+};
+
+//Copy PNG files
+copyFileWorker = (index, step, files) => { //TODO: Refactor using highland
+  const fileName = files[index];
+  if(!fileName) return;
+  copyFile(inDir + fileName, outDir + fileName).on('close', function(){
+    copyFileWorker(index + step, step, files);
+  });
+};
+
+const files = fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() === 'png');
+
+//This only does 10 at a time, most machines can do better
+copyFileWorker(0, 10, files); //TODO: Refactor into a workerGenerator
+copyFileWorker(1, 10, files);
+copyFileWorker(2, 10, files);
+copyFileWorker(3, 10, files);
+copyFileWorker(4, 10, files);
+copyFileWorker(5, 10, files);
+copyFileWorker(6, 10, files);
+copyFileWorker(7, 10, files);
+copyFileWorker(8, 10, files);
+copyFileWorker(9, 10, files);
+
+
+
 const extractBase64 = (fileName, html) => {
     const b64files = html.match(/( src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
 
@@ -23,13 +52,13 @@ const extractBase64 = (fileName, html) => {
         const split = b64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
 
         if (!split || split.length !== 3) {
-            log('No valid b64, continuing anyway.');
+            //log('No valid b64, continuing anyway.');
             return html;
         }
 
         const mimeType = split[1];
         if (!mimeType) {
-            log('No mimeType, continuing anyway.');
+            //log('No mimeType, continuing anyway.');
             return html;
         }
 
@@ -39,6 +68,7 @@ const extractBase64 = (fileName, html) => {
         if(fileExt === 'ogg') return html;
         if(fileExt === 'mpeg') return html;
         if(fileExt === 'jpeg') return html;
+        if(fileExt === 'png') return html;
 
         const isImage = mimeType.split('/')[0] === 'image';
 
