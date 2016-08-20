@@ -16,7 +16,7 @@ const copyFile = (fromPath, toPath) => {
 copyFile(resDir + 'ractive.js', outDir + 'ractive.js');
 copyFile(resDir + 'index.css', outDir + 'index.css');
 copyFile(resDir + 'phet-banner.png', outDir + 'phet-banner.png');
-copyFile(resDir + 'favicon.ico', outDir + 'favicon.ico');
+copyFile(resDir + 'favicon.png', outDir + 'favicon.png');
 
 
 copyFileWorker = (index, step, files) => { //TODO: Refactor using highland
