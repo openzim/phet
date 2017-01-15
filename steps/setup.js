@@ -10,6 +10,7 @@ rimraf('state', function (err) {
             fs.mkdir('state/get');
             fs.mkdir('state/transform');
             fs.mkdir('state/export');
+            fs.mkdir('state/tmp');
         });
     }
 });
