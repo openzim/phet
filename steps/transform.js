@@ -4,6 +4,7 @@ const tmpDir = 'state/tmp/';
 
 const fs = require('fs');
 const cheerio = require('cheerio');
+const md5 = require('md5');
 const config = require('../config.json');
 const imagemin = require('imagemin');
 const imageminJpegoptim = require('imagemin-jpegoptim');
@@ -84,8 +85,10 @@ const extractBase64 = (fileName, html) => {
 
         const kiwixPrefix = isInSrc ? '' : '../I/';
 
-        html = html.replace(b64, `${kiwixPrefix}${fileName.replace('.html', '')}_${index}.${fileExt}`);
-        fs.writeFileSync(`${tmpDir}${fileName.replace('.html', '')}_${index}.${fileExt}`, split[2], { encoding: 'base64' });
+        const newName = md5(split[2]);
+
+        html = html.replace(b64, `${kiwixPrefix}${newName}.${fileExt}`);
+        fs.writeFileSync(`${tmpDir}${newName}.${fileExt}`, split[2], { encoding: 'base64' });
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
 
         return html;
@@ -93,6 +96,7 @@ const extractBase64 = (fileName, html) => {
 };
 
 
+console.log('Compressing images, this will take a while');
 const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() === 'html').
     reduce(function (acc, fileName) {
         var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
@@ -120,7 +124,9 @@ fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({
 
 
 const imageMinSlow = index => {
-    imagemin([`${tmpDir}*_${index}.{jpg,jpeg,png,svg}`], outDir, {
+    if(index === 58) index = 65;
+    console.log(`Copying compressed images beginning with: ${String.fromCharCode(index)}`);
+    imagemin([`${tmpDir}${String.fromCharCode(index)}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
             imageminJpegoptim(),
             imageminPngquant({ quality: '65-80' }),
@@ -128,7 +134,7 @@ const imageMinSlow = index => {
             imageminGifsicle()
         ]
     }).then(files => {
-        if (files.length) {
+        if (index < 122) {
             imageMinSlow(index + 1);
         }
     }).catch(err => {
@@ -140,4 +146,4 @@ const imageMinSlow = index => {
         });
     });
 };
-imageMinSlow(0);
+imageMinSlow(48);
