@@ -13,6 +13,7 @@
     "imagemin-jpegoptim": "^5.0.0",
     "imagemin-pngquant": "^5.0.0",
     "imagemin-svgo": "^5.2.0",
+    "ncp": "^2.0.0",
     "request": "^2.72.0",
     "rimraf": "^2.5.2"
   },
