@@ -13,7 +13,6 @@ const imageminSvgo = require('imagemin-svgo');
 const imageminGifsicle = require('imagemin-gifsicle');
 const htmlminify = require('html-minifier').minify;
 
-
 const log = function () { config.verbose && console.log.apply(console, arguments) };
 const error = function () { config.verbose && console.error.apply(console, arguments) };
 
@@ -29,7 +28,7 @@ const copyFile = (fromPath, toPath) => {
 copyFileWorker = (index, step, files) => { //TODO: Refactor using highland
     const fileName = files[index];
     if (!fileName) return;
-    copyFile(inDir + fileName, outDir + fileName).on('close', function () {
+    copyFile(inDir + fileName, tmpDir + fileName).on('close', function () {
         copyFileWorker(index + step, step, files);
     });
 };
@@ -48,13 +47,40 @@ copyFileWorker(7, 10, files);
 copyFileWorker(8, 10, files);
 copyFileWorker(9, 10, files);
 
-const extractLicense = (html, writeFile) => {
+const extractLanguageElements = (fileName, html) => {
+    const $ = cheerio.load(html);
+
+    const scripts = $('script').toArray().map(script => {
+        return (script.children[0] || {}).data || '';
+    }).filter(a => a);
+
+    return scripts.reduce((acc, script, index) => {
+        const newFileName = md5(script);
+
+
+        try { //File Exists
+            stats = fs.statSync(outDir + newFileName);
+        }
+        catch (e) { //File does not exists
+            fs.writeFileSync(`${outDir}${newFileName}.js`, script, 'utf8');
+        }
+
+        return acc.replace(script, `</script><script src='../-/${newFileName}.js'>`);
+    }, html);
+
+};
+
+const extractLicense = (html) => {
 
     const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
     const license = htmlSplit[1] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[0];
 
-    if (writeFile)
+    try { //File Exists
+        stats = fs.statSync(outDir + newFileName);
+    }
+    catch (e) { //File does not exists
         fs.writeFileSync(`${outDir}license.js`, license, 'utf8');
+    }
 
     html = html.replace(`<script type="text/javascript">`, `<script src='./license.js'></script><script type="text/javascript">`);
 
@@ -72,9 +98,6 @@ const removeStrings = html => {
 };
 
 const extractBase64 = (fileName, html) => {
-    html = extractLicense(html);
-    html = removeStrings(html);
-
     const b64files = html.match(/( src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
 
     return (b64files || []).reduce((html, b64, index) => {
@@ -114,7 +137,7 @@ const extractBase64 = (fileName, html) => {
 
         html = html.replace(b64, `${kiwixPrefix}${newName}.${fileExt}`);
         try { //File Exists
-            stats = fs.statSync(outDir+fileName);
+            stats = fs.statSync(outDir + fileName);
         }
         catch (e) { //File does not exists
             fs.writeFileSync(`${tmpDir}${newName}.${fileExt}`, split[2], { encoding: 'base64' });
@@ -134,7 +157,10 @@ const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split(
 
         var html = fs.readFileSync(inDir + fileName, 'utf8');
 
-        extractLicense(html, index === 0);
+
+        html = extractLicense(html);
+        html = removeStrings(html);
+        html = extractLanguageElements(fileName, html);
         html = extractBase64(fileName, html);
 
         var $ = cheerio.load(html);
