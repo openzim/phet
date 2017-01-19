@@ -11,6 +11,7 @@ const imageminJpegoptim = require('imagemin-jpegoptim');
 const imageminPngquant = require('imagemin-pngquant');
 const imageminSvgo = require('imagemin-svgo');
 const imageminGifsicle = require('imagemin-gifsicle');
+const htmlminify = require('html-minifier').minify;
 
 
 const log = function () { config.verbose && console.log.apply(console, arguments) };
@@ -47,9 +48,33 @@ copyFileWorker(7, 10, files);
 copyFileWorker(8, 10, files);
 copyFileWorker(9, 10, files);
 
+const extractLicense = (html, writeFile) => {
 
+    const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
+    const license = htmlSplit[1] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[0];
+
+    if (writeFile)
+        fs.writeFileSync(`${outDir}license.js`, license, 'utf8');
+
+    html = html.replace(`<script type="text/javascript">`, `<script src='./license.js'></script><script type="text/javascript">`);
+
+    return html;
+};
+
+const removeStrings = html => {
+    const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
+    html = htmlSplit[0] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[1];
+
+    html = htmlminify(html, {
+        removeComments: true,
+    });
+    return html;
+};
 
 const extractBase64 = (fileName, html) => {
+    html = extractLicense(html);
+    html = removeStrings(html);
+
     const b64files = html.match(/( src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
 
     return (b64files || []).reduce((html, b64, index) => {
@@ -88,7 +113,12 @@ const extractBase64 = (fileName, html) => {
         const newName = md5(split[2]);
 
         html = html.replace(b64, `${kiwixPrefix}${newName}.${fileExt}`);
-        fs.writeFileSync(`${tmpDir}${newName}.${fileExt}`, split[2], { encoding: 'base64' });
+        try { //File Exists
+            stats = fs.statSync(outDir+fileName);
+        }
+        catch (e) { //File does not exists
+            fs.writeFileSync(`${tmpDir}${newName}.${fileExt}`, split[2], { encoding: 'base64' });
+        }
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
 
         return html;
@@ -98,12 +128,13 @@ const extractBase64 = (fileName, html) => {
 
 console.log('Compressing images, this will take a while');
 const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() === 'html').
-    reduce(function (acc, fileName) {
+    reduce(function (acc, fileName, index) {
         var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
         acc[language] = acc[language] || [];
 
         var html = fs.readFileSync(inDir + fileName, 'utf8');
 
+        extractLicense(html, index === 0);
         html = extractBase64(fileName, html);
 
         var $ = cheerio.load(html);
@@ -124,7 +155,7 @@ fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({
 
 
 const imageMinSlow = index => {
-    if(index === 58) index = 65;
+    if (index === 58) index = 65;
     console.log(`Copying compressed images beginning with: ${String.fromCharCode(index)}`);
     imagemin([`${tmpDir}${String.fromCharCode(index)}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
