@@ -16,7 +16,7 @@ const request = require('request');
 const cheerio = require('cheerio');
 const async = require('async');
 const fs = require('fs');
-const config = Object.assign(defaultConfig, require('../config.json'));
+const config = Object.assign(defaultConfig, require('../config.js'));
 
 const log = function () { config.verbose && console.log.apply(console, arguments) };
 const error = function () { config.verbose && console.error.apply(console, arguments) };
