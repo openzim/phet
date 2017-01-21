@@ -67,11 +67,12 @@
 			window.navigator.language)
 	) || 'en';
 
-	navigatorLanguage = window.importedData.languageMappings[navigatorLanguage.split('-')[0]] || Object.keys(window.importedData.simulationsByLanguage)[0];
+	navigatorLanguage = window.importedData.languageMappings[navigatorLanguage.split('-')[0]]
+	var languageToUse = window.importedData.simsByLanguage[navigatorLanguage] ? navigatorLanguage : Object.keys(window.importedData.simsByLanguage)[0];
 
 	var currentLanguage = (localStorage && localStorage.currentLanguage) ?
 		localStorage.currentLanguage :
-		navigatorLanguage;
+		languageToUse;
 
 	var ractive = new Ractive({
 		el: '#ractive-target',

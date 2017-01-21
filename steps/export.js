@@ -3,44 +3,114 @@ const outDir = 'state/export/';
 const resDir = 'res/';
 
 const fs = require('fs');
+const cheerio = require('cheerio');
+const rimraf = require('rimraf');
 const config = Object.assign({ languages: ['en'] }, require('../config.json'));
 const spawn = require('child_process').spawn;
 const dirsum = require('dirsum');
 const ncp = require('ncp');
 ncp.limit = 16;
 
-ncp(resDir + 'ractive.js', outDir + 'ractive.js');
-ncp(resDir + 'index.css', outDir + 'index.css');
-ncp(resDir + 'phet-banner.png', outDir + 'phet-banner.png');
-ncp(resDir + 'favicon.png', outDir + 'favicon.png');
+const kiwixPrefix = {
+  js: '../-/',
+  svg: '../I/',
+  png: '../I/',
+  jpg: '../I/',
+  jpeg: '../I/'
+};
+
+var getLanguage = function (fileName) {
+  return fileName.split('_').pop().split('.')[0];
+};
+
+const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
+  const resources = file.match(/[0-9a-f]{32}\.(svg|jpg|jpeg|png|js)/g) || [];
+  return resources
+    .reduce((file, resName) => {
+      const ext = resName.split('.').slice(-1)[0];
+      ncp(`${inDir}${resName}`, `${targetDir}${resName}`);
+      return file.replace(resName, `${kiwixPrefix[ext]}${resName}`);
+    }, file);
+};
+
+config.buildCombinations.forEach((combination) => {
+  const targetDir = `${outDir}${combination.output}/`;
+  rimraf(targetDir, function (err) {
+    fs.mkdir(targetDir, function () {
+
+      //Generate Catalog.json file
+      const filesByLanguage = fs.readdirSync(inDir)
+        .filter(fileName => fileName.split('.').pop() === 'html')
+        .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
+        .reduce((acc, fileName) => {
+          var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
+          acc[language] = acc[language] || [];
+
+          var html = fs.readFileSync(inDir + fileName, 'utf8');
+
+          var $ = cheerio.load(html);
+          var title = ($('meta[property="og:title"]').attr('content') || '');
+
+          const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
+
+          filesToCopy.forEach(fileName => {
+            const ext = fileName.split('.').slice(-1)[0];
+            html = html.replace(fileName, `${kiwixPrefix[ext]}${fileName}`);
+
+            let file = fs.readFileSync(`${inDir}${fileName}`, 'utf8');
+
+            file = addKiwixPrefixes(file, targetDir);
+
+            fs.writeFileSync(`${targetDir}${fileName}`, file, 'utf8');
+          });
+
+          fs.writeFileSync(`${targetDir}${fileName}`, html, 'utf8');
+
+          acc[language].push({
+            displayName: title || fileName.split('_').slice(0, -1).join(' '),
+            url: fileName,
+            image: '../I/' + fileName.split('_')[0] + `-${config.imageResolution}.png`
+          });
+          return acc;
+        }, {});
+
+      const catalog = {
+        languageMappings: config.languageMappings,
+        simsByLanguage: filesByLanguage
+      }
+
+      //Generate index file
+      const templateHTML = fs.readFileSync(resDir + 'template.html', 'utf8');
+      fs.writeFileSync(targetDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways
+        templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog)), 'utf8');
 
 
-const files = fs.readdirSync(inDir);
-ncp(`${inDir}`, outDir, function () {
+      ncp(resDir + 'ractive.js', targetDir + 'ractive.js');
+      ncp(resDir + 'index.css', targetDir + 'index.css');
+      ncp(resDir + 'phet-banner.png', targetDir + 'phet-banner.png');
+      ncp(resDir + 'favicon.png', targetDir + 'favicon.png');
 
+      //Run export2zim
+      console.log('Creating Zim file...');
 
-  const templateHTML = fs.readFileSync(resDir + 'template.html', 'utf8');
-  fs.writeFileSync(outDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways
-    templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(require(`../${inDir}catalog.json`))), 'utf8');
+      const exportProc = spawn(`./export2zim`, [targetDir, `${combination.output}.zim`]);
 
+      exportProc.stdout.on('data', function (data) {    // register one or more handlers
+        console.log('stdout: ' + data);
+      });
 
-  console.log('Creating Zim file...');
+      exportProc.stderr.on('data', function (data) {
+        console.log('stderr: ' + data);
+      });
 
-  const exportProc = spawn(`./export2zim`, [`PHET-${Object.keys(config.languageMappings).join('-')}.zim`]);
+      exportProc.on('exit', function (code) {
+        console.log('child process exited with code ' + code);
 
-  exportProc.stdout.on('data', function (data) {    // register one or more handlers
-    console.log('stdout: ' + data);
+        console.log('View html file at state/export/index.html');
+        console.log('View ZIM file at dist/PHET-*.zim');
+      });
+
+    });
   });
 
-  exportProc.stderr.on('data', function (data) {
-    console.log('stderr: ' + data);
-  });
-
-  exportProc.on('exit', function (code) {
-    console.log('child process exited with code ' + code);
-
-    console.log('View html file at state/export/index.html');
-    console.log('View ZIM file at dist/PHET-*.zim');
-  });
 });
-

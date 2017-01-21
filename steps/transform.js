@@ -65,7 +65,7 @@ const extractLanguageElements = (fileName, html) => {
             fs.writeFileSync(`${outDir}${newFileName}.js`, script, 'utf8');
         }
 
-        return acc.replace(script, `</script><script src='../-/${newFileName}.js'>`);
+        return acc.replace(script, `</script><script src='${newFileName}.js'>`);
     }, html);
 
 };
@@ -82,7 +82,7 @@ const extractLicense = (html) => {
         fs.writeFileSync(`${outDir}license.js`, license, 'utf8');
     }
 
-    html = html.replace(`<script type="text/javascript">`, `<script src='./license.js'></script><script type="text/javascript">`);
+    html = html.replace(`<script type="text/javascript">`, `<script src='license.js'></script><script type="text/javascript">`);
 
     return html;
 };
@@ -131,11 +131,9 @@ const extractBase64 = (fileName, html) => {
 
         if (!isImage) console.log(mimeType);
 
-        const kiwixPrefix = isInSrc ? '' : '../I/';
-
         const newName = md5(split[2]);
 
-        html = html.replace(b64, `${kiwixPrefix}${newName}.${fileExt}`);
+        html = html.replace(b64, `${newName}.${fileExt}`);
         try { //File Exists
             stats = fs.statSync(outDir + fileName);
         }
@@ -150,35 +148,18 @@ const extractBase64 = (fileName, html) => {
 
 
 console.log('Compressing images, this will take a while');
-const filesByLanguage = fs.readdirSync(inDir).filter(fileName => fileName.split('.').pop() === 'html').
-    reduce(function (acc, fileName, index) {
-        var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
-        acc[language] = acc[language] || [];
-
+const filesByLanguage = fs.readdirSync(inDir)
+    .filter(fileName => fileName.split('.').pop() === 'html')
+    .forEach(function (fileName, index) {
         var html = fs.readFileSync(inDir + fileName, 'utf8');
 
-
-        html = extractLicense(html);
+        //html = extractLicense(html);
+        html = extractBase64(fileName, html);
         html = removeStrings(html);
         html = extractLanguageElements(fileName, html);
-        html = extractBase64(fileName, html);
 
-        var $ = cheerio.load(html);
-        var title = ($('meta[property="og:title"]').attr('content') || '');
-
-        acc[language].push({
-            displayName: title || fileName.split('_').slice(0, -1).join(' '),
-            url: fileName,
-            image: '../I/' + fileName.split('_')[0] + `-${config.imageResolution}.png`
-        });
-        return acc;
-    }, {});
-
-fs.writeFileSync(outDir + 'catalog.json', JSON.stringify({
-    languageMappings: config.languageMappings,
-    simsByLanguage: filesByLanguage
-}), 'utf8');
-
+        fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
+    });
 
 const imageMinSlow = index => {
     if (index === 58) index = 65;
