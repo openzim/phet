@@ -19,6 +19,10 @@ const kiwixPrefix = {
   jpeg: '../I/'
 };
 
+const copyFileSync = function copyFileSync(from, to){
+  fs.writeFileSync(to, fs.readFileSync(from));
+};
+
 var getLanguage = function (fileName) {
   return fileName.split('_').pop().split('.')[0];
 };
@@ -85,10 +89,11 @@ config.buildCombinations.forEach((combination) => {
         templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog)), 'utf8');
 
 
-      ncp(resDir + 'ractive.js', targetDir + 'ractive.js');
-      ncp(resDir + 'index.css', targetDir + 'index.css');
-      ncp(resDir + 'phet-banner.png', targetDir + 'phet-banner.png');
-      ncp(resDir + 'favicon.png', targetDir + 'favicon.png');
+
+      copyFileSync(resDir + 'ractive.js', targetDir + 'ractive.js');
+      copyFileSync(resDir + 'index.css', targetDir + 'index.css');
+      copyFileSync(resDir + 'phet-banner.png', targetDir + 'phet-banner.png');
+      copyFileSync(resDir + 'favicon.png', targetDir + 'favicon.png');
 
       //Run export2zim
       console.log('Creating Zim file...');
