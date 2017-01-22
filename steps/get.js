@@ -23,7 +23,7 @@ const error = function () { config.verbose && console.error.apply(console, argum
 
 const syncMap = (arr, iterator, done, acc) => {
     acc = acc || [];
-    if(arr.length === 0) return done(acc);
+    if (arr.length === 0) return done(acc);
     iterator(arr[0], val => {
         syncMap(arr.slice(1), iterator, done, acc.concat(val));
     });
@@ -31,11 +31,11 @@ const syncMap = (arr, iterator, done, acc) => {
 
 
 //TODO: maybe implement some kind of worker system for this (genericise from below)
-syncMap(Object.keys(config.languageMappings).map(language => ({ url: `https://phet.colorado.edu/${language}/offline-access`, language })), (data, next) => {
+syncMap(Object.keys(config.languagesToGet).map(language => ({ url: `https://phet.colorado.edu/${language}/offline-access`, language })), (data, next) => {
     log(`Getting urls for ${data.language}`);
     request(data.url, function (err, res, body) {
         if (err || !res || res.statusCode !== 200 || !body) {
-            error(`Failed to get urls for language ${data.language}`);
+            error(`Failed to get urls for language ${data.language}`, err);
             next([]); //Should probably do some error stuff here, but it's not a breaking issue
             return;
         }
@@ -59,59 +59,34 @@ syncMap(Object.keys(config.languageMappings).map(language => ({ url: `https://ph
 
     const urls = simURLs.concat(imageURLs);
 
-    const getFile = (urls, index, step, id, handler) => {
-        const url = urls[index];
-        if (!url) return log(`Worker ${id} finished`);
-
-        log(`Worker ${id} downloading ${index}`);
-
-        const req = request(url);
-        req.on('error', err => error('Request Error', err));
-
-        return handler(req, url, index, step, id, handler);
-    };
-
-    const spawnWorkers = (num, urls, handler) => { //TODO, refactor again!
-        makeArr(num).forEach((_, index) => getFile(urls, index, num, index, handler));
-    };
-
     log(`Beginning download of ${urls.length}`);
 
-    spawnWorkers(config.workers, urls, (req, url, index, step, id, handler) => {
-        const fileName = url.split('/').pop();
-        const writeStream = fs.createWriteStream(outDir + fileName);
+    const tasks = urls.map((url, index) => {
+        return function (handler) {
+            console.log(`Progress: ${Math.floor(((index + 1) / urls.length) * 100)}%`);
+            const req = request(url);
+            const fileName = url.split('/').pop();
+            const writeStream = fs.createWriteStream(outDir + fileName);
 
-        req.on('response', function (response) {
-            if (response.statusCode !== 200) {
-                error(`${fileName} gave a ${response.statusCode}`);
+            req.on('response', function (response) {
+                if (response.statusCode !== 200) {
+                    error(`${fileName} gave a ${response.statusCode}`);
 
-                fs.unlink(outDir + fileName, function (err) {
-                    if (err) error(`Failed to delete item: ${err}`);
-                });
-            }
+                    fs.unlink(outDir + fileName, function (err) {
+                        if (err) error(`Failed to delete item: ${err}`);
+                    });
+                }
 
-        }).pipe(writeStream);
+            }).pipe(writeStream);
 
-        writeStream.on('close', _ => getFile(urls, index + step, step, id, handler));
+            writeStream.on('close', _ => {
+                handler(null, null);
+            });
+        }
     });
 
-
-    //TODO: keeping the process alive until all streams are closed (it may be that this isn't even needed)
-    var checksum;
-
-    const checkState = _ => { //This is icky, but we kinda need it
-        setTimeout(_ => {
-            dirsum.digest(outDir, 'sha1', function (err, hashes) {
-                if (!hashes) return console.log('CheckState ran into an issue, limping along anyway.');
-                if (checksum === hashes.hash) process.exit(0); //Done
-                else {
-                    console.log(hashes.hash, checksum)
-                    checksum = hashes.hash;
-                    checkState();
-                }
-            });
-        }, 4000);
-    }
-    checkState();
-
+    async.parallelLimit(tasks, config.workers, function () {
+        console.log('done')
+        process.exit(0);
+    });
 });
