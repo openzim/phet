@@ -135,13 +135,12 @@ const extractBase64 = (fileName, html) => {
 
         html = html.replace(b64, `${newName}.${fileExt}`);
         try { //File Exists
-            stats = fs.statSync(outDir + fileName);
+            stats = fs.statSync(`${tmpDir}${newName}.${fileExt}`);
         }
-        catch (e) { //File does not exists
+        catch (e) { //File does not exist
             fs.writeFileSync(`${tmpDir}${newName}.${fileExt}`, split[2], { encoding: 'base64' });
         }
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
-
         return html;
     }, html);
 };
