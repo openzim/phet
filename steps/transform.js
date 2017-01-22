@@ -160,10 +160,10 @@ const filesByLanguage = fs.readdirSync(inDir)
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
     });
 
-const imageMinSlow = index => {
-    if (index === 58) index = 65;
-    console.log(`Copying compressed images beginning with: ${String.fromCharCode(index)}`);
-    imagemin([`${tmpDir}${String.fromCharCode(index)}*.{jpg,jpeg,png,svg}`], outDir, {
+const md5Chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'];
+const imageMinSlow = (index, secondIndex) => {
+    console.log(`Copying compressed images beginning with: ${md5Chars[index]}${md5Chars[secondIndex]}`);
+    imagemin([`${tmpDir}${md5Chars[index]}${md5Chars[secondIndex]}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
             imageminJpegoptim(),
             imageminPngquant({ quality: '65-80' }),
@@ -171,16 +171,18 @@ const imageMinSlow = index => {
             imageminGifsicle()
         ]
     }).then(files => {
-        if (index < 122) {
-            imageMinSlow(index + 1);
+        if (secondIndex > md5Chars.length) {
+            imageMinSlow(index + 1, 0)
+        } else if (index < md5Chars.length) {
+            imageMinSlow(index, secondIndex + 1);
         }
     }).catch(err => {
         const failedFile = err.message.match(/Error in file: (.*)/)[1].trim();
         console.log(err.message)
         fs.unlink(failedFile, () => {
             console.log('The following file is invalid and was deleted:', failedFile);
-            imageMinSlow(index);
+            imageMinSlow(index, secondIndex);
         });
     });
 };
-imageMinSlow(48);
+imageMinSlow(0, 0);
