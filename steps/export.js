@@ -8,6 +8,7 @@ const rimraf = require('rimraf');
 const config = Object.assign({ languages: ['en'] }, require('../config.js'));
 const spawn = require('child_process').spawn;
 const dirsum = require('dirsum');
+const async = require('async');
 const ncp = require('ncp');
 ncp.limit = 16;
 
@@ -37,7 +38,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
     }, file);
 };
 
-config.buildCombinations.forEach((combination) => {
+async.series((combination, handler) => {
   const targetDir = `${outDir}${combination.output}/`;
   rimraf(targetDir, function (err) {
     fs.mkdir(targetDir, function () {
@@ -110,9 +111,7 @@ config.buildCombinations.forEach((combination) => {
 
       exportProc.on('exit', function (code) {
         console.log('child process exited with code ' + code);
-
-        console.log('View html file at state/export/index.html');
-        console.log('View ZIM file at dist/PHET-*.zim');
+        handler(null, null);
       });
 
     });
