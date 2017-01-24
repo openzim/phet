@@ -101,7 +101,7 @@ const extractBase64 = (fileName, html) => {
     const b64files = html.match(/( src=)?'data:([A-Za-z-+\/]+);base64,[^']*/g);
 
     return (b64files || []).reduce((html, b64, index) => {
-        const isInSrc = b64.slice(0, 6) === ' src=";
+        const isInSrc = b64.slice(0, 6) === ' src="';
         b64 = b64.slice(isInSrc ? 6 : 1);
 
         const split = b64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
