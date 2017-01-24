@@ -49,6 +49,7 @@ async.series(config.buildCombinations.map((combination) => {
           .filter(fileName => fileName.split('.').pop() === 'html')
           .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
           .reduce((acc, fileName) => {
+            console.log(fileName)
             var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
             acc[language] = acc[language] || [];
 
