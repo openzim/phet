@@ -34,7 +34,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
     .reduce((file, resName) => {
       const ext = resName.split('.').slice(-1)[0];
       ncp(`${inDir}${resName}`, `${targetDir}${resName}`);
-      return file.replace(resName, `${kiwixPrefix[ext]}${resName}`);
+      return file.replace(new RegExp(resName,'g'), `${kiwixPrefix[ext]}${resName}`);
     }, file);
 };
 
