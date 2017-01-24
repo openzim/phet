@@ -1,2 +1,2 @@
 #!/bin/bash
-../openzim/zimwriterfs/zimwriterfs -w index.html -f favicon.png -l ISO639-3 -t PHETSims -d PHETSims -c ColoradoUni -p PHETScraper $1 ./dist/$2
+zimwriterfs -w index.html -f favicon.png -l ISO639-3 -t PHETSims -d PHETSims -c ColoradoUni -p PHETScraper $1 ./dist/$2
