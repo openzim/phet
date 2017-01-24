@@ -60,7 +60,7 @@ async.series((combination, handler) => {
 
           filesToCopy.forEach(fileName => {
             const ext = fileName.split('.').slice(-1)[0];
-            html = html.replace(fileName, `${kiwixPrefix[ext]}${fileName}`);
+            html = html.replace(new RegExp(fileName, 'g'), `${kiwixPrefix[ext]}${fileName}`);
 
             let file = fs.readFileSync(`${inDir}${fileName}`, 'utf8');
 
