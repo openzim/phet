@@ -8,7 +8,7 @@ const md5 = require('md5');
 const config = require('../config.js');
 const imagemin = require('imagemin');
 const imageminJpegoptim = require('imagemin-jpegoptim');
-const imageminPngquant = require('imagemin-pngquant');
+const imageminPngcrush = require('imagemin-pngcrush');
 const imageminSvgo = require('imagemin-svgo');
 const imageminGifsicle = require('imagemin-gifsicle');
 const htmlminify = require('html-minifier').minify;
@@ -166,7 +166,7 @@ const imageMinSlow = (index, secondIndex) => {
     imagemin([`${tmpDir}${md5Chars[index]}${md5Chars[secondIndex]}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
             imageminJpegoptim(),
-            imageminPngquant({ quality: '65-80' }),
+            imageminPngcrush(),
             imageminSvgo(),
             imageminGifsicle()
         ]
