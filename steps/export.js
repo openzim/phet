@@ -60,7 +60,7 @@ async.series(config.buildCombinations.map((combination) => {
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
 
             filesToCopy.forEach(fileName => {
-              if(filename.length > 40) return;
+              if(fileName.length > 40) return;
               const ext = fileName.split('.').slice(-1)[0];
               html = html.replace(fileName, `${kiwixPrefix[ext]}${fileName}`);
 
