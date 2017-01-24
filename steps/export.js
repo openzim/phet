@@ -58,7 +58,7 @@ async.series(config.buildCombinations.map((combination) => {
             var title = ($('meta[property="og:title"]').attr('content') || '');
 
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
-
+            copyFileSync(`${inDir}${fileName.split('_')[0]}-${config.imageResolution}.png`, `${targetDir}${fileName.split('_')[0]}-${config.imageResolution}.png`);
             filesToCopy.forEach(fileName => {
               if(fileName.length > 40) return;
               const ext = fileName.split('.').slice(-1)[0];
