@@ -49,7 +49,6 @@ async.series(config.buildCombinations.map((combination) => {
           .filter(fileName => fileName.split('.').pop() === 'html')
           .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
           .reduce((acc, fileName) => {
-            console.log(fileName)
             var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
             acc[language] = acc[language] || [];
 
@@ -61,6 +60,7 @@ async.series(config.buildCombinations.map((combination) => {
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
 
             filesToCopy.forEach(fileName => {
+            console.log(fileName)
               const ext = fileName.split('.').slice(-1)[0];
               html = html.replace(new RegExp(fileName, 'g'), `${kiwixPrefix[ext]}${fileName}`);
 
