@@ -82,7 +82,7 @@ const extractLicense = (html) => {
         fs.writeFileSync(`${outDir}license.js`, license, 'utf8');
     }
 
-    html = html.replace(`<script type="text/javascript">`, `<script src='license.js'></script><script type="text/javascript">`);
+    html = html.replace(`<script type='text/javascript'>`, `<script src='license.js'></script><script type='text/javascript'>`);
 
     return html;
 };
@@ -98,10 +98,10 @@ const removeStrings = html => {
 };
 
 const extractBase64 = (fileName, html) => {
-    const b64files = html.match(/( src=)?"data:([A-Za-z-+\/]+);base64,[^"]*/g);
+    const b64files = html.match(/( src=)?'data:([A-Za-z-+\/]+);base64,[^']*/g);
 
     return (b64files || []).reduce((html, b64, index) => {
-        const isInSrc = b64.slice(0, 6) === ' src="';
+        const isInSrc = b64.slice(0, 6) === ' src='';
         b64 = b64.slice(isInSrc ? 6 : 1);
 
         const split = b64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -160,9 +160,11 @@ const filesByLanguage = fs.readdirSync(inDir)
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
     });
 
-    console.log(`Copying compressed images beginning with: `);
-    
-    imagemin([`${tmpDir}*.{jpg,jpeg,png,svg}`], outDir, {
+const chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+const imageMinSlow = (index, secondIndex) => {
+    console.log(`Copying compressed images beginning with: ${chars[index]}${chars[secondIndex]}`);
+
+    imagemin([`${tmpDir}${chars[index]}${chars[secondIndex]}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
             imageminJpegoptim(),
             imageminPngcrush(),
@@ -170,9 +172,9 @@ const filesByLanguage = fs.readdirSync(inDir)
             imageminGifsicle()
         ]
     }).then(files => {
-        if (secondIndex > md5Chars.length) {
+        if (secondIndex > chars.length) {
             imageMinSlow(index + 1, 0)
-        } else if (index < md5Chars.length) {
+        } else if (index < chars.length) {
             imageMinSlow(index, secondIndex + 1);
         }
     }).catch(err => {
@@ -183,3 +185,5 @@ const filesByLanguage = fs.readdirSync(inDir)
             imageMinSlow(index, secondIndex);
         });
     });
+};
+imageMinSlow(0, 0);
