@@ -160,9 +160,9 @@ const filesByLanguage = fs.readdirSync(inDir)
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
     });
 
-    console.log(`Copying compressed images beginning with: ${md5Chars[index]}${md5Chars[secondIndex]}`);
+    console.log(`Copying compressed images beginning with: `);
     
-    imagemin([`${tmpDir}${md5Chars[index]}${md5Chars[secondIndex]}*.{jpg,jpeg,png,svg}`], outDir, {
+    imagemin([`${tmpDir}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
             imageminJpegoptim(),
             imageminPngcrush(),
