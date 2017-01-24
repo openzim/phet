@@ -160,9 +160,8 @@ const filesByLanguage = fs.readdirSync(inDir)
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
     });
 
-const md5Chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'];
-const imageMinSlow = (index, secondIndex) => {
     console.log(`Copying compressed images beginning with: ${md5Chars[index]}${md5Chars[secondIndex]}`);
+    
     imagemin([`${tmpDir}${md5Chars[index]}${md5Chars[secondIndex]}*.{jpg,jpeg,png,svg}`], outDir, {
         plugins: [
             imageminJpegoptim(),
@@ -184,5 +183,3 @@ const imageMinSlow = (index, secondIndex) => {
             imageMinSlow(index, secondIndex);
         });
     });
-};
-imageMinSlow(0, 0);
