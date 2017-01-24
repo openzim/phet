@@ -34,7 +34,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
     .reduce((file, resName) => {
       const ext = resName.split('.').slice(-1)[0];
       ncp(`${inDir}${resName}`, `${targetDir}${resName}`);
-      return file.replace(new RegExp(resName, 'g'), `${kiwixPrefix[ext]}${resName}`);
+      return file.replace(resName, `${kiwixPrefix[ext]}${resName}`);
     }, file);
 };
 
@@ -60,9 +60,8 @@ async.series(config.buildCombinations.map((combination) => {
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
 
             filesToCopy.forEach(fileName => {
-            console.log(fileName.length)
               const ext = fileName.split('.').slice(-1)[0];
-              html = html.replace(new RegExp(fileName, 'g'), `${kiwixPrefix[ext]}${fileName}`);
+              html = html.replace(fileName, `${kiwixPrefix[ext]}${fileName}`);
 
               let file = fs.readFileSync(`${inDir}${fileName}`, 'utf8');
 
