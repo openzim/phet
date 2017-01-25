@@ -93,7 +93,7 @@ module.exports = {
     "languagesToGet": languageMappings,
     "buildCombinations": availableLanguages.map(lang => {
         return {
-            output: `phet_${lang}_all_${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`,
+            output: `phet_${lang}_all_${date.getUTCFullYear()}-${('0' + ( date.getMonth() + 1 ) ).slice( -2 )}`,
             languages: [lang]
         }
     }).concat({
