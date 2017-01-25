@@ -91,8 +91,6 @@ async.series(config.buildCombinations.map((combination) => {
         fs.writeFileSync(targetDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways
           templateHTML.replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog)), 'utf8');
 
-
-
         copyFileSync(resDir + 'ractive.js', targetDir + 'ractive.js');
         copyFileSync(resDir + 'index.css', targetDir + 'index.css');
         copyFileSync(resDir + 'phet-banner.png', targetDir + 'phet-banner.png');
@@ -100,8 +98,18 @@ async.series(config.buildCombinations.map((combination) => {
 
         //Run export2zim
         console.log('Creating Zim file...');
-
-        const exportProc = spawn(`./export2zim`, [targetDir, `${combination.output}.zim`]);
+        const exportProc = spawn( `zimwriterfs`,
+				  [ '--verbose',
+				    '--welcome=index.html',
+				    '--favicon=favicon.png',
+				    '--language=ISO639-3', // TODO: to replace with real ISO639-3 lang code
+				    '--title=PhET Interactive Simulations',
+                                    '--name=phets', // TODO: here too, the language code should be append
+				    '--description=Interactives simulations for Science and Math',
+				    '--creator=University of Colorado',
+				    '--publisher=Kiwix',
+				    targetDir,
+				    `./dist/${combination.output}.zim` ] );
 
         exportProc.stdout.on('data', function (data) {    // register one or more handlers
           console.log('stdout: ' + data);

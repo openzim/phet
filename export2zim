@@ -1,2 +1,0 @@
-#!/bin/bash
-zimwriterfs -w index.html -f favicon.png -l ISO639-3 -t PHETSims -d PHETSims -c ColoradoUni -p PHETScraper $1 ./dist/$2
