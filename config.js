@@ -97,7 +97,7 @@ module.exports = {
             languages: [lang]
         }
     }).concat({
-        "output": `phet_mul_all_${date.getUTCFullYear()}-${date.getUTCMonth() + 1}`,
+        "output": `phet_mul_all_${date.getUTCFullYear()}-${('0' + ( date.getMonth() + 1 ) ).slice( -2 )}`,
         "languages": [
             "en",
             "ar_SA",
