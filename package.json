@@ -15,6 +15,7 @@
     "imagemin-pngcrush": "^5.0.0",
     "imagemin-pngquant": "^5.0.0",
     "imagemin-svgo": "^5.2.0",
+    "iso-639-3": "^1.0.0",
     "md5": "^2.2.1",
     "ncp": "^2.0.0",
     "request": "^2.72.0",

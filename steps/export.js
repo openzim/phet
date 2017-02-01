@@ -2,6 +2,7 @@ const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
 
+const iso6393 = require('iso-639-3');
 const fs = require('fs');
 const cheerio = require('cheerio');
 const rimraf = require('rimraf');
@@ -36,6 +37,10 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
       ncp(`${inDir}${resName}`, `${targetDir}${resName}`);
       return file.replace(resName, `${kiwixPrefix[ext]}${resName}`);
     }, file);
+};
+
+const getISO6393 = function getISO6393(lang = 'en'){
+  return (iso6393.find(lang => lang.iso6391 === lang) || {}).iso6393;
 };
 
 async.series(config.buildCombinations.map((combination) => {
@@ -96,13 +101,15 @@ async.series(config.buildCombinations.map((combination) => {
         copyFileSync(resDir + 'phet-banner.png', targetDir + 'phet-banner.png');
         copyFileSync(resDir + 'favicon.png', targetDir + 'favicon.png');
 
+        const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
+
         //Run export2zim
         console.log('Creating Zim file...');
         const exportProc = spawn( `zimwriterfs`,
 				  [ '--verbose',
 				    '--welcome=index.html',
 				    '--favicon=favicon.png',
-				    '--language=ISO639-3', // TODO: to replace with real ISO639-3 lang code
+				    `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
 				    '--title=PhET Interactive Simulations',
                                     '--name=phets', // TODO: here too, the language code should be append
 				    '--description=Interactives simulations for Science and Math',
