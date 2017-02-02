@@ -40,6 +40,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
 };
 
 const getISO6393 = function getISO6393(lang = 'en'){
+  lang = lang.split('_')[0];
   return (iso6393.find(lang => lang.iso6391 === lang) || {}).iso6393;
 };
 
