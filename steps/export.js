@@ -41,7 +41,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
 
 const getISO6393 = function getISO6393(lang = 'en'){
   lang = lang.split('_')[0];
-  return (iso6393.find(lang => lang.iso6391 === lang) || {}).iso6393;
+  return (iso6393.find(l => l.iso6391 === lang) || {}).iso6393;
 };
 
 async.series(config.buildCombinations.map((combination) => {
@@ -103,7 +103,7 @@ async.series(config.buildCombinations.map((combination) => {
         copyFileSync(resDir + 'favicon.png', targetDir + 'favicon.png');
 
         const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
-
+        
         //Run export2zim
         console.log('Creating Zim file...');
         const exportProc = spawn( `zimwriterfs`,
