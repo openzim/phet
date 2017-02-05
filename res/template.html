@@ -61,6 +61,10 @@
 <script>
 	window.importedData = <!-- REPLACEMEINCODE -->;
 
+	var lsPrefix = 'kiwix';
+
+	<!-- SETLSPREFIX -->
+
 	var navigatorLanguage = (window.navigator && 
 		((window.navigator.languages && window.navigator.languages[0]) || 
 			window.navigator.userLanguage || 
@@ -70,8 +74,8 @@
 	navigatorLanguage = window.importedData.languageMappings[navigatorLanguage.split('-')[0]]
 	var languageToUse = window.importedData.simsByLanguage[navigatorLanguage] ? navigatorLanguage : Object.keys(window.importedData.simsByLanguage)[0];
 
-	var currentLanguage = (localStorage && localStorage.currentLanguage) ?
-		localStorage.currentLanguage :
+	var currentLanguage = (localStorage && localStorage[lsPrefix + 'currentLanguage']) ?
+		localStorage[lsPrefix + 'currentLanguage'] :
 		languageToUse;
 
 	var ractive = new Ractive({
@@ -90,7 +94,7 @@
 		oninit: function(){
 			this.observe('selectedLanguage', function(selectedLanguage){
 				if(localStorage) {
-					localStorage.currentLanguage = selectedLanguage;
+					localStorage[lsPrefix + 'currentLanguage'] = selectedLanguage;
 				};
 			});
 		}
