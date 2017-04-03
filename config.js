@@ -98,47 +98,6 @@ module.exports = {
         }
     }).concat({
         "output": `phet_mul_${date.getUTCFullYear()}-${('0' + ( date.getMonth() + 1 ) ).slice( -2 )}`,
-        "languages": [
-            "en",
-            "ar_SA",
-            "be",
-            "bs",
-            "zh_CN",
-            "zh_TW",
-            "cs",
-            "da",
-            "nl",
-            "et",
-            "fi",
-            "fr",
-            "gl",
-            "ka",
-            "de",
-            "el",
-            "hu",
-            "in",
-            "it",
-            "ja",
-            "ko",
-            "ku",
-            "ku_TR",
-            "mk",
-            "mr",
-            "nb",
-            "nn",
-            "fa",
-            "pt",
-            "pt_BR",
-            "ro",
-            "sr",
-            "si",
-            "sk",
-            "es",
-            "es_PE",
-            "th",
-            "tr",
-            "uk",
-            "vi"
-        ]
+        "languages": availableLanguages
     })
 }
