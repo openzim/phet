@@ -4,6 +4,10 @@
   "description": "Scraper and exporter of PHET simulations",
   "main": "index.js",
   "dependencies": {
+    "@types/cheerio": "^0.22.1",
+    "@types/es6-shim": "^0.31.32",
+    "@types/node": "^7.0.12",
+    "@types/request-promise-native": "^1.0.2",
     "async": "^2.0.0-rc.6",
     "cheerio": "^0.20.0",
     "dirsum": "^0.1.1",
@@ -19,6 +23,7 @@
     "md5": "^2.2.1",
     "ncp": "^2.0.0",
     "request": "^2.72.0",
+    "request-promise-native": "^1.0.3",
     "rimraf": "^2.5.2"
   },
   "devDependencies": {},
