@@ -1,28 +1,44 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('fonts/OpenSans-Light.ttf') format('ttf');
+  
+}
+
+html {
+    font-size: 62.5%;
+}
+
 body {
     height: 100%;
     padding: 0px;
     margin: 0px;
-    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-family: 'Open Sans', Georgia, 'Times New Roman', Times, serif;
     background-color: white;
     position:absolute;
+}
+
+h1 {
+    font-size: 2.6rem;
+}
+
+h2 {
+    font-size: 2.0rem;
+}
+
+p {
+    font-size: 1.6rem;
 }
 
 #container {
   width:100%;
   text-align:center;
-  height: auto !important;
+  height: auto !import
 }
+
 #header {
-    z-index: 4;
-    width:100%;
-    height:auto;
-    position: relative;
-    padding-left:0px;
-    padding-top:0px;
-    padding-bottom:0px;
-}
-#header img {
-    width:100%;
+    width: 100%;
 }
 
 .menu-wrapper {
@@ -34,7 +50,7 @@ body {
 select {
     width: 100%;
     max-width: 300px;
-    font-size: 1.5em;
+    font-size: 1.5rem;
     padding: 10px;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -78,4 +94,49 @@ select {
 .simulation-list-thumbnail {
     width: 200px;
     height: auto;
+}
+
+.sim-card {
+    width: 90%;
+    margin: 0 auto 20px;
+    position: relative;
+    -webkit-box-shadow: 3px 6px 14px 0px rgba(0,0,0,0.32);
+    -moz-box-shadow: 3px 6px 14px 0px rgba(0,0,0,0.32);
+    box-shadow: 3px 6px 14px 0px rgba(0,0,0,0.32);
+}
+
+.sim-card img {
+    width: 100%;
+}
+
+.sim-card .overlay {
+    background: rgba(24, 130, 159, 0.8);
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.sim-card .overlay h2 {
+    color: #fff;
+    font-weight: 200;
+    position: absolute;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    margin: 0;
+    padding: 20px 0;
+    width: 100%;
+}
+
+.sim-card .fa-info-circle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 8px;
+    color: #fff;
+    font-size: 4.0rem;
+}
+
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
+
 }
