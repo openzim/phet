@@ -23,38 +23,36 @@
 	<meta name="theme-color" content="#ffffff">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="index.css" type="text/css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" type="text/css" rel="stylesheet">
 </head>
 
 <body>
 	<div id="container">
 		<div id="header" class="shadow-lr">
-			<img class="phet-logo" src="phet-banner.png"></img>
+			<!-- <img class="phet-logo" src="phet-banner.png"></img> -->
+            <h1>PheT Interactive Simlulations</h1>
+            <p>Description here</p>
 		</div>
-		<div id='ractive-target'></div>
-</body>
 
-<script type='text/html' id='pageContent'>
-	<div class="menu-wrapper">
-		<select value="{{selectedLanguage}}">
-			{{#each languages}}
-				<option value='{{.}}'>{{.}}</option>
-			{{/each}}
-		</select>
-		<hr /> 
-		{{#each simulationsByLanguage[selectedLanguage]}}
-			<div class="simulation-list-item">
-				<a href="{{url}}" class="simulation-link">
-					<img class="simulation-list-thumbnail" src="{{image}}" id="simulation-display-thumbnail-area-builder" alt="Screenshot of the {{display}}"><br>
-					<strong><span class="simulation-list-title">{{displayName}}</span></strong><br>
-					<span class="sim-display-badge sim-badge-html"></span>
-				</a>
-				<!-- TODO: Re-add notes (at the moment a sign in is required for download)
-						<a href="{{notes}}">Notes</a>
-				-->
-			</div>
-		{{/each}}
-	</div>
-</script>
+
+		<div id='ractive-target'>
+            <select value="{{selectedLanguage}}">
+                {{#each languages}}
+                    <option value='{{.}}'>{{.}}</option>
+                {{/each}}
+            </select>
+
+            {{#each simulationsByLanguage[selectedLanguage]}}
+                <div class="sim-card">
+                    <img src="{{image}}" alt="Screenshot of the {{display}}"/>
+                    <div class="overlay">
+                        <i class="fa fa-info-circle" aria-hidden="true"></i>
+                        <a href="{{url}}"><h2>{{displayName}}</h2></a>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+</body>
 
 <script>
 	window.importedData = <!-- REPLACEMEINCODE -->;
