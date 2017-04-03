@@ -1,24 +1,24 @@
-#Kiwix - PhET
+# Kiwix - PhET
 
-##Quick Start
+## Quick Start
 ```bash
 npm i && npm start
 ```
 
 The above will eventually output a ZIM file to ```dist/```
 
-##Notes
+## Notes
 It is likely that the export to ZIM will fail - modify the ```export2zim``` file to point at a working zimwriterfs executable.
 
 Hopefully this step will be removed once there are bindings for libzim and node.
 
-##Config
+## Config
 The only way to configure behaviour is through ```config.json```. It accepts the following properties:
 * languages:Array - PhET country codes (possible values can be found below)
 * languageMapping:Object<string, string> - Mapping between language code and displayName
 
 
-##About
+## About
 
 This project achieves multiple things:
 * Download PhET content
