@@ -25,6 +25,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="index.css" type="text/css" rel="stylesheet">
 	<link href="css/font-awesome.min.css" type="text/css" rel="stylesheet">
+	<link href="css/sweetalert2.min.css" type="text/css" rel="stylesheet">
 </head>
 
 <body>
@@ -42,11 +43,11 @@
                 {{/each}}
             </select> {{#each simulationsByLanguage[selectedLanguage]}}
 			<div class="sim-card">
-				<img src="{{image}}" alt="Screenshot of the {{display}}" />
+				<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
 				<div class="overlay">
 					<i class="fa fa-info-circle" aria-hidden="true"></i>
-					<a href="{{url}}">
-						<h2>{{displayName}}</h2>
+					<a href="{{id}}_{{language}}.html">
+						<h2>{{title}}</h2>
 					</a>
 				</div>
 			</div>

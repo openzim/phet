@@ -33,7 +33,7 @@
     "setup": "node steps/setup.js",
     "get": "node_modules/ts-node/dist/bin.js steps/getCategory.ts",
     "transform": "node steps/transform.js",
-    "export": "node steps/export.js",
+    "export": "node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

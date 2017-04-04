@@ -1,3 +1,4 @@
+import { Category, Simulation, SimulationWithoutAdditional } from './types';
 const inDir = '';
 const outDir = 'state/get/';
 
@@ -11,24 +12,6 @@ import * as async from 'async';
 
 const log = function (...args: any[]) { config.verbose && console.log.apply(console, arguments) };
 const error = function (...args: any[]) { config.verbose && console.error.apply(console, arguments) };
-
-type Category = {
-    title: string,
-    slug: string
-}[];
-
-type SimulationWithoutAdditional = {
-    id: string,
-    language: string,
-}
-
-type Simulation = SimulationWithoutAdditional & {
-    title: string
-    categories: Category[],
-    difficulty: string[],
-    topics: string[],
-    description: string
-};
 
 console.log('Starting build');
 async.mapLimit(
@@ -101,7 +84,11 @@ async.mapLimit(
 
             async.eachLimit(urlsToGet, config.workers, function (url, next) {
                 const req = requestAsync(url);
-                const fileName = url.split('/').pop();
+                let fileName = url.split('/').pop();
+                if(fileName.slice(-4) === '.png') {
+                    const fileParts = fileName.split('-');
+                    fileName = fileParts.slice(0, -1).join('-') + '.png';
+                }
                 const writeStream = fs.createWriteStream(outDir + fileName);
 
                 req.on('response', function (response) {

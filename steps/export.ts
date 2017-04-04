@@ -1,16 +1,19 @@
+import { Catalog, Simulation } from './types';
 const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
 
-const iso6393 = require('iso-639-3');
-const fs = require('fs');
-const cheerio = require('cheerio');
-const rimraf = require('rimraf');
-const config = Object.assign({ languages: ['en'] }, require('../config.js'));
-const spawn = require('child_process').spawn;
-const dirsum = require('dirsum');
-const async = require('async');
-const ncp = require('ncp');
+
+import * as iso6393 from 'iso-639-3';
+import * as fs from 'fs';
+import * as cheerio from 'cheerio';
+import * as rimraf from 'rimraf';
+import * as config from '../config';
+import * as cp from 'child_process';
+import * as async from 'async';
+import * as ncp from 'ncp';
+
+const spawn = cp.spawn;
 ncp.limit = 16;
 
 const kiwixPrefix = {
@@ -20,6 +23,8 @@ const kiwixPrefix = {
   jpg: '../I/',
   jpeg: '../I/'
 };
+
+const sims: Simulation[] = require('../state/get/catalog.json');
 
 const copyFileSync = function copyFileSync(from, to) {
   fs.writeFileSync(to, fs.readFileSync(from));
@@ -39,7 +44,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
     }, file);
 };
 
-const getISO6393 = function getISO6393(lang = 'en'){
+const getISO6393 = function getISO6393(lang = 'en') {
   lang = lang.split('_')[0];
   return (iso6393.find(l => l.iso6391 === lang) || {}).iso6393;
 };
@@ -50,23 +55,18 @@ async.series(config.buildCombinations.map((combination) => {
     rimraf(targetDir, function (err) {
       fs.mkdir(targetDir, function () {
 
-        //Generate Catalog.json file
-        const filesByLanguage = fs.readdirSync(inDir)
+        fs.readdirSync(inDir)
           .filter(fileName => fileName.split('.').pop() === 'html')
           .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
-          .reduce((acc, fileName) => {
-            var language = config.languageMappings[getLanguage(fileName)] || 'Misc';
-            acc[language] = acc[language] || [];
+          .forEach((fileName) => {
 
             var html = fs.readFileSync(inDir + fileName, 'utf8');
-
             var $ = cheerio.load(html);
-            var title = ($('meta[property="og:title"]').attr('content') || '');
 
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
-            copyFileSync(`${inDir}${fileName.split('_')[0]}-${config.imageResolution}.png`, `${targetDir}${fileName.split('_')[0]}-${config.imageResolution}.png`);
+            copyFileSync(`${inDir}${fileName.split('_')[0]}.png`, `${targetDir}${fileName.split('_')[0]}.png`);
             filesToCopy.forEach(fileName => {
-              if(fileName.length > 40) return;
+              if (fileName.length > 40) return;
               const ext = fileName.split('.').slice(-1)[0];
               html = html.replace(fileName, `${kiwixPrefix[ext]}${fileName}`);
 
@@ -78,19 +78,21 @@ async.series(config.buildCombinations.map((combination) => {
             });
 
             fs.writeFileSync(`${targetDir}${fileName}`, html, 'utf8');
+          });
 
-            acc[language].push({
-              displayName: title || fileName.split('_').slice(0, -1).join(' '),
-              url: fileName,
-              image: '../I/' + fileName.split('_')[0] + `-${config.imageResolution}.png`
-            });
-            return acc;
-          }, {});
+        //Generate Catalog.json file
+        const simsByLanguage = sims.reduce((acc, sim) => {
+          if (!!~combination.languages.indexOf(sim.language)) {
+            const lang = config.languageMappings[sim.language];
+            acc[lang] = (acc[lang] || []).concat(sim);
+          }
+          return acc;
+        }, {});
 
-        const catalog = {
+        const catalog: Catalog = {
           languageMappings: config.languageMappings,
-          simsByLanguage: filesByLanguage
-        }
+          simsByLanguage
+        };
 
         //Generate index file
         const templateHTML = fs.readFileSync(resDir + 'template.html', 'utf8');
@@ -105,21 +107,21 @@ async.series(config.buildCombinations.map((combination) => {
         copyFileSync(resDir + 'favicon.png', targetDir + 'favicon.png');
 
         const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
-        
+
         //Run export2zim
         console.log('Creating Zim file...');
         const exportProc = spawn(`zimwriterfs`,
-				  [ '--verbose',
-				    '--welcome=index.html',
-				    '--favicon=favicon.png',
-				    `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
-				    '--title=PhET Interactive Simulations',
-                                    '--name=phets', // TODO: here too, the language code should be append
-				    '--description=Interactives simulations for Science and Math',
-				    '--creator=University of Colorado',
-				    '--publisher=Kiwix',
-				    targetDir,
-				    `./dist/${combination.output}.zim` ] );
+          ['--verbose',
+            '--welcome=index.html',
+            '--favicon=favicon.png',
+            `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
+            '--title=PhET Interactive Simulations',
+            '--name=phets', // TODO: here too, the language code should be append
+            '--description=Interactives simulations for Science and Math',
+            '--creator=University of Colorado',
+            '--publisher=Kiwix',
+            targetDir,
+            `./dist/${combination.output}.zim`]);
 
         exportProc.stdout.on('data', function (data) {    // register one or more handlers
           console.log('stdout: ' + data);
