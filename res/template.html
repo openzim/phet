@@ -34,24 +34,30 @@
 		<div id="header" class="shadow-lr">
 			<!-- <img class="phet-logo" src="phet-banner.png"></img> -->
 			<h1>PheT Interactive Simlulations</h1>
-			<p>Description here</p>
+			<p>To help students engage in science and mathematics.</p>
 		</div>
 
 		<script id='ractive-template' type='text/html'>
-			<select value="{{selectedLanguage}}">
-                {{#each languages}}
-                    <option value='{{.}}'>{{.}}</option>
-                {{/each}}
-            </select> {{#each simulationsByLanguage[selectedLanguage]}}
-			<div class="sim-card">
-				<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
-				<div class="overlay">
-					<i class="fa fa-info-circle" aria-hidden="true"></i>
-					<a href="{{id}}_{{language}}.html">
-						<h2>{{title}}</h2>
-					</a>
-				</div>
+			<div class="language-container">
+				<label>
+					Selected language:
+					<select value="{{selectedLanguage}}">
+						{{#each languages}}
+							<option value='{{.}}'>{{.}}</option>
+						{{/each}}
+					</select>
+				</label>
 			</div>
+		    {{#each simulationsByLanguage[selectedLanguage]}}
+				<div class="sim-card">
+					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
+					<div class="overlay">
+						<i class="fa fa-info-circle" aria-hidden="true"></i>
+						<a href="{{id}}_{{language}}.html">
+							<h2>{{title}}</h2>
+						</a>
+					</div>
+				</div>
 			{{/each}}
 		</script>
 		<div id='ractive-target'></div>
