@@ -90,7 +90,7 @@ module.exports = {
     "workers": 10,
     "imageResolution": 600,
     "languageMappings": languageMappings,
-    "languagesToGet": languagesToGet,
+    "languagesToGet": availableLanguages,
     "buildCombinations": availableLanguages.map(lang => {
         return {
             output: `phet_${lang.toLowerCase().replace("_", "-")}_${date.getUTCFullYear()}-${('0' + ( date.getMonth() + 1 ) ).slice( -2 )}`,
