@@ -10,6 +10,7 @@
     "@types/request-promise-native": "^1.0.2",
     "async": "^2.0.0-rc.6",
     "cheerio": "^0.20.0",
+    "copy": "^0.3.0",
     "dirsum": "^0.1.1",
     "handlebars": "^4.0.5",
     "html-minifier": "^3.2.3",

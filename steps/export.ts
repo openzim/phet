@@ -12,6 +12,7 @@ import * as config from '../config';
 import * as cp from 'child_process';
 import * as async from 'async';
 import * as ncp from 'ncp';
+import * as copy from 'copy';
 
 const spawn = cp.spawn;
 ncp.limit = 16;
@@ -101,41 +102,39 @@ async.series(config.buildCombinations.map((combination) => {
             .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
             .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
 
-        copyFileSync(resDir + 'ractive.js', targetDir + 'ractive.js');
-        copyFileSync(resDir + 'index.css', targetDir + 'index.css');
-        copyFileSync(resDir + 'phet-banner.png', targetDir + 'phet-banner.png');
-        copyFileSync(resDir + 'favicon.png', targetDir + 'favicon.png');
+        async.each(['js', 'css', 'fonts', 'img'], function (path, next) {
+          copy(`${resDir}${path}/*`, targetDir, next);
+        }, function () {
+          const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
+          //Run export2zim
+          console.log('Creating Zim file...');
+          const exportProc = spawn(`zimwriterfs`,
+            ['--verbose',
+              '--welcome=index.html',
+              '--favicon=favicon.png',
+              `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
+              '--title=PhET Interactive Simulations',
+              '--name=phets', // TODO: here too, the language code should be append
+              '--description=Interactives simulations for Science and Math',
+              '--creator=University of Colorado',
+              '--publisher=Kiwix',
+              targetDir,
+              `./dist/${combination.output}.zim`]);
 
-        const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
+          exportProc.stdout.on('data', function (data) {    // register one or more handlers
+            console.log('stdout: ' + data);
+          });
 
-        //Run export2zim
-        console.log('Creating Zim file...');
-        const exportProc = spawn(`zimwriterfs`,
-          ['--verbose',
-            '--welcome=index.html',
-            '--favicon=favicon.png',
-            `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
-            '--title=PhET Interactive Simulations',
-            '--name=phets', // TODO: here too, the language code should be append
-            '--description=Interactives simulations for Science and Math',
-            '--creator=University of Colorado',
-            '--publisher=Kiwix',
-            targetDir,
-            `./dist/${combination.output}.zim`]);
+          exportProc.stderr.on('data', function (data) {
+            console.log('stderr: ' + data);
+          });
 
-        exportProc.stdout.on('data', function (data) {    // register one or more handlers
-          console.log('stdout: ' + data);
+          exportProc.on('exit', function (code) {
+            console.log('child process exited with code ' + code);
+            handler(null, null);
+          });
+
         });
-
-        exportProc.stderr.on('data', function (data) {
-          console.log('stderr: ' + data);
-        });
-
-        exportProc.on('exit', function (code) {
-          console.log('child process exited with code ' + code);
-          handler(null, null);
-        });
-
       });
     });
   }

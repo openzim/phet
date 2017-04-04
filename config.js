@@ -1,7 +1,7 @@
 const date = new Date();
 const availableLanguages = [
     "en",
-    "ar_SA",
+    /*"ar_SA",
     "be",
     "bs",
     "zh_CN",
@@ -38,7 +38,7 @@ const availableLanguages = [
     "es_PE",
     "th",
     "tr",
-    "uk",
+    "uk",*/
     "vi"
 ];
 
