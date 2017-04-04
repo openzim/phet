@@ -61,8 +61,8 @@ const extractLanguageElements = (fileName, html) => {
         try { //File Exists
             stats = fs.statSync(outDir + newFileName);
         }
-        catch (e) { //File does not exists
-            fs.writeFileSync(`${outDir}${newFileName}.js`, script, 'utf8');
+        catch (e) { //File does not exist
+            fs.writeFileSync(`${outDir}${newFileName}.js`, script.trim(), 'utf8');
         }
 
         return acc.replace(script, `</script><script src='${newFileName}.js'>`);
@@ -160,7 +160,7 @@ const filesByLanguage = fs.readdirSync(inDir)
         fs.writeFileSync(`${outDir}${fileName}`, html, 'utf8');
     });
 
-const chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+const chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 const imageMinSlow = (index, secondIndex) => {
     console.log(`Copying compressed images beginning with: ${chars[index]}${chars[secondIndex]}`);
 

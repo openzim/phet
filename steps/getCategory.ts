@@ -53,7 +53,7 @@ async.mapLimit(
         console.log(`Got list of ${sims.length} simulations to fetch... Here we go!`);
         async.mapLimit(sims, config.workers, function (sim, next) {
             request.get(`https://phet.colorado.edu/${sim.language}/simulation/${sim.id}`)
-                .catch(err => console.error(`Whoops: ${err}`))
+                .catch(err => console.error(`Got a 404 for ${sim.language} ${sim.id}`))
                 .then(html => next(null, html));
         }, function (err, pages) {
             console.log(`Got ${pages.length} pages`);
@@ -91,7 +91,6 @@ async.mapLimit(
                     description: $('.simulation-panel-indent[itemprop]').text()
                 };
             });
-
 
             fs.writeFileSync(`${outDir}catalog.json`, JSON.stringify(catalog), 'utf8');
 

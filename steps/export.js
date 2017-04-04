@@ -108,7 +108,7 @@ async.series(config.buildCombinations.map((combination) => {
         
         //Run export2zim
         console.log('Creating Zim file...');
-        const exportProc = spawn( `zimwriterfs`,
+        const exportProc = spawn(`zimwriterfs`,
 				  [ '--verbose',
 				    '--welcome=index.html',
 				    '--favicon=favicon.png',

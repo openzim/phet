@@ -24,12 +24,14 @@
     "ncp": "^2.0.0",
     "request": "^2.72.0",
     "request-promise-native": "^1.0.3",
-    "rimraf": "^2.5.2"
+    "rimraf": "^2.5.2",
+    "ts-node": "^3.0.2",
+    "typescript": "^2.2.2"
   },
   "devDependencies": {},
   "scripts": {
     "setup": "node steps/setup.js",
-    "get": "node steps/get.js",
+    "get": "node_modules/ts-node/dist/bin.js steps/getCategory.ts",
     "transform": "node steps/transform.js",
     "export": "node steps/export.js",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
