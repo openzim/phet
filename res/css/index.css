@@ -3,7 +3,6 @@
   font-style: normal;
   font-weight: 300;
   src: url('fonts/OpenSans-Light.ttf') format('ttf');
-  
 }
 
 html {
@@ -16,7 +15,6 @@ body {
     margin: 0px;
     font-family: 'Open Sans', Georgia, 'Times New Roman', Times, serif;
     background-color: white;
-    position:absolute;
 }
 
 h1 {
@@ -27,14 +25,14 @@ h2 {
     font-size: 2.0rem;
 }
 
-p {
+p, label {
     font-size: 1.6rem;
 }
 
 #container {
-  width:100%;
+  width: 90%;
   text-align:center;
-  height: auto !import
+  margin: 0 auto;
 }
 
 #header {
@@ -57,52 +55,14 @@ select {
     appearance: none;
 }
 
-.simulation-list-item-new {
-    width: 250px;
-    background-color: white;
-    display: inline-block;
-    margin: 5px;
-}
-.simulation-list-item {
-    display: inline-block;
-    text-align: center;
-    padding: 10px 20px;
-    margin-right: 10px;
-    width: 200px;
-    vertical-align: top;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-    position: relative;
-}
-
-.simulation-list-item .simulation-link {
-    position: relative;
-    display: block;
-}
-
-.sim-display-badge {
-    display: block;
-    position: absolute;
-    background-size: 28px 28px;
-    width: 28px;
-    height: 28px;
-    left: 111px;
-    top: 62px;
-}
-
-.simulation-list-thumbnail {
-    width: 200px;
-    height: auto;
-}
-
 .sim-card {
-    width: 90%;
+    width: 100%;
     margin: 0 auto 20px;
     position: relative;
     -webkit-box-shadow: 3px 6px 14px 0px rgba(0,0,0,0.32);
     -moz-box-shadow: 3px 6px 14px 0px rgba(0,0,0,0.32);
     box-shadow: 3px 6px 14px 0px rgba(0,0,0,0.32);
+    float: left;
 }
 
 .sim-card img {
@@ -137,6 +97,44 @@ select {
     font-size: 4.0rem;
 }
 
-@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {
+.language-container {
+    margin: 10px 0
+}
+
+@media only screen 
+  and (min-device-width: 320px) 
+  and (max-device-width: 480px)
+  and (-webkit-min-device-pixel-ratio: 2)
+  and (orientation: landscape) {
+
+    .sim-card {
+        width: calc(50% - 10px);
+        margin-right: 10px;
+    }
+
+    .sim-card:nth-child(odd) {
+        margin-right: 0;
+    }
+}
+
+@media only screen and (min-width : 768px) and (max-width : 1024px) {
+     
+     .sim-card {
+        width: calc(50% - 10px);
+        margin-right: 15px;
+    }
+
+    .sim-card:nth-child(3n + 1) {
+        margin-right: 0;
+    }
+
+}
+
+@media only screen and (min-width : 1024px) {
+  
+  .sim-card {
+    width: calc(33.3% - 10px);
+    margin-right: 15px;
+  }
 
 }
