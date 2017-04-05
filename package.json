@@ -7,8 +7,10 @@
     "@types/cheerio": "^0.22.1",
     "@types/es6-shim": "^0.31.32",
     "@types/node": "^7.0.12",
+    "@types/ractive": "^0.7.27",
     "@types/request-promise-native": "^1.0.2",
     "async": "^2.0.0-rc.6",
+    "browserify": "^14.1.0",
     "cheerio": "^0.20.0",
     "copy": "^0.3.0",
     "dirsum": "^0.1.1",
@@ -26,6 +28,7 @@
     "request": "^2.72.0",
     "request-promise-native": "^1.0.3",
     "rimraf": "^2.5.2",
+    "sweetalert2": "^6.5.5",
     "ts-node": "^3.0.2",
     "typescript": "^2.2.2"
   },
@@ -34,7 +37,7 @@
     "setup": "node steps/setup.js",
     "get": "node_modules/ts-node/dist/bin.js steps/getCategory.ts",
     "transform": "node steps/transform.js",
-    "export": "node_modules/ts-node/dist/bin.js steps/export.ts",
+    "export": "node_modules/typescript/bin/tsc && node_modules/browserify/bin/cmd.js res/js/index.js -o res/js/index.js && node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

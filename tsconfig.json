@@ -1,9 +1,16 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
-        "noImplicitAny": false,
+        "removeComments": false,
+        "preserveConstEnums": true,
         "sourceMap": false,
-        "allowJs": true
-    }
+        "noImplicitAny": false,
+        "suppressImplicitAnyIndexErrors": true,
+        "allowJs": true,
+        "module": "commonjs",
+        "target": "ES5",
+        "skipLibCheck": true
+    },
+    "files": [
+        "res/js/index.ts"
+    ]
 }

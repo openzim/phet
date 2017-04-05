@@ -15,7 +15,7 @@ import * as ncp from 'ncp';
 import * as copy from 'copy';
 
 const spawn = cp.spawn;
-ncp.limit = 16;
+(<any>ncp).limit = 16;
 
 const kiwixPrefix = {
   js: '../-/',

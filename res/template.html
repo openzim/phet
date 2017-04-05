@@ -20,13 +20,12 @@
 	<link rel="icon" type="image/ico" href="favicon.ico" sizes="16x16">
 	<link rel="manifest" href="manifest.json">
 	<title>PhET INTERACTIVE SIMULATIONS</title>
-	<script src='../-/sweetalert2.min.js'></script>
-	<script src='../-/ractive.js'></script>
 	<meta name="theme-color" content="#ffffff">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="index.css" type="text/css" rel="stylesheet">
-	<link href="font-awesome.min.css" type="text/css" rel="stylesheet">
+	<!--<link href="font-awesome.min.css" type="text/css" rel="stylesheet">-->
 	<link href="sweetalert2.min.css" type="text/css" rel="stylesheet">
+	<script src='../-/ractive.js'></script>
 </head>
 
 <body>
@@ -37,67 +36,36 @@
 			<p>Description here</p>
 		</div>
 
+		<div id='ractive-target'></div>
 		<script id='ractive-template' type='text/html'>
 			<select value="{{selectedLanguage}}">
                 {{#each languages}}
                     <option value='{{.}}'>{{.}}</option>
                 {{/each}}
-            </select> {{#each simulationsByLanguage[selectedLanguage]}}
-			<div class="sim-card">
-				<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
-				<div class="overlay">
-					<i class="fa fa-info-circle" aria-hidden="true"></i>
-					<a href="{{id}}_{{language}}.html">
-						<h2>{{title}}</h2>
-					</a>
+            </select> 
+			{{#each simulationsByLanguage[selectedLanguage]}}
+				<div class="sim-card">
+					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
+					<div class="overlay">
+						<i class="fa fa-info-circle" aria-hidden="true"></i>
+						<a href="{{id}}_{{language}}.html">
+							<h2>{{title}}</h2>
+						</a>
+					</div>
 				</div>
-			</div>
 			{{/each}}
 		</script>
-		<div id='ractive-target'></div>
 </body>
 
 <script>
 	window.importedData = <!-- REPLACEMEINCODE -->;
 
-	var lsPrefix = 'kiwix';
+	window.lsPrefix = 'kiwix';
 
 	<!-- SETLSPREFIX -->
 
-	var navigatorLanguage = (window.navigator &&
-		((window.navigator.languages && window.navigator.languages[0]) ||
-			window.navigator.userLanguage ||
-			window.navigator.language)
-	) || 'en';
-
-	navigatorLanguage = window.importedData.languageMappings[navigatorLanguage.split('-')[0]]
-	var languageToUse = window.importedData.simsByLanguage[navigatorLanguage] ? navigatorLanguage : Object.keys(window.importedData.simsByLanguage)[0];
-
-	var currentLanguage = (localStorage && localStorage[lsPrefix + 'currentLanguage']) ?
-		localStorage[lsPrefix + 'currentLanguage'] :
-		languageToUse;
-
-	var ractive = new Ractive({
-		el: '#ractive-target',
-		template: '#ractive-template',
-		computed: {
-			languages: function () {
-				return Object.keys(this.get('simulationsByLanguage'));
-			}
-		},
-		data: {
-			simulationsByLanguage: window.importedData.simsByLanguage,
-			selectedLanguage: currentLanguage,
-			languageMappings: window.importedData.languageMappings
-		},
-		oninit: function () {
-			this.observe('selectedLanguage', function (selectedLanguage) {
-				if (localStorage) {
-					localStorage[lsPrefix + 'currentLanguage'] = selectedLanguage;
-				};
-			});
-		}
-	});
 </script>
+
+<script src='../-/index.js'></script>
 
 </html>
