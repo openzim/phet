@@ -49,13 +49,11 @@
 				</label>
 			</div>
 		    {{#each simulationsByLanguage[selectedLanguage]}}
-				<div class="sim-card">
+				<div class="sim-card" on-click='showConfirm'>
 					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
 					<div class="overlay">
 						<i class="fa fa-info-circle" aria-hidden="true"></i>
-						<a href="{{id}}_{{language}}.html">
 							<h2>{{title}}</h2>
-						</a>
 					</div>
 				</div>
 			{{/each}}

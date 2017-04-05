@@ -1,4 +1,5 @@
-import { Simulation } from '../../steps/types';
+import * as events from 'events';
+import { Category, Simulation } from '../../steps/types';
 import swal from 'sweetalert2';
 
 declare interface sweetalert2 {
@@ -55,6 +56,27 @@ var ractive = new Ractive({
                 localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
             };
         });
-        //swal('hi');
+        this.on('showConfirm', function (ev) {
+            const simulation: Simulation = ev.context;
+
+            const categoryHTML = simulation.categories.map(cat => {
+                const categoryContent = cat.map(c => {
+                    return c.title;
+                }).join(' / ');
+                return `<li>${categoryContent}</li>`;
+            });
+
+            swal({
+                title: `${simulation.title}`,
+                html: `<img src='../I/${simulation.id}.png' />
+                <ul>${categoryHTML}</ul>
+                <div class='description'>${simulation.description}</div>
+                <div class='topics'>${simulation.topics}</div>`,
+                showCloseButton: true,
+                showCancelButton: true
+            }).then(() => {
+                (<any>window).location = `${simulation.id}_${simulation.language}.html`;
+            });
+        });
     }
 });
