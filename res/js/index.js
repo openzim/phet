@@ -1618,7 +1618,7 @@ var ractive = new Ractive({
                     return c.title;
                 }).join(' / ');
                 return "<li>" + categoryContent + "</li>";
-            });
+            }).join('');
             sweetalert2_1.default({
                 title: "" + simulation.title,
                 html: "<img src='../I/" + simulation.id + ".png' />\n                <ul>" + categoryHTML + "</ul>\n                <div class='description'>" + simulation.description + "</div>\n                <div class='topics'>" + simulation.topics + "</div>",

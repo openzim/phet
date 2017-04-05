@@ -64,7 +64,7 @@ var ractive = new Ractive({
                     return c.title;
                 }).join(' / ');
                 return `<li>${categoryContent}</li>`;
-            });
+            }).join('');
 
             swal({
                 title: `${simulation.title}`,
