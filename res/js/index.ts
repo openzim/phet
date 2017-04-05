@@ -1,5 +1,7 @@
 import * as events from 'events';
 import { Category, Simulation } from '../../steps/types';
+import * as ArrayFrom from 'array-from';
+if(!(<any>Array).from) (<any>Array).from = ArrayFrom;
 import swal from 'sweetalert2';
 
 declare interface sweetalert2 {
@@ -68,7 +70,7 @@ var ractive = new Ractive({
 
             const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
             
-            window.swal({
+            swal({
                 title: `${simulation.title}`,
                 html: `
                 <div>
