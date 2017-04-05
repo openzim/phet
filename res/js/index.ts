@@ -66,16 +66,31 @@ var ractive = new Ractive({
                 return `<li>${categoryContent}</li>`;
             }).join('');
 
-            swal({
+            const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
+            
+            window.swal({
                 title: `${simulation.title}`,
-                html: `<img src='../I/${simulation.id}.png' />
-                <ul>${categoryHTML}</ul>
-                <div class='description'>${simulation.description}</div>
-                <div class='topics'>${simulation.topics}</div>`,
+                html: `
+                <div>
+                    <img src='../I/${simulation.id}.png' />
+                </div>
+                <div class='flex-cont'>
+                    <div>
+                        <span>Categories</span>
+                        <ul>${categoryHTML}</ul>
+                    </div>
+                    <div>
+                        <span>Topics</span>
+                        <ul class='topics'>${topicsHTML}</ul>
+                    </div>
+                </div>
+                <div class='description'>${simulation.description}</div>`,
                 showCloseButton: true,
                 showCancelButton: true
-            }).then(() => {
-                (<any>window).location = `${simulation.id}_${simulation.language}.html`;
+            }).then((isConfirm) => {
+                const a = document.createElement('a');
+                a.href = `${simulation.id}_${simulation.language}.html`;
+                document.body.appendChild(a).click();
             });
         });
     }

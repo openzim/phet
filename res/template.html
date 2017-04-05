@@ -21,11 +21,13 @@
 	<link rel="manifest" href="manifest.json">
 	<title>PhET INTERACTIVE SIMULATIONS</title>
 	<meta name="theme-color" content="#ffffff">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<link href="index.css" type="text/css" rel="stylesheet">
 	<!--<link href="font-awesome.min.css" type="text/css" rel="stylesheet">-->
 	<link href="sweetalert2.min.css" type="text/css" rel="stylesheet">
 	<script src='../-/ractive.js'></script>
+	<script src='../-/es6-promise-auto.js'></script>
+	<script src='../-/sweetalert2.js'></script>
 </head>
 
 <body>
@@ -33,21 +35,23 @@
 		<div id="header" class="shadow-lr">
 			<!-- <img class="phet-logo" src="phet-banner.png"></img> -->
 			<h1>PheT Interactive Simlulations</h1>
-			<p>To help students engage in science and mathematics.</p>
+			<p>Helping students engage in science and mathematics.</p>
 		</div>
 
 		<div id='ractive-target'></div>
 		<script id='ractive-template' type='text/html'>
-			<div class="language-container">
-				<label>
-					Selected language:
-					<select value="{{selectedLanguage}}">
-						{{#each languages}}
-							<option value='{{.}}'>{{.}}</option>
-						{{/each}}
-					</select>
-				</label>
-			</div>
+			{{#if languages.length > 1}}
+				<div class="language-container">
+					<label>
+						Selected language:
+						<select value="{{selectedLanguage}}">
+							{{#each languages}}
+								<option value='{{.}}'>{{.}}</option>
+							{{/each}}
+						</select>
+					</label>
+				</div>
+			{{/if}}
 		    {{#each simulationsByLanguage[selectedLanguage]}}
 				<div class="sim-card" on-click='showConfirm'>
 					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
