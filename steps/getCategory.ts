@@ -44,7 +44,7 @@ async.mapLimit(
                 const $ = cheerio.load(html);
                 const categories: Category[] = $('li ul li ul li .nml-link-label.selected').parent().toArray()
                     .reduce((acc, el) => {
-                        const cat = $(el);
+                        const cat = $(el).closest('li').closest('.link-holder').children('a').eq(0);
                         const categories: Category[] = cat.next().find('a').toArray()
                             .map(el => {
                                 return [{

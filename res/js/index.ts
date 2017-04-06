@@ -51,7 +51,7 @@ var ractive = new Ractive({
             const sims = this.get(`simulationsByLanguage.${lang}`);
             const makeCategoryId = this.get('makeCategoryId');
             return sims.reduce((acc, sim) => acc.concat(sim.categories), [])
-                .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? 1 : -1)
+                .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
                 .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));
         },
         simulations:function(){
