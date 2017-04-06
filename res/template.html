@@ -39,8 +39,8 @@
 
 		<div id='ractive-target'></div>
 		<script id='ractive-template' type='text/html'>
+			<div class="language-container">
 			{{#if languages.length > 1}}
-				<div class="language-container">
 					<label>
 						Selected language:
 						<select value="{{selectedLanguage}}">
@@ -49,15 +49,17 @@
 							{{/each}}
 						</select>
 					</label>
-				</div>
 			{{/if}}
-			<label>Categories</label>
-			<select value='{{selectedCategory}}'>
-				<option value='all'>All</option>
-				{{#each categories}}
-					<option value='{{makeCategoryId(.)}}'>{{makeCategoryName(.)}}</option>
-				{{/each}}
-			</select>
+				<label>
+					Categories
+					<select value='{{selectedCategory}}'>
+					<option value='all'>All</option>
+					{{#each categories}}
+						<option value='{{makeCategoryId(.)}}'>{{makeCategoryName(.)}}</option>
+					{{/each}}
+					</select>
+				</label>
+				</div>
 		    {{#each simulations}}
 				<div class="sim-card" on-click='showConfirm'>
 					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
