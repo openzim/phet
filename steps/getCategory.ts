@@ -13,6 +13,10 @@ import * as async from 'async';
 const log = function (...args: any[]) { config.verbose && console.log.apply(console, arguments) };
 const error = function (...args: any[]) { config.verbose && console.error.apply(console, arguments) };
 
+const makeCategoryId = function (category: Category) {
+    return category.map(c => c.slug).join('-');
+};
+
 console.log('Starting build');
 async.mapLimit(
     config.languagesToGet.map(lang => `https://phet.colorado.edu/${lang}/offline-access`),
@@ -62,7 +66,9 @@ async.mapLimit(
                             }]);
                         }
                         return acc.concat(categories);
-                    }, []);
+                    }, [])
+                    .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
+                    .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));;
                 const [id, language] = $('.sim-download').attr('href').split('/').pop().split('.')[0].split('_');
                 return <Simulation>{
                     categories: categories,
@@ -85,7 +91,7 @@ async.mapLimit(
             async.eachLimit(urlsToGet, config.workers, function (url, next) {
                 const req = requestAsync(url);
                 let fileName = url.split('/').pop();
-                if(fileName.slice(-4) === '.png') {
+                if (fileName.slice(-4) === '.png') {
                     const fileParts = fileName.split('-');
                     fileName = fileParts.slice(0, -1).join('-') + '.png';
                 }

@@ -1823,7 +1823,7 @@ var ractive = new Ractive({
             return sims.reduce(function (acc, sim) {
                 return acc.concat(sim.categories);
             }, []).sort(function (a, b) {
-                return makeCategoryId(a) < makeCategoryId(b) ? 1 : -1;
+                return makeCategoryId(a) < makeCategoryId(b) ? -1 : 1;
             }).filter(function (val, index, arr) {
                 return makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []);
             });
@@ -1882,7 +1882,8 @@ var ractive = new Ractive({
                 title: "" + simulation.title,
                 html: "\n                <div>\n                    <img src='../I/" + simulation.id + ".png' />\n                </div>\n                <div class='flex-cont'>\n                    <div>\n                        <span>Categories</span>\n                        <ul>" + categoryHTML + "</ul>\n                    </div>\n                    <div>\n                        <span>Topics</span>\n                        <ul class='topics'>" + topicsHTML + "</ul>\n                    </div>\n                </div>\n                <div class='description'>" + simulation.description + "</div>",
                 showCloseButton: true,
-                showCancelButton: true
+                showCancelButton: true,
+                confirmButtonText: 'Load'
             }).then(function (isConfirm) {
                 var a = document.createElement('a');
                 a.href = simulation.id + "_" + simulation.language + ".html";
