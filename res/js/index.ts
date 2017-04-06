@@ -1,7 +1,7 @@
 import * as events from 'events';
 import { Category, Simulation } from '../../steps/types';
 import * as ArrayFrom from 'array-from';
-if(!(<any>Array).from) (<any>Array).from = ArrayFrom;
+if (!(<any>Array).from) (<any>Array).from = ArrayFrom;
 import swal from 'sweetalert2';
 
 declare interface sweetalert2 {
@@ -45,12 +45,40 @@ var ractive = new Ractive({
     computed: {
         languages: function () {
             return Object.keys(this.get('simulationsByLanguage'));
+        },
+        categories: function () {
+            const lang = this.get('selectedLanguage');
+            const sims = this.get(`simulationsByLanguage.${lang}`);
+            const makeCategoryId = this.get('makeCategoryId');
+            return sims.reduce((acc, sim) => acc.concat(sim.categories), [])
+                .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? 1 : -1)
+                .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));
+        },
+        simulations:function(){
+            const lang = this.get('selectedLanguage');
+            const sims = this.get(`simulationsByLanguage.${lang}`);
+            const category = this.get('selectedCategory') || 'all';
+
+            if(category === 'all') {
+                return sims;
+            } else {
+                return sims.filter(sim => {
+                    return !!~sim.categories.map(c => c.map(c => c.slug).join('-')).indexOf(category);
+                });
+            }
         }
     },
     data: {
         simulationsByLanguage: window.importedData.simsByLanguage,
         selectedLanguage: currentLanguage,
-        languageMappings: window.importedData.languageMappings
+        languageMappings: window.importedData.languageMappings,
+
+        makeCategoryId: function (category: Category) {
+            return category.map(c => c.slug).join('-');
+        },
+        makeCategoryName: function (category: Category) {
+            return category.map(c => c.title).join(' / ');
+        }
     },
     oninit: function () {
         this.observe('selectedLanguage', function (selectedLanguage) {
@@ -69,7 +97,7 @@ var ractive = new Ractive({
             }).join('');
 
             const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
-            
+
             swal({
                 title: `${simulation.title}`,
                 html: `

@@ -13,6 +13,7 @@ import * as cp from 'child_process';
 import * as async from 'async';
 import * as ncp from 'ncp';
 import * as copy from 'copy';
+import * as _ from 'lodash';
 
 const spawn = cp.spawn;
 (<any>ncp).limit = 16;

@@ -1815,12 +1815,50 @@ var ractive = new Ractive({
     computed: {
         languages: function () {
             return Object.keys(this.get('simulationsByLanguage'));
+        },
+        categories: function () {
+            var lang = this.get('selectedLanguage');
+            var sims = this.get("simulationsByLanguage." + lang);
+            var makeCategoryId = this.get('makeCategoryId');
+            return sims.reduce(function (acc, sim) {
+                return acc.concat(sim.categories);
+            }, []).sort(function (a, b) {
+                return makeCategoryId(a) < makeCategoryId(b) ? 1 : -1;
+            }).filter(function (val, index, arr) {
+                return makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []);
+            });
+        },
+        simulations: function () {
+            var lang = this.get('selectedLanguage');
+            var sims = this.get("simulationsByLanguage." + lang);
+            var category = this.get('selectedCategory') || 'all';
+            if (category === 'all') {
+                return sims;
+            } else {
+                return sims.filter(function (sim) {
+                    return !!~sim.categories.map(function (c) {
+                        return c.map(function (c) {
+                            return c.slug;
+                        }).join('-');
+                    }).indexOf(category);
+                });
+            }
         }
     },
     data: {
         simulationsByLanguage: window.importedData.simsByLanguage,
         selectedLanguage: currentLanguage,
-        languageMappings: window.importedData.languageMappings
+        languageMappings: window.importedData.languageMappings,
+        makeCategoryId: function (category) {
+            return category.map(function (c) {
+                return c.slug;
+            }).join('-');
+        },
+        makeCategoryName: function (category) {
+            return category.map(function (c) {
+                return c.title;
+            }).join(' / ');
+        }
     },
     oninit: function () {
         this.observe('selectedLanguage', function (selectedLanguage) {
