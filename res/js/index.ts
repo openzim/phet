@@ -116,7 +116,8 @@ var ractive = new Ractive({
                 </div>
                 <div class='description'>${simulation.description}</div>`,
                 showCloseButton: true,
-                showCancelButton: true
+                showCancelButton: true,
+                confirmButtonText:'Load'
             }).then((isConfirm) => {
                 const a = document.createElement('a');
                 a.href = `${simulation.id}_${simulation.language}.html`;
