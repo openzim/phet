@@ -158,6 +158,10 @@ select {
     margin: 10px;
 }
 
+option[value="by-device"], option[value="by-device-chromebook"], option[value="by-device-ipad-tablet"] {
+    display: none;
+}
+
 @media only screen and (min-width: 320px) and (max-width: 1023px) and (orientation: landscape) {
     .sim-card {
         width: calc(50% - 10px);
@@ -208,7 +212,7 @@ select {
     .sim-card:nth-child(3n+1) {
         margin-right: 0;
     }
-    
+
     #container {
         width: 1000px;
     }
