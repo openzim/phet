@@ -25,6 +25,7 @@ var ractive = new Ractive({
             var sims = this.get("simulationsByLanguage." + lang);
             var makeCategoryId = this.get('makeCategoryId');
             return sims.reduce(function (acc, sim) { return acc.concat(sim.categories); }, [])
+                .filter(function (a) { return a[0].slug !== 'by-device'; })
                 .sort(function (a, b) { return makeCategoryId(a) < makeCategoryId(b) ? -1 : 1; })
                 .filter(function (val, index, arr) { return makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []); });
         },

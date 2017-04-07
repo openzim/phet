@@ -51,15 +51,16 @@ var ractive = new Ractive({
             const sims = this.get(`simulationsByLanguage.${lang}`);
             const makeCategoryId = this.get('makeCategoryId');
             return sims.reduce((acc, sim) => acc.concat(sim.categories), [])
+                .filter(a => a[0].slug !== 'by-device')
                 .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
                 .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));
         },
-        simulations:function(){
+        simulations: function () {
             const lang = this.get('selectedLanguage');
             const sims = this.get(`simulationsByLanguage.${lang}`);
             const category = this.get('selectedCategory') || 'all';
 
-            if(category === 'all') {
+            if (category === 'all') {
                 return sims;
             } else {
                 return sims.filter(sim => {
@@ -117,7 +118,7 @@ var ractive = new Ractive({
                 <div class='description'>${simulation.description}</div>`,
                 showCloseButton: true,
                 showCancelButton: true,
-                confirmButtonText:'Load'
+                confirmButtonText: 'Load'
             }).then((isConfirm) => {
                 const a = document.createElement('a');
                 a.href = `${simulation.id}_${simulation.language}.html`;
