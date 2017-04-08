@@ -37,38 +37,42 @@
 	</div>
 	<div id="container">
 		<div id='ractive-target'></div>
-		<script id='ractive-template' type='text/html'>
-			<div class="language-container">
+	</div>
+
+	<script id='ractive-template' type='text/html'>
+		<div class="language-container">
 			{{#if languages.length > 1}}
-					<label>
-						Selected language:
-						<select value="{{selectedLanguage}}">
-							{{#each languages}}
-								<option value='{{.}}'>{{.}}</option>
-							{{/each}}
-						</select>
-					</label>
-			{{/if}}
 				<label>
-					Categories
-					<select value='{{selectedCategory}}'>
+					Selected language:
+					<select value="{{selectedLanguage}}">
+						{{#each languages}}
+							<option value='{{.}}'>{{.}}</option>
+						{{/each}}
+					</select>
+				</label>
+			{{/if}}
+			<label>
+				Categories
+				<select value='{{selectedCategory}}'>
 					<option value='all'>All</option>
 					{{#each categories}}
 						<option value='{{makeCategoryId(.)}}'>{{makeCategoryName(.)}}</option>
 					{{/each}}
-					</select>
-				</label>
-				</div>
+				</select>
+			</label>
+		</div>
+		<div class="card-cont">
 		    {{#each simulations}}
 				<div class="sim-card" on-click='showConfirm'>
 					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
 					<div class="overlay">
 						<i class="fa fa-info-circle" aria-hidden="true"></i>
-							<h2>{{title}}</h2>
+						<h2>{{title}}</h2>
 					</div>
 				</div>
 			{{/each}}
-		</script>
+		</div>
+	</script>
 </body>
 
 <script>
