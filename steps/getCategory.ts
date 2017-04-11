@@ -29,65 +29,77 @@ async.mapLimit(
     function (err, pages: string[]) {
         const sims = pages.reduce<SimulationWithoutAdditional[]>((acc: SimulationWithoutAdditional[], html: string) => {
             const $ = cheerio.load(html);
+            const pageLang = $('.translation-links select').val().split('/').slice(-2)[0];
             const sims = $('.oa-html5 > a').toArray().map(function (item) {
                 return $(item).attr('href').split('/').pop().split('.')[0].split('_');
-            }).map(([id, language]) => {
+            })
+            .filter(([id, language]) => language === pageLang)
+            .map(([id, language]) => {
                 return { id, language };
             });
             return acc.concat(sims);
         }, []);
 
+        let catalog = [];
+
         console.log(`Got list of ${sims.length} simulations to fetch... Here we go!`);
         async.mapLimit(sims, config.workers, function (sim, next) {
             request.get(`https://phet.colorado.edu/${sim.language}/simulation/${sim.id}`)
-                .catch(err => console.error(`Got a 404 for ${sim.language} ${sim.id}`))
-                .then(html => next(null, html));
-        }, function (err, pages) {
-            console.log(`Got ${pages.length} pages`);
-            const catalog = pages.map(html => {
-                const $ = cheerio.load(html);
-                const categories: Category[] = $('li ul li ul li .nml-link-label.selected').parent().toArray()
-                    .reduce((acc, el) => {
-                        const cat = $(el).closest('li').closest('.link-holder').children('a').eq(0);
-                        const categories: Category[] = cat.next().find('a').toArray()
-                            .map(el => {
-                                return [{
+                .then(html => {
+                    console.log(`Got ${sim.language} ${sim.id} metadata`);
+                    const $ = cheerio.load(html);
+                    const selectedLinks = $('li ul li ul li .nml-link-label.selected');
+                    const categories: Category[] = ((selectedLinks && selectedLinks.parent && selectedLinks.parent().toArray()) || [])
+                        .reduce((acc, el) => {
+                            const cat = $(el).closest('li').closest('.link-holder').children('a').eq(0);
+                            const categories: Category[] = cat.next().find('a').toArray()
+                                .map(el => {
+                                    return [{
+                                        title: cat.text().trim(),
+                                        slug: cat.attr('href').split('/').slice(-1)[0]
+                                    }, {
+                                        title: $(el).text().trim(),
+                                        slug: $(el).attr('href').split('/').slice(-1)[0]
+                                    }];
+                                });
+                            if (cat.text().trim() !== 'By Grade Level') {
+                                categories.push([{
                                     title: cat.text().trim(),
                                     slug: cat.attr('href').split('/').slice(-1)[0]
-                                }, {
-                                    title: $(el).text().trim(),
-                                    slug: $(el).attr('href').split('/').slice(-1)[0]
-                                }];
-                            });
-                        if (cat.text().trim() !== 'By Grade Level') {
-                            categories.push([{
-                                title: cat.text().trim(),
-                                slug: cat.attr('href').split('/').slice(-1)[0]
-                            }]);
-                        }
-                        return acc.concat(categories);
-                    }, [])
-                    .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
-                    .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));;
-                const [id, language] = $('.sim-download').attr('href').split('/').pop().split('.')[0].split('_');
-                return <Simulation>{
-                    categories: categories,
-                    id,
-                    language,
-                    title: $('.simulation-main-title').text().trim(),
-                    difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),
-                    topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
-                    description: $('.simulation-panel-indent[itemprop]').text()
-                };
-            });
+                                }]);
+                            }
+                            return acc.concat(categories);
+                        }, [])
+                        .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
+                        .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));;
+                    const [id, language] = $('.sim-download').attr('href').split('/').pop().split('.')[0].split('_');
+                    catalog.push(<Simulation>{
+                        categories: categories,
+                        id,
+                        language,
+                        title: $('.simulation-main-title').text().trim(),
+                        difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),
+                        topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
+                        description: $('.simulation-panel-indent[itemprop]').text()
+                    });
+                    next(null, null);
+                })
+                .catch(err => {
+                    console.error(`Got a 404 for ${sim.language} ${sim.id}`);
+                    next(null, null);
+                });
+        }, function (err, pages) {
+            console.log(`Got ${pages.length} pages`);
 
             fs.writeFileSync(`${outDir}catalog.json`, JSON.stringify(catalog), 'utf8');
+
+            console.log('Saved Catalog')
 
             const simUrls = catalog.map(sim => `https://phet.colorado.edu/sims/html/${sim.id}/latest/${sim.id}_${sim.language}.html`);
             const imgUrls = simUrls.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + `-${config.imageResolution}.png`);
 
             const urlsToGet = simUrls.concat(imgUrls);
-
+            console.log(`Getting ${simUrls} simulations`)
             async.eachLimit(urlsToGet, config.workers, function (url, next) {
                 const req = requestAsync(url);
                 let fileName = url.split('/').pop();
@@ -108,6 +120,7 @@ async.mapLimit(
                 }).pipe(writeStream);
 
                 writeStream.on('close', _ => {
+                    console.log(`Got ${url}`);
                     next(null, null);
                 });
             }, function (err, done) {
