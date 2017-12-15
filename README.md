@@ -2,8 +2,7 @@
 
 ## Quick Start
 
-```
-bash
+```bash
 npm i && npm start
 ```
 
