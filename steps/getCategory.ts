@@ -19,24 +19,23 @@ const makeCategoryId = function (category: Category) {
 
 console.log('Starting build');
 async.mapLimit(
-    config.languagesToGet.map(lang => `https://phet.colorado.edu/${lang}/offline-access`),
+    config.languagesToGet.map(lang => [lang, `https://phet.colorado.edu/${lang}/offline-access`]),
     config.workers,
-    function (url, next) {
+    function ([lang, url], next) {
         request.get(url)
             .catch(err => next(err, null))
-            .then(html => next(null, html));
+            .then(html => next(null, { lang, html }));
     },
-    function (err, pages: string[]) {
-        const sims = pages.reduce<SimulationWithoutAdditional[]>((acc: SimulationWithoutAdditional[], html: string) => {
+    function (err, pages: any[]) {
+        const sims = pages.reduce<SimulationWithoutAdditional[]>((acc: SimulationWithoutAdditional[], { lang, html }) => {
             const $ = cheerio.load(html);
-            const pageLang = $('.translation-links select').val().split('/').slice(-2)[0];
             const sims = $('.oa-html5 > a').toArray().map(function (item) {
                 return $(item).attr('href').split('/').pop().split('.')[0].split('_');
             })
-            .filter(([id, language]) => language === pageLang)
-            .map(([id, language]) => {
-                return { id, language };
-            });
+                .filter(([id, language]) => language === lang)
+                .map(([id, language]) => {
+                    return { id, language };
+                });
             return acc.concat(sims);
         }, []);
 
