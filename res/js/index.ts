@@ -1,4 +1,3 @@
-import * as events from 'events';
 import { Category, Simulation } from '../../steps/types';
 import * as ArrayFrom from 'array-from';
 if (!(<any>Array).from) (<any>Array).from = ArrayFrom;
@@ -10,7 +9,6 @@ declare interface sweetalert2 {
 
 declare global {
     interface Navigator {
-        languages: string[],
         userLanguage: string
     }
 

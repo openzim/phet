@@ -6,7 +6,7 @@ const outDir = 'state/export/';
 const resDir = 'res/';
 
 
-import iso6393 from 'iso-639-3';
+import * as iso6393 from 'iso-639-3';
 import * as fs from 'fs';
 import * as cheerio from 'cheerio';
 import * as rimraf from 'rimraf';

@@ -1,1 +1,1 @@
-declare module "iso-639-3" {}
+declare module "iso-639-3";
