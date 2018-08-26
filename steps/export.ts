@@ -1,10 +1,12 @@
+///<reference path="shim.d.ts" />
+
 import { Catalog, Simulation } from './types';
 const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
 
 
-import * as iso6393 from 'iso-639-3';
+import iso6393 from 'iso-639-3';
 import * as fs from 'fs';
 import * as cheerio from 'cheerio';
 import * as rimraf from 'rimraf';
@@ -13,7 +15,6 @@ import * as cp from 'child_process';
 import * as async from 'async';
 import * as ncp from 'ncp';
 import * as copy from 'copy';
-import * as _ from 'lodash';
 
 const spawn = cp.spawn;
 (<any>ncp).limit = 16;

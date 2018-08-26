@@ -1,0 +1,1 @@
+declare module "iso-639-3" {}
