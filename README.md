@@ -8,6 +8,8 @@ npm i && npm start
 
 The above will eventually output a ZIM file to ```dist/```
 
+[![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
+
 ## Notes
 
 It is likely that the export to ZIM will fail - modify the ```export2zim``` file to point at a working zimwriterfs executable.
