@@ -14,8 +14,8 @@
     "async": "^2.6.0",
     "babel-polyfill": "6.22.0",
     "babel-preset-es2015": "^6.24.1",
-    "babel-register": "6.9.0",
-    "babelify": "7.2.0",
+    "babel-register": "^6.9.0",
+    "babelify": "^7.2.0",
     "browserify": "12.0.0",
     "cheerio": "^0.20.0",
     "copy": "^0.3.0",
@@ -35,10 +35,10 @@
     "request": "^2.84.0",
     "request-promise-native": "^1.0.5",
     "rimraf": "^2.5.2",
+    "snyk": "^1.116.2",
     "sweetalert2": "^6.5.5",
     "ts-node": "^3.3.0",
-    "typescript": "^2.2.2",
-    "snyk": "^1.96.0"
+    "typescript": "^2.2.2"
   },
   "devDependencies": {},
   "scripts": {
