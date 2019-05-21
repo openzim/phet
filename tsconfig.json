@@ -8,7 +8,7 @@
         "allowJs": true,
         "module": "commonjs",
         "target": "ES5",
-        "skipLibCheck": true
+        "skipLibCheck": true,
     },
     "files": [
         "res/js/index.ts"

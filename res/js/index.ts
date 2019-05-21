@@ -3,10 +3,6 @@ import * as ArrayFrom from 'array-from';
 if (!(<any>Array).from) (<any>Array).from = ArrayFrom;
 import swal from 'sweetalert2';
 
-declare interface sweetalert2 {
-    (...args: any[]): void
-}
-
 declare global {
     interface Navigator {
         userLanguage: string
@@ -97,7 +93,7 @@ var ractive = new Ractive({
 
             const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
 
-            swal({
+            swal.fire({
                 title: `${simulation.title}`,
                 html: `
                 <div>

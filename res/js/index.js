@@ -70,7 +70,7 @@ var ractive = new Ractive({
                 return "<li>" + categoryContent + "</li>";
             }).join('');
             var topicsHTML = simulation.topics.map(function (t) { return "<li>" + t + "</li>"; }).join('');
-            sweetalert2_1.default({
+            sweetalert2_1.default.fire({
                 title: "" + simulation.title,
                 html: "\n                <div>\n                    <img src='../I/" + simulation.id + ".png' />\n                </div>\n                <div class='flex-cont'>\n                    <div>\n                        <span>Categories</span>\n                        <ul>" + categoryHTML + "</ul>\n                    </div>\n                    <div>\n                        <span>Topics</span>\n                        <ul class='topics'>" + topicsHTML + "</ul>\n                    </div>\n                </div>\n                <div class='description'>" + simulation.description + "</div>",
                 showCloseButton: true,

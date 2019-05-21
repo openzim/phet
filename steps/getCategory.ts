@@ -17,7 +17,7 @@ const makeCategoryId = function (category: Category) {
     return category.map(c => c.slug).join('-');
 };
 
-console.log('Starting build');
+console.log(`Starting build with [${config.languagesToGet.length}] languages`);
 async.mapLimit(
     config.languagesToGet.map(lang => [lang, `https://phet.colorado.edu/${lang}/offline-access`]),
     config.workers,

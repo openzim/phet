@@ -4,6 +4,7 @@
   "description": "Scraper and exporter of PHET simulations",
   "main": "index.js",
   "dependencies": {
+    "@babel/core": "^7.4.4",
     "@types/cheerio": "^0.22.11",
     "@types/es6-shim": "^0.31.39",
     "@types/lodash": "^4.14.130",
@@ -50,7 +51,8 @@
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "echo \"Error: no test specified\" && exit 1",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
