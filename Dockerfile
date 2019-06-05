@@ -10,14 +10,14 @@ RUN apt-get install -y nodejs
 
 # Install jpegoptim
 RUN apt-get install -y libjpeg-dev
-RUN wget http://www.kokkonen.net/tjko/src/jpegoptim-1.4.4.tar.gz
+RUN wget https://www.kokkonen.net/tjko/src/jpegoptim-1.4.4.tar.gz
 RUN tar xvf jpegoptim-1.4.4.tar.gz
 RUN cd jpegoptim-1.4.4 && ./configure
 RUN cd jpegoptim-1.4.4 && make all install
 
 # Install pngquant
 RUN apt-get install -y libpng-dev
-RUN wget http://pngquant.org/pngquant-2.9.0-src.tar.gz
+RUN wget https://pngquant.org/pngquant-2.9.0-src.tar.gz
 RUN tar xvf pngquant-2.9.0-src.tar.gz
 RUN cd pngquant-2.9.0 && ./configure
 RUN cd pngquant-2.9.0 && make all install
