@@ -37,7 +37,7 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "rimraf": "^2.6.3",
-    "snyk": "^1.165.1",
+    "snyk": "^1.189.0",
     "sweetalert2": "^8.11.1",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"
