@@ -21,7 +21,7 @@
     "cheerio": "^0.22.0",
     "copy": "^0.3.2",
     "dirsum": "^0.1.1",
-    "handlebars": "^4.4.5",
+    "handlebars": "^4.5.2",
     "hoek": "^6.1.3",
     "html-minifier": "^4.0.0",
     "imagemin": "^6.1.0",
