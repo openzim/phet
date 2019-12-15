@@ -2,7 +2,9 @@
   <img src="https://play.google.com/intl/en/badges/images/badge_new.png" alt="Get it on Google Play" height="30" />
 </a>
 
-# PhET
+# PhET Simulations scraper
+
+This scraper creates offline versions in [ZIM format](https://openzim.org) of [PhET science simulations](https://phet.colorado.edu) in the ZIM format.
 
 ## Quick Start
 
