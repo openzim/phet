@@ -12,6 +12,7 @@ npm i && npm start
 
 The above will eventually output a ZIM file to ```dist/```
 
+[![latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 
 ## Notes
