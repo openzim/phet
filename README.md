@@ -1,3 +1,7 @@
+<a href="https://play.google.com/store/apps/details?id=org.kiwix.kiwixcustomphet" target="_blank" align="left">
+  <img src="https://play.google.com/intl/en/badges/images/badge_new.png" alt="Get it on Google Play" height="30" />
+</a>
+
 # PhET
 
 ## Quick Start
