@@ -68,10 +68,10 @@ var ractive = new Ractive({
         selectedLanguage: currentLanguage,
         languageMappings: window.importedData.languageMappings,
 
-        makeCategoryId: function (category: Category) {
+        makeCategoryId: function (category: Category[]) {
             return category.map(c => c.slug).join('-');
         },
-        makeCategoryName: function (category: Category) {
+        makeCategoryName: function (category: Category[]) {
             return category.map(c => c.title).join(' / ');
         }
     },
@@ -85,10 +85,11 @@ var ractive = new Ractive({
             const simulation: Simulation = ev.context;
 
             const categoryHTML = simulation.categories.map(cat => {
-                const categoryContent = cat.map(c => {
-                    return c.title;
-                }).join(' / ');
-                return `<li>${categoryContent}</li>`;
+                // const categoryContent = cat.map(c => {
+                //     return c.title;
+                // }).join(' / ');
+                // return `<li>${categoryContent}</li>`;
+                return `<li>cat.title</li>`;
             }).join('');
 
             const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
