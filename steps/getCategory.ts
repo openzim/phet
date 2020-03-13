@@ -45,13 +45,11 @@ const fetchCategoriesTree = async () => {
     );
 };
 
+// leave IIFE here until global refactoring
+(async () => await fetchCategoriesTree())();
+
 // todo move to class
 const getItemCategories = async (item): Promise<Category[]> => {
-    // lazy fetch categories tree
-    if (!Object.keys(categoriesTree).length) {
-        await fetchCategoriesTree();
-        console.log(`Got categories tree`);
-    }
     const categoryTitles = categoriesTree[item];
     return categoryTitles ? categoryTitles.map(title => ({
         title,
