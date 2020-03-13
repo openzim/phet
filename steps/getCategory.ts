@@ -7,7 +7,7 @@ import asyncPool from "tiny-async-pool";
 import slugify from 'slugify';
 import axios from 'axios';
 
-import { Simulation, SimulationWithoutAdditional } from './types';
+import {Category, Simulation, SimulationWithoutAdditional} from './types';
 import * as config from '../config';
 
 
@@ -46,13 +46,17 @@ const fetchCategoriesTree = async () => {
 };
 
 // todo move to class
-const getItemCategories = async (item) => {
+const getItemCategories = async (item): Promise<Category[]> => {
     // lazy fetch categories tree
     if (!Object.keys(categoriesTree).length) {
         await fetchCategoriesTree();
         console.log(`Got categories tree`);
     }
-    return categoriesTree[item] || [];
+    const categoryTitles = categoriesTree[item];
+    return categoryTitles ? categoryTitles.map(title => ({
+        title,
+        slug: slugify(title, {lower: true})
+    })) : [];
 };
 
 console.log(`Starting build with [${config.languagesToGet.length}] languages`);
