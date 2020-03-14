@@ -113,7 +113,13 @@ var ractive = new Ractive({
                 showCloseButton: true,
                 showCancelButton: true,
                 confirmButtonText: 'Load'
-            }).then((isConfirm) => {
+            }).then(({dismiss}) => {
+                const reasonsToCancel = [
+                    swal.DismissReason.cancel,
+                    swal.DismissReason.close,
+                    swal.DismissReason.esc,
+                ];
+                if (reasonsToCancel.includes(dismiss)) return;
                 const a = document.createElement('a');
                 a.href = `${simulation.id}_${simulation.language}.html`;
                 document.body.appendChild(a).click();
