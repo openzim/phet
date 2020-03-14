@@ -45,7 +45,7 @@ var ractive = new Ractive({
             const sims = this.get(`simulationsByLanguage.${lang}`);
             const makeCategoryId = this.get('makeCategoryId');
             return sims.reduce((acc, sim) => acc.concat(sim.categories), [])
-                .filter(a => a[0].slug !== 'by-device')
+                .filter(a => a.slug !== 'by-device')
                 .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
                 .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));
         },
@@ -54,11 +54,14 @@ var ractive = new Ractive({
             const sims = this.get(`simulationsByLanguage.${lang}`);
             const category = this.get('selectedCategory') || 'all';
 
+            console.log(`selected: ${category}`);
+            console.dir(sims);
+
             if (category === 'all') {
                 return sims;
             } else {
                 return sims.filter(sim => {
-                    return !!~sim.categories.map(c => c.map(c => c.slug).join('-')).indexOf(category);
+                    return !!~sim.categories.map(c => c.slug).indexOf(category);
                 });
             }
         }
@@ -68,18 +71,21 @@ var ractive = new Ractive({
         selectedLanguage: currentLanguage,
         languageMappings: window.importedData.languageMappings,
 
-        makeCategoryId: function (category: Category[]) {
-            return category.map(c => c.slug).join('-');
+        makeCategoryId: function (category: Category) {
+            // return category.map(c => c.slug).join('-');
+            console.log(`slug >> ${category.slug}`);
+            return category.slug;
         },
-        makeCategoryName: function (category: Category[]) {
-            return category.map(c => c.title).join(' / ');
+        makeCategoryName: function (category: Category) {
+            // return category.map(c => c.title).join(' / ');
+            return category.title;
         }
     },
     oninit: function () {
         this.observe('selectedLanguage', function (selectedLanguage) {
             if (localStorage) {
                 localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
-            };
+            }
         });
         this.on('showConfirm', function (ev) {
             const simulation: Simulation = ev.context;

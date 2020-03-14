@@ -86,7 +86,7 @@ const getItemCategories = async (item): Promise<Category[]> => {
     const categoryTitles = categoriesTree[item];
     return categoryTitles ? categoryTitles.map(title => ({
         title,
-        slug: slugify(title, {lower: true})
+        slug: subCategoriesList[title] || slugify(title, {lower: true})
     })) : [];
 };
 
@@ -147,7 +147,7 @@ async.mapLimit(
             const imgUrls = simUrls.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + `-${config.imageResolution}.png`);
 
             const urlsToGet = simUrls.concat(imgUrls);
-            console.log(`Getting ${simUrls} simulations`);
+            // console.log(`Getting ${simUrls} simulations`);
             async.eachLimit(urlsToGet, config.workers, function (url, next) {
                 const req = requestAsync(url);
                 let fileName = url.split('/').pop();
