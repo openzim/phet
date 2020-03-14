@@ -145,9 +145,8 @@ async.mapLimit(
 
             const simUrls = catalog.map(sim => `https://phet.colorado.edu/sims/html/${sim.id}/latest/${sim.id}_${sim.language}.html`);
             const imgUrls = simUrls.map(url => url.split('_')[0]).sort().filter((url, index, arr) => url != arr[index - 1]).map(url => url + `-${config.imageResolution}.png`);
-
             const urlsToGet = simUrls.concat(imgUrls);
-            // console.log(`Getting ${simUrls} simulations`);
+
             async.eachLimit(urlsToGet, config.workers, function (url, next) {
                 const req = requestAsync(url);
                 let fileName = url.split('/').pop();
@@ -176,91 +175,3 @@ async.mapLimit(
             })
         });
     });
-
-
-
-/*
-const majorCategories = ['physics', 'biology', 'chemistry', 'earth-science', 'math', 'by-level'];
-
-Promise.all( //Get all possible categories
-    majorCategories.map(majorCategory => {
-        return new Promise((resolve, reject) => {
-            request.get(`https://phet.colorado.edu/en/simulations/category/${majorCategory}`)
-                .then((html) => {
-                    const $ = cheerio.load(html);
-                    const cat = $('.nml-link-label.selected').last().parent();
-                    const categories: Category[] = cat.next().find('a').toArray()
-                        .map(el => {
-                            return [{
-                                title: cat.text().trim(),
-                                slug: cat.attr('href').split('/').slice(-1)[0]
-                            }, {
-                                title: $(el).text().trim(),
-                                slug: $(el).attr('href').split('/').slice(-1)[0]
-                            }];
-                        });
-                    if (cat.text().trim() !== 'By Grade Level') {
-                        categories.push([{
-                            title: cat.text().trim(),
-                            slug: cat.attr('href').split('/').slice(-1)[0]
-                        }]);
-                    }
-                    resolve(categories);
-                })
-                .catch(err => reject(err));
-        });
-    })
-)
-    .then((promiseResults: Category[][]) => { //Flatten categories array
-        return promiseResults.reduce((acc, val) => acc.concat(val), []);
-    })
-    .then((cats: Category[]) => { //Get Sims for Categories
-        return Promise.all(
-            cats.map(category => {
-                return new Promise((resolve, reject) => {
-                    request.get(`https://phet.colorado.edu/en/simulations/category/${category.map(c => c.slug).join('/')}`)
-                        .catch(reject)
-                        .then(html => {
-                            const $ = cheerio.load(html);
-                            const simsForCategory = $('.sim-badge-html').closest('a').toArray().reduce((acc, el) => {
-                                const id = $(el).attr('href').split('/').slice(-1)[0];
-                                const title = $(el).find('strong').text().trim();
-                                acc[id] = acc[id] || {
-                                    id,
-                                    title
-                                };
-                                if (category.length === 2 && category[0].title === 'By Grade Level') { //Dealing with difficulty
-                                    acc[id].difficulty = category[1].title;
-                                } else {
-                                    acc[id].categories = (acc[id].categories || []);
-                                    acc[id].categories.push(category);
-                                }
-                                return acc;
-                            }, {});
-                            resolve(simsForCategory);
-                        });
-                });
-            })
-        )
-            .then((sims: { [id: string]: SimulationWithoutAdditional }[]) => { //Combine Sims
-                return sims.reduce((acc, sims) => {
-                    const ids = Object.keys(sims);
-                    return ids.reduce((acc, id) => {
-                        const from = sims[id];
-                        const target = acc[id] = acc[id] || from;
-
-                        target.categories = target.categories.concat(from.categories);
-
-                        return acc;
-                    }, acc);
-                }, {});
-            })
-            .then(sims => { //Get Sim
-                console.log(sims);
-            });
-    })
-    .catch(err => {
-        console.error(err);
-    });
-
-    */

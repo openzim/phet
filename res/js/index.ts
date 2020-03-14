@@ -54,9 +54,6 @@ var ractive = new Ractive({
             const sims = this.get(`simulationsByLanguage.${lang}`);
             const category = this.get('selectedCategory') || 'all';
 
-            console.log(`selected: ${category}`);
-            console.dir(sims);
-
             if (category === 'all') {
                 return sims;
             } else {
@@ -72,12 +69,9 @@ var ractive = new Ractive({
         languageMappings: window.importedData.languageMappings,
 
         makeCategoryId: function (category: Category) {
-            // return category.map(c => c.slug).join('-');
-            console.log(`slug >> ${category.slug}`);
             return category.slug;
         },
         makeCategoryName: function (category: Category) {
-            // return category.map(c => c.title).join(' / ');
             return category.title;
         }
     },
