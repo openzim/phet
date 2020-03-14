@@ -35,6 +35,7 @@
     "js-yaml": "^3.13.1",
     "md5": "^2.2.1",
     "ncp": "^2.0.0",
+    "object-path": "^0.11.4",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "rimraf": "^2.6.3",

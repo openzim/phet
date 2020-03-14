@@ -5,6 +5,7 @@ import * as cheerio from 'cheerio';
 import * as async from 'async';
 import asyncPool from "tiny-async-pool";
 import slugify from 'slugify';
+import * as op from 'object-path';
 import axios from 'axios';
 
 import {Category, Simulation, SimulationWithoutAdditional} from './types';
@@ -21,32 +22,64 @@ const error = function (...args: any[]) { config.verbose && console.error.apply(
 
 // todo move to class
 const categoriesTree = {};
+const subCategoriesList = {};
 const fetchCategoriesTree = async () => {
     await asyncPool(
-        2,  // TODO adjust this to avoid 503's
+        config.workers,
         config.categoriesToGet,
         async (categoryTitle) => {
-            let url = `https://phet.colorado.edu/en/simulations/category/${slugify(categoryTitle, {lower: true})}/index`;
-            const response = await axios.get(url);
+            const categorySlug = slugify(categoryTitle, {lower: true});
+            const response = await axios.get(`https://phet.colorado.edu/en/simulations/category/${categorySlug}/index`);
             const $ = cheerio.load(response.data);
-            const categoryElements = $('.simulation-index a').toArray();
-            if (categoryElements.length === 0) {
-                console.warn('Failed to get categoryElements');
-            }
-            categoryElements.map((item) => {
+
+            // extract the sims
+            const sims = $('.simulation-index a').toArray();
+            if (sims.length === 0) console.warn(`Failed to get sims for category ${categoryTitle}`);
+            console.debug(`\t - ${categorySlug}: ${sims.length}`);
+
+            sims.map((item) => {
                 const slug = $(item).attr('href').split('/').pop();
-                if (!categoriesTree[slug]) {
-                    categoriesTree[slug] = [categoryTitle];
-                } else {
-                    categoriesTree[slug].push(categoryTitle);
-                }
+                op.push(categoriesTree, slug, categoryTitle);
+            });
+
+            // gather sub-categories
+            const subCategories = $('.side-nav ul.parents ul.children a').toArray();
+            subCategories.map((item) => {
+                const title = $(item).text();
+                const slug = $(item).attr('href').split('/').pop();
+                op.set(subCategoriesList, `${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
+            });
+        }
+    );
+};
+
+const fetchSubCategories = async () => {
+    await asyncPool(
+        config.workers,
+        Object.entries(subCategoriesList),
+        async ([subCatTitle, subCatSlug]) => {
+            const response = await axios.get(`https://phet.colorado.edu/en/simulations/category/${subCatSlug}/index`);
+            const $ = cheerio.load(response.data);
+
+            // extract the sims
+            const sims = $('.simulation-index a').toArray();
+            if (sims.length === 0) console.warn(`Failed to get sims for sub-category ${subCatTitle}`);
+            console.debug(`\t - ${subCatSlug}: ${sims.length}`);
+
+            sims.map((item) => {
+                const slug = $(item).attr('href').split('/').pop();
+                op.push(categoriesTree, slug, subCatTitle);
             });
         }
     );
 };
 
 // leave IIFE here until global refactoring
-(async () => await fetchCategoriesTree())();
+(async () => {
+    console.log(`Getting categories...`);
+    await fetchCategoriesTree();
+    await fetchSubCategories();
+})();
 
 // todo move to class
 const getItemCategories = async (item): Promise<Category[]> => {
@@ -85,7 +118,7 @@ async.mapLimit(
         async.mapLimit(sims, config.workers, function (sim, next) {
             request.get(`https://phet.colorado.edu/${sim.language}/simulation/${sim.id}`)
                 .then(async html => {
-                    console.log(`Got ${sim.language} ${sim.id} metadata`);
+                    console.log(`+ [${sim.language}] ${sim.id}`);
                     const $ = cheerio.load(html);
                     const [id, language] = $('.sim-download').attr('href').split('/').pop().split('.')[0].split('_');
                     catalog.push(<Simulation>{
