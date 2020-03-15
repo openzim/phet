@@ -16,6 +16,7 @@ import * as async from 'async';
 import * as ncp from 'ncp';
 import * as copy from 'copy';
 import * as glob from 'glob';
+import * as path from 'path';
 import {ZimCreator, ZimArticle} from '@openzim/libzim';
 
 const spawn = cp.spawn;
@@ -111,7 +112,7 @@ async.series(config.buildCombinations.map((combination) => {
         }, async () => {
           const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
 
-          console.log('Creating Zim file...');
+          console.log(`Creating Zim file for ${languageCode}...`);
 
           const creator = new ZimCreator({
             fileName: `./dist/${combination.output}.zim`,
@@ -128,11 +129,7 @@ async.series(config.buildCombinations.map((combination) => {
           });
 
           await Promise.all(glob.sync(`${targetDir}/*`, {})
-            .map(async (url, i) => {
-              const data = await fs.readFileSync(url);
-              return creator.addArticle(new ZimArticle({url, data}));
-            })
-          );
+            .map(async (url, i) => creator.addArticle(new ZimArticle({url: path.basename(url), data: await fs.readFileSync(url)}))));
 
           await creator.finalise();
 
