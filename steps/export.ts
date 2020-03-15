@@ -15,6 +15,8 @@ import * as cp from 'child_process';
 import * as async from 'async';
 import * as ncp from 'ncp';
 import * as copy from 'copy';
+import * as glob from 'glob';
+import {ZimCreator, ZimArticle} from '@openzim/libzim';
 
 const spawn = cp.spawn;
 (<any>ncp).limit = 16;
@@ -63,8 +65,8 @@ async.series(config.buildCombinations.map((combination) => {
           .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
           .forEach((fileName) => {
 
-            var html = fs.readFileSync(inDir + fileName, 'utf8');
-            var $ = cheerio.load(html);
+            let html = fs.readFileSync(inDir + fileName, 'utf8');
+            const $ = cheerio.load(html);
 
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
             copyFileSync(`${inDir}${fileName.split('_')[0]}.png`, `${targetDir}${fileName.split('_')[0]}.png`);
@@ -106,36 +108,36 @@ async.series(config.buildCombinations.map((combination) => {
 
         async.each(['js', 'css', 'fonts', 'img'], function (path, next) {
           copy(`${resDir}${path}/*`, targetDir, next);
-        }, function () {
+        }, async () => {
           const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
-          //Run export2zim
+
           console.log('Creating Zim file...');
-          const exportProc = spawn(`zimwriterfs`,
-            ['--verbose',
-              '--welcome=index.html',
-              '--favicon=favicon.png',
-              `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
-              '--title=PhET Interactive Simulations',
-              '--name=phets', // TODO: here too, the language code should be append
-              '--description=Interactives simulations for Science and Math',
-              '--creator=University of Colorado',
-              '--publisher=Kiwix',
-              targetDir,
-              `./dist/${combination.output}.zim`]);
 
-          exportProc.stdout.on('data', function (data) {    // register one or more handlers
-            console.log('stdout: ' + data);
+          const creator = new ZimCreator({
+            fileName: `./dist/${combination.output}.zim`,
+            welcome: 'index.html',
+            fullTextIndexLanguage: languageCode
+          }, {
+            Name: 'phets',  // TODO: here too, the language code should be append
+            Title: 'PhET Interactive Simulations',
+            Description: 'Interactives simulations for Science and Math',
+            Creator: 'University of Colorado',
+            Publisher: 'Kiwix',
+            Language: languageCode  // TODO: to replace with real ISO639-3 lang code
+            // Tags: //todo
           });
 
-          exportProc.stderr.on('data', function (data) {
-            console.log('stderr: ' + data);
-          });
+          await Promise.all(glob.sync(`${targetDir}/*`, {})
+            .map(async (url, i) => {
+              const data = await fs.readFileSync(url);
+              return creator.addArticle(new ZimArticle({url, data}));
+            })
+          );
 
-          exportProc.on('exit', function (code) {
-            console.log('child process exited with code ' + code);
-            handler(null, null);
-          });
+          await creator.finalise();
 
+          console.log('Done Writing');
+          handler(null, null);
         });
       });
     });
