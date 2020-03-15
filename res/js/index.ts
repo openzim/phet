@@ -84,14 +84,7 @@ var ractive = new Ractive({
         this.on('showConfirm', function (ev) {
             const simulation: Simulation = ev.context;
 
-            const categoryHTML = simulation.categories.map(cat => {
-                // const categoryContent = cat.map(c => {
-                //     return c.title;
-                // }).join(' / ');
-                // return `<li>${categoryContent}</li>`;
-                return `<li>cat.title</li>`;
-            }).join('');
-
+            const categoryHTML = simulation.categories.map(cat => `<li>${cat.title}</li>`).join('');
             const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
 
             swal.fire({
