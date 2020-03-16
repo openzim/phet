@@ -108,8 +108,8 @@ var ractive = new Ractive({
                         <span>Topics</span>
                         <ul class='topics'>${topicsHTML}</ul>
                     </div>
-                </div>
-                <div class='description'>${simulation.description}</div>`,
+                    <div class='description'>${simulation.description}</div>
+                </div>`,
                 showCloseButton: true,
                 showCancelButton: true,
                 confirmButtonText: 'Load'
