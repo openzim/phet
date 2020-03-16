@@ -121,7 +121,7 @@ async.series(config.buildCombinations.map((combination) => {
           }, {
             Name: 'phets',  // TODO: here too, the language code should be append
             Title: 'PhET Interactive Simulations',
-            Description: 'Interactives simulations for Science and Math',
+            Description: 'Interactive simulations for Science and Math',
             Creator: 'University of Colorado',
             Publisher: 'Kiwix',
             Language: languageCode  // TODO: to replace with real ISO639-3 lang code
