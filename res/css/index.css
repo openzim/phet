@@ -174,7 +174,7 @@ select {
     border-radius: 6px;
     padding: 6px 6px 45px;
     margin: 10px 18px 10px 0;
-    max-width: 95%;
+    width: calc(100% - 37px);
 }
 
 @media only screen and (min-width: 320px) and (max-width: 1023px) and (orientation: landscape) {
@@ -186,6 +186,9 @@ select {
 @media only screen and (min-width: 767px) {
     .sim-card {
         width: calc(50% - 10px);
+    }
+    .description {
+        width: calc(100% - 47px);
     }
     #header img {
         width: calc(100% - 32px);

@@ -93,11 +93,16 @@ var ractive = new Ractive({
 
             const topicsHTML = simulation.topics.map(t => `<li>${t}</li>`).join('');
 
-            swal.fire({
+            swal
+              .mixin({
+                  customClass: 'swal-height'
+              })
+              .fire({
                 title: `${simulation.title}`,
                 html: `
                 <div>
                     <img src='../I/${simulation.id}.png' />
+                    <div class='description'>${simulation.description}</div>
                 </div>
                 <div class='flex-cont'>
                     <div>
@@ -108,7 +113,6 @@ var ractive = new Ractive({
                         <span>Topics</span>
                         <ul class='topics'>${topicsHTML}</ul>
                     </div>
-                    <div class='description'>${simulation.description}</div>
                 </div>`,
                 showCloseButton: true,
                 showCancelButton: true,
