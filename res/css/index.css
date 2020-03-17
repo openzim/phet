@@ -2,7 +2,7 @@
     font-family: 'Open Sans';
     font-style: normal;
     font-weight: 300;
-    src: url('fonts/OpenSans-Light.ttf') format('ttf');
+    src: url('./OpenSans-Light.ttf') format('ttf');
 }
 
 html {
@@ -11,8 +11,8 @@ html {
 
 body {
     height: 100%;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: #f2f2f2;
 }
@@ -41,7 +41,7 @@ label {
 #header {
     width: 100%;
     color: #f2f2f2;
-    padding: 5% 5%;
+    padding: 5%;
     background: #244b59;
     float: left;
     text-align: center;
@@ -84,9 +84,9 @@ select {
     margin: 0 5px 20px;
     position: relative;
     display: inline-block;
-    -webkit-box-shadow: 3px 6px 14px 0px rgba(0, 0, 0, 0.32);
-    -moz-box-shadow: 3px 6px 14px 0px rgba(0, 0, 0, 0.32);
-    box-shadow: 3px 6px 14px 0px rgba(0, 0, 0, 0.32);
+    -webkit-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
+    -moz-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
+    box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
 }
 
 .sim-card img {
@@ -150,7 +150,6 @@ select {
 }
 
 .flex-cont {
-    display: flex;
     justify-content: space-around;
     display: none;
 }
