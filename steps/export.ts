@@ -11,21 +11,29 @@ import * as fs from 'fs';
 import * as cheerio from 'cheerio';
 import * as rimraf from 'rimraf';
 import * as config from '../config';
-import * as cp from 'child_process';
 import * as async from 'async';
 import * as ncp from 'ncp';
 import * as copy from 'copy';
+import * as glob from 'glob';
+import * as path from 'path';
+import {ZimCreator, ZimArticle} from '@openzim/libzim';
 
-const spawn = cp.spawn;
 (<any>ncp).limit = 16;
 
-const kiwixPrefix = {
-  js: '../-/',
-  svg: '../I/',
-  png: '../I/',
-  jpg: '../I/',
-  jpeg: '../I/'
+const namespaces = {
+  js: '-',
+  css: '-',
+  svg: 'I',
+  png: 'I',
+  jpg: 'I',
+  jpeg: 'I',
+  html: 'A'
 };
+
+const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-';
+
+const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`;
+
 
 const sims: Simulation[] = require('../state/get/catalog.json');
 
@@ -33,7 +41,7 @@ const copyFileSync = function copyFileSync(from, to) {
   fs.writeFileSync(to, fs.readFileSync(from));
 };
 
-var getLanguage = function (fileName) {
+const getLanguage = function (fileName) {
   return fileName.split('_').pop().split('.')[0];
 };
 
@@ -41,9 +49,9 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
   const resources = file.match(/[0-9a-f]{32}\.(svg|jpg|jpeg|png|js)/g) || [];
   return resources
     .reduce((file, resName) => {
-      const ext = resName.split('.').slice(-1)[0];
+      const ext = path.extname(resName).slice(1);
       ncp(`${inDir}${resName}`, `${targetDir}${resName}`);
-      return file.replace(resName, `${kiwixPrefix[ext]}${resName}`);
+      return file.replace(resName, `${getKiwixPrefix(ext)}${resName}`);
     }, file);
 };
 
@@ -63,15 +71,15 @@ async.series(config.buildCombinations.map((combination) => {
           .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
           .forEach((fileName) => {
 
-            var html = fs.readFileSync(inDir + fileName, 'utf8');
-            var $ = cheerio.load(html);
+            let html = fs.readFileSync(inDir + fileName, 'utf8');
+            const $ = cheerio.load(html);
 
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
             copyFileSync(`${inDir}${fileName.split('_')[0]}.png`, `${targetDir}${fileName.split('_')[0]}.png`);
             filesToCopy.forEach(fileName => {
               if (fileName.length > 40) return;
-              const ext = fileName.split('.').slice(-1)[0];
-              html = html.replace(fileName, `${kiwixPrefix[ext]}${fileName}`);
+              const ext = path.extname(fileName).slice(1);
+              html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
 
               let file = fs.readFileSync(`${inDir}${fileName}`, 'utf8');
 
@@ -83,7 +91,7 @@ async.series(config.buildCombinations.map((combination) => {
             fs.writeFileSync(`${targetDir}${fileName}`, html, 'utf8');
           });
 
-        //Generate Catalog.json file
+        // Generate Catalog.json file
         const simsByLanguage = sims.reduce((acc, sim) => {
           if (!!~combination.languages.indexOf(sim.language)) {
             const lang = config.languageMappings[sim.language];
@@ -97,45 +105,48 @@ async.series(config.buildCombinations.map((combination) => {
           simsByLanguage
         };
 
-        //Generate index file
+        // Generate index file
         const templateHTML = fs.readFileSync(resDir + 'template.html', 'utf8');
-        fs.writeFileSync(targetDir + 'index.html', //Pretty hacky - doing a replace on the HTML. Investigate other ways
+        fs.writeFileSync(targetDir + 'index.html', // Pretty hacky - doing a replace on the HTML. Investigate other ways
           templateHTML
             .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
             .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
 
         async.each(['js', 'css', 'fonts', 'img'], function (path, next) {
           copy(`${resDir}${path}/*`, targetDir, next);
-        }, function () {
+        }, async () => {
           const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
-          //Run export2zim
-          console.log('Creating Zim file...');
-          const exportProc = spawn(`zimwriterfs`,
-            ['--verbose',
-              '--welcome=index.html',
-              '--favicon=favicon.png',
-              `--language=${languageCode}`, // TODO: to replace with real ISO639-3 lang code
-              '--title=PhET Interactive Simulations',
-              '--name=phets', // TODO: here too, the language code should be append
-              '--description=Interactives simulations for Science and Math',
-              '--creator=University of Colorado',
-              '--publisher=Kiwix',
-              targetDir,
-              `./dist/${combination.output}.zim`]);
 
-          exportProc.stdout.on('data', function (data) {    // register one or more handlers
-            console.log('stdout: ' + data);
+          console.log(`Creating Zim file for ${languageCode}...`);
+
+          const creator = new ZimCreator({
+            fileName: `./dist/${combination.output}.zim`,
+            welcome: 'index.html',
+            fullTextIndexLanguage: languageCode
+          }, {
+            Name: 'phets',  // TODO: here too, the language code should be append
+            Title: 'PhET Interactive Simulations',
+            Description: 'Interactive simulations for Science and Math',
+            Creator: 'University of Colorado',
+            Publisher: 'Kiwix',
+            Language: languageCode  // TODO: to replace with real ISO639-3 lang code
+            // Tags: //todo
           });
 
-          exportProc.stderr.on('data', function (data) {
-            console.log('stderr: ' + data);
-          });
+          await Promise.all(glob.sync(`${targetDir}/*`, {})
+            .map(async (url) => {
+              const ns = getNamespaceByExt(path.extname(url).slice(1));
+              return creator.addArticle(new ZimArticle({
+                url: path.basename(url),
+                data: await fs.readFileSync(url),
+                ns
+              }))
+            }));
 
-          exportProc.on('exit', function (code) {
-            console.log('child process exited with code ' + code);
-            handler(null, null);
-          });
+          await creator.finalise();
 
+          console.log('Done Writing');
+          handler(null, null);
         });
       });
     });

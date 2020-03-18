@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@babel/core": "^7.4.4",
+    "@openzim/libzim": "^2.1.0",
     "@types/cheerio": "^0.22.11",
     "@types/es6-shim": "^0.31.39",
     "@types/lodash": "^4.14.130",
@@ -55,7 +56,8 @@
     "setup": "node steps/setup.js",
     "get": "node_modules/ts-node/dist/bin.js steps/getCategory.ts",
     "transform": "node_modules/ts-node/dist/bin.js steps/transform.ts",
-    "export": "node_modules/typescript/bin/tsc && node_modules/browserify/bin/cmd.js res/js/index.js  -t babelify --presets [es2015] -o res/js/dist.js && node_modules/ts-node/dist/bin.js steps/export.ts",
+    "export-prebuild": "npm run build && node_modules/browserify/bin/cmd.js res/js/index.js -t babelify --presets [es2015] -o res/js/dist.js",
+    "export": "npm run export-prebuild && node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "echo \"Error: no test specified\" && exit 1",
     "snyk-protect": "snyk protect",
