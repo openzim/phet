@@ -19,6 +19,7 @@
     ],
     "interface-name": false,
     "no-debugger": false,
+    "no-bitwise": false,
     "ordered-imports": false,
     "max-line-length": false,
     "no-console": false,
