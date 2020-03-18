@@ -1,7 +1,7 @@
 export type Category = {
     title: string,
     slug: string
-}[];
+};
 
 export type SimulationWithoutAdditional = {
     id: string,
