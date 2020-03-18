@@ -21,8 +21,7 @@ const outDir = 'state/transform/';
 
 const transform = async () => {
   console.log('Converting images...');
-  // const images: string[] = await Promise.all(glob.sync(`${inDir}/*.{jpg,jpeg,png,svg}`, {}));
-  const images = [];
+  const images: string[] = await Promise.all(glob.sync(`${inDir}/*.{jpg,jpeg,png,svg}`, {}));
   const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
 
   bar.start(images.length, 0);
