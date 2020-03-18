@@ -102,7 +102,6 @@ const getSims = async () => {
         }
     );
 
-    // don't commit this
     const sims = simsData.reduce<SimulationWithoutAdditional[]>((acc: SimulationWithoutAdditional[], {lang, data}) => {
         const $ = cheerio.load(data);
         const sims = $('.oa-html5 > a')
