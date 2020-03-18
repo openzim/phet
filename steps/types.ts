@@ -6,7 +6,7 @@ export type Category = {
 export type SimulationWithoutAdditional = {
     id: string,
     language: string,
-}
+};
 
 export type Simulation = SimulationWithoutAdditional & {
     title: string
