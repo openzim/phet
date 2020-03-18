@@ -17,6 +17,10 @@ const error = function (...args: any[]) {
   if (config.verbose) console.error.apply(console, arguments);
 };
 
+const getIdAndLanguage = (url: string) => {
+  return /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
+};
+
 
 // todo move to class
 const categoriesTree = {};
@@ -103,7 +107,7 @@ const getSims = async () => {
     const $ = cheerio.load(data);
     const sims = $('.oa-html5 > a')
       .toArray()
-      .map(item => /([^_]*)_([^]*)\./.exec(path.basename($(item).attr('href'))).slice(1, 3))
+      .map(item => getIdAndLanguage($(item).attr('href')))
       .filter(([id, language]) => language === lang)
       .map(([id, language]) => ({id, language}));
     return acc.concat(sims);
@@ -123,9 +127,10 @@ const getSims = async () => {
         console.log(`+ [${sim.language}] ${sim.id}`);
       } catch (e) {
         console.error(`Failed to get the page for ${sim.language} ${sim.id}`);
+        return;
       }
       const $ = cheerio.load(data);
-      const [id, language] = $('.sim-download').attr('href').split('/').pop().split('.')[0].split('_');
+      const [id, language] = getIdAndLanguage($('.sim-download').attr('href'));
       catalog.push({
         categories: await getItemCategories(sim.id),
         id,
@@ -165,6 +170,7 @@ const getSims = async () => {
           data = (await axios.get(url, {responseType: 'stream'})).data;
         } catch (e) {
           console.error(`Failed to get url ${url}`);
+          return;
         }
         let fileName = url.split('/').pop();
         if (fileName.slice(-4) === '.png') {
