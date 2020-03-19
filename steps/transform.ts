@@ -59,11 +59,10 @@ const transform = async () => {
         data = await extractBase64(basename, data);
         data = removeStrings(data);
         data = await extractLanguageElements(basename, data);
-        bar.increment();
         return fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
       } catch (err) {
-        console.warn(`Error while processing the file: ${file}`);
-        console.warn(err.message);
+        console.error(`Error while processing the file: ${file}`);
+        console.error(err.message);
       } finally {
         bar.increment();
       }
