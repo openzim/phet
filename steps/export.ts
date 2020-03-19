@@ -1,24 +1,26 @@
-///<reference path="shim.d.ts" />
-
-import { Catalog, Simulation } from './types';
 const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
 
-
-import * as iso6393 from 'iso-639-3';
 import * as fs from 'fs';
-import * as cheerio from 'cheerio';
-import * as rimraf from 'rimraf';
-import * as config from '../config';
-import * as async from 'async';
 import * as ncp from 'ncp';
-import * as copy from 'copy';
 import * as glob from 'glob';
 import * as path from 'path';
+import {promisify} from 'util';
+import * as rimraf from 'rimraf';
+import * as cheerio from 'cheerio';
+import * as iso6393 from 'iso-639-3';
+import asyncPool from 'tiny-async-pool';
+import * as progress from 'cli-progress';
 import {ZimCreator, ZimArticle} from '@openzim/libzim';
 
-(<any>ncp).limit = 16;
+import * as config from '../config';
+import {Catalog, Simulation} from './types';
+
+// @ts-ignore
+import * as sims from '../state/get/catalog.json';
+
+(ncp as any).limit = 16;
 
 const namespaces = {
   js: '-',
@@ -34,16 +36,7 @@ const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-';
 
 const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`;
 
-
-const sims: Simulation[] = require('../state/get/catalog.json');
-
-const copyFileSync = function copyFileSync(from, to) {
-  fs.writeFileSync(to, fs.readFileSync(from));
-};
-
-const getLanguage = function (fileName) {
-  return fileName.split('_').pop().split('.')[0];
-};
+const getLanguage = (fileName) => fileName.split('_').pop().split('.')[0];
 
 const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
   const resources = file.match(/[0-9a-f]{32}\.(svg|jpg|jpeg|png|js)/g) || [];
@@ -55,100 +48,117 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
     }, file);
 };
 
-const getISO6393 = function getISO6393(lang = 'en') {
+const getISO6393 = (lang = 'en') => {
   lang = lang.split('_')[0];
-  return (iso6393.find(l => l.iso6391 === lang) || {}).iso6393;
+  const langEntity = iso6393.find(l => l.iso6391 === lang);
+  if (langEntity) return langEntity.iso6393;
 };
 
-async.series(config.buildCombinations.map((combination) => {
-  return (handler) => {
-    const targetDir = `${outDir}${combination.output}/`;
-    rimraf(targetDir, function (err) {
-      fs.mkdir(targetDir, function () {
 
-        fs.readdirSync(inDir)
-          .filter(fileName => fileName.split('.').pop() === 'html')
-          .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
-          .forEach((fileName) => {
+const exportData = async () =>
+  await asyncPool(
+    1,
+    config.buildCombinations,
+    async (combination) => {
+      const targetDir = `${outDir}${combination.output}/`;
 
-            let html = fs.readFileSync(inDir + fileName, 'utf8');
+      await promisify(rimraf)(targetDir);
+      await fs.promises.mkdir(targetDir);
+
+      await Promise.all(glob.sync(`${inDir}/*.html`, {})
+        .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
+        .map(async (fileName) => {
+          try {
+            let html = await fs.promises.readFile(fileName, 'utf8');
             const $ = cheerio.load(html);
 
             const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
-            copyFileSync(`${inDir}${fileName.split('_')[0]}.png`, `${targetDir}${fileName.split('_')[0]}.png`);
-            filesToCopy.forEach(fileName => {
+            await fs.promises.copyFile(`${fileName.split('_')[0]}.png`, `${targetDir}${path.basename(fileName).split('_')[0]}.png`);
+
+            await Promise.all(filesToCopy.map(async fileName => {
               if (fileName.length > 40) return;
               const ext = path.extname(fileName).slice(1);
               html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
 
-              let file = fs.readFileSync(`${inDir}${fileName}`, 'utf8');
-
+              let file = await fs.promises.readFile(`${fileName}`, 'utf8');
               file = addKiwixPrefixes(file, targetDir);
-
-              fs.writeFileSync(`${targetDir}${fileName}`, file, 'utf8');
-            });
-
-            fs.writeFileSync(`${targetDir}${fileName}`, html, 'utf8');
-          });
-
-        // Generate Catalog.json file
-        const simsByLanguage = sims.reduce((acc, sim) => {
-          if (!!~combination.languages.indexOf(sim.language)) {
-            const lang = config.languageMappings[sim.language];
-            acc[lang] = (acc[lang] || []).concat(sim);
-          }
-          return acc;
-        }, {});
-
-        const catalog: Catalog = {
-          languageMappings: config.languageMappings,
-          simsByLanguage
-        };
-
-        // Generate index file
-        const templateHTML = fs.readFileSync(resDir + 'template.html', 'utf8');
-        fs.writeFileSync(targetDir + 'index.html', // Pretty hacky - doing a replace on the HTML. Investigate other ways
-          templateHTML
-            .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
-            .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
-
-        async.each(['js', 'css', 'fonts', 'img'], function (path, next) {
-          copy(`${resDir}${path}/*`, targetDir, next);
-        }, async () => {
-          const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
-
-          console.log(`Creating Zim file for ${languageCode}...`);
-
-          const creator = new ZimCreator({
-            fileName: `./dist/${combination.output}.zim`,
-            welcome: 'index.html',
-            fullTextIndexLanguage: languageCode
-          }, {
-            Name: 'phets',  // TODO: here too, the language code should be append
-            Title: 'PhET Interactive Simulations',
-            Description: 'Interactive simulations for Science and Math',
-            Creator: 'University of Colorado',
-            Publisher: 'Kiwix',
-            Language: languageCode  // TODO: to replace with real ISO639-3 lang code
-            // Tags: //todo
-          });
-
-          await Promise.all(glob.sync(`${targetDir}/*`, {})
-            .map(async (url) => {
-              const ns = getNamespaceByExt(path.extname(url).slice(1));
-              return creator.addArticle(new ZimArticle({
-                url: path.basename(url),
-                data: await fs.readFileSync(url),
-                ns
-              }))
+              return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
             }));
+            await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
+          } catch (err) {
+            throw err;  // todo
+          }
+        })
+      );
 
-          await creator.finalise();
+      // Generate Catalog.json file
+      const simsByLanguage = (sims as Simulation[]).reduce((acc, sim) => {
+        if (!!~combination.languages.indexOf(sim.language)) {
+          const lang = config.languageMappings[sim.language];
+          acc[lang] = (acc[lang] || []).concat(sim);
+        }
+        return acc;
+      }, {});
 
-          console.log('Done Writing');
-          handler(null, null);
-        });
+      const catalog: Catalog = {
+        languageMappings: config.languageMappings,
+        simsByLanguage
+      };
+
+      // Generate index file
+      const templateHTML = await fs.promises.readFile(resDir + 'template.html', 'utf8');
+      // Pretty hacky - doing a replace on the HTML. Investigate other ways
+      await fs.promises.writeFile(targetDir + 'index.html',
+        templateHTML
+          .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
+          .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
+
+      await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*.ts', 'template.html'], nodir: true})
+        .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)) // todo test this
+      );
+
+      const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
+
+      console.log(`Creating ${combination.output}.zim ...`);
+
+      const creator = new ZimCreator({
+        fileName: `./dist/${combination.output}.zim`,
+        welcome: 'index.html',
+        fullTextIndexLanguage: languageCode
+      }, {
+        Name: `phets_${languageCode}`,
+        Title: 'PhET Interactive Simulations',
+        Description: 'Interactive simulations for Science and Math',
+        Creator: 'University of Colorado',
+        Publisher: 'Kiwix',
+        Language: languageCode,
+        Date: (new Date()).toISOString(),
+        Tags: 'phets;_category:PhET;_pictures:yes;_videos:no;_ftindex:no;_details:no',
+        // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
+        // todo: remove this further
+        // @ts-ignore
+        Source: `https://phet.colorado.edu/${combination.languages[0]}/simulations/`,
+        Scraper: 'openzim/phet'
       });
-    });
-  }
-}));
+
+      const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+      const files = glob.sync(`${targetDir}/*`, {});
+      bar.start(files.length, 0);
+
+      await asyncPool(1, files, async (url) => {
+        await creator.addArticle(
+          new ZimArticle({
+            url: path.basename(url),
+            data: await fs.promises.readFile(url),
+            ns: getNamespaceByExt(path.extname(url).slice(1))
+          })
+        );
+        bar.increment();
+      });
+      bar.stop();
+      await creator.finalise();
+      console.log('Done Writing');
+    }
+  );
+
+(async () => exportData())();

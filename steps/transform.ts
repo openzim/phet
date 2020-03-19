@@ -59,11 +59,10 @@ const transform = async () => {
         data = await extractBase64(basename, data);
         data = removeStrings(data);
         data = await extractLanguageElements(basename, data);
-        bar.increment();
         return fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
       } catch (err) {
-        console.warn(`Error while processing the file: ${file}`);
-        console.warn(err.message);
+        console.error(`Error while processing the file: ${file}`);
+        console.error(err.message);
       } finally {
         bar.increment();
       }
@@ -92,6 +91,7 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
 
 const removeStrings = (html): string => {
   const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
+  if (htmlSplit.length === 1) return html;
   html = htmlSplit[0] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[1];
   html = minify(html, {removeComments: true});
   return html;

@@ -8,7 +8,8 @@
         "allowJs": true,
         "module": "commonjs",
         "target": "ES5",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "resolveJsonModule": true
     },
     "files": [
         "res/js/index.ts"
