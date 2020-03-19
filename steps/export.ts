@@ -131,8 +131,14 @@ const exportData = async () =>
         Description: 'Interactive simulations for Science and Math',
         Creator: 'University of Colorado',
         Publisher: 'Kiwix',
-        Language: languageCode  // TODO: to replace with real ISO639-3 lang code
-        // Tags: //todo
+        Language: languageCode,
+        Date: (new Date()).toISOString(),
+        Tags: 'phets;_category:PhET;_pictures:yes;_videos:no;_ftindex:no;_details:no',
+        // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
+        // todo: remove this further
+        // @ts-ignore
+        Source: `https://phet.colorado.edu/${combination.languages[0]}/simulations/`,
+        Scraper: 'openzim/phet'
       });
 
       const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
