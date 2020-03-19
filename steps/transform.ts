@@ -92,6 +92,7 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
 
 const removeStrings = (html): string => {
   const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
+  if (htmlSplit.length === 1) return html;
   html = htmlSplit[0] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[1];
   html = minify(html, {removeComments: true});
   return html;

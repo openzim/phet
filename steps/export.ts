@@ -3,14 +3,15 @@ const outDir = 'state/export/';
 const resDir = 'res/';
 
 import * as fs from 'fs';
-import {promisify} from 'util';
 import * as ncp from 'ncp';
 import * as glob from 'glob';
 import * as path from 'path';
+import {promisify} from 'util';
 import * as rimraf from 'rimraf';
 import * as cheerio from 'cheerio';
 import * as iso6393 from 'iso-639-3';
 import asyncPool from 'tiny-async-pool';
+import * as progress from 'cli-progress';
 import {ZimCreator, ZimArticle} from '@openzim/libzim';
 
 import * as config from '../config';
@@ -112,13 +113,13 @@ const exportData = async () =>
           .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
           .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
 
-      await Promise.all(glob.sync(`${resDir}${path}/*`, {})
-        .map(async (file) => fs.promises.copyFile(file, targetDir)) // todo test this
+      await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*.ts', 'template.html'], nodir: true})
+        .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)) // todo test this
       );
 
       const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
 
-      console.log(`Creating Zim file for ${languageCode}...`);
+      console.log(`Creating ${combination.output}.zim ...`);
 
       const creator = new ZimCreator({
         fileName: `./dist/${combination.output}.zim`,
@@ -134,18 +135,22 @@ const exportData = async () =>
         // Tags: //todo
       });
 
-      await Promise.all(glob.sync(`${targetDir}/*`, {})
-        .map(async (url) => {
-          const ns = getNamespaceByExt(path.extname(url).slice(1));
-          return await creator.addArticle(new ZimArticle({
+      const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+      const files = glob.sync(`${targetDir}/*`, {});
+      bar.start(files.length, 0);
+
+      await asyncPool(1, files, async (url) => {
+        await creator.addArticle(
+          new ZimArticle({
             url: path.basename(url),
-            data: await fs.readFileSync(url),
-            ns
-          }));
-        }));
-
+            data: await fs.promises.readFile(url),
+            ns: getNamespaceByExt(path.extname(url).slice(1))
+          })
+        );
+        bar.increment();
+      });
+      bar.stop();
       await creator.finalise();
-
       console.log('Done Writing');
     }
   );
