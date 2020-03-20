@@ -5,21 +5,28 @@ import slugify from 'slugify';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
 import asyncPool from 'tiny-async-pool';
+import * as progress from 'cli-progress';
 
 import * as config from '../config';
-import {Category, Simulation, SimulationWithoutAdditional} from './types';
+import {Category, SetByLanguage, Simulation} from './types';
+import {SimulationsList} from './classes';
 
 
 const outDir = 'state/get/';
+
+const barOptions = {
+  clearOnComplete: false,
+  autopadding: true,
+  hideCursor: true,
+  format: '{prefix} {bar} {percentage}% | ETA: {eta}s | {value}/{total} | {postfix}'
+};
 
 
 const error = function (...args: any[]) {
   if (config.verbose) console.error.apply(console, arguments);
 };
 
-const getIdAndLanguage = (url: string) => {
-  return /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
-};
+const getIdAndLanguage = (url: string) => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
 
 
 // todo move to class
@@ -88,77 +95,75 @@ const getItemCategories = async (item): Promise<Category[]> => {
 
 
 const getSims = async () => {
-  console.log(`Starting build with [${config.languagesToGet.length}] languages`);
-  const simsData: any[] = await asyncPool(
+  console.log(`Gathering sim links...`);
+  const simIds: SetByLanguage<string> = await asyncPool(
     config.workers,
-    config.languagesToGet.map(lang => [lang, `https://phet.colorado.edu/${lang}/offline-access`]),
-    async ([lang, url]) => {
-      let data;
+    config.languagesToGet,
+    async (lang) => {
       try {
-        data = (await axios.get(url)).data;
+        const $ = cheerio.load((await axios.get(`https://phet.colorado.edu/${lang}/offline-access`)).data);
+        return {
+          lang,
+          data: $('.oa-html5 > a')
+            .toArray()
+            .map(item => getIdAndLanguage($(item).attr('href')))
+            .filter(([id, language]) => language === lang)
+            .map(([id, language]) => id)
+        };
       } catch (e) {
         console.error(`Failed to get simulation list for ${lang}`);
-      }
-      return {lang, data};
-    }
-  );
-
-  const sims = simsData.reduce<SimulationWithoutAdditional[]>((acc: SimulationWithoutAdditional[], {lang, data}) => {
-    const $ = cheerio.load(data);
-    const sims = $('.oa-html5 > a')
-      .toArray()
-      .map(item => getIdAndLanguage($(item).attr('href')))
-      .filter(([id, language]) => language === lang)
-      .map(([id, language]) => ({id, language}));
-    return acc.concat(sims);
-  }, []);
-
-  const catalog: Simulation[] = [];
-
-  console.log(`Got list of ${sims.length} simulations to fetch... Here we go!`);
-
-  const pages = await asyncPool(
-    config.workers,
-    sims,
-    async (sim) => {
-      let data: string;
-      try {
-        data = (await axios.get(`https://phet.colorado.edu/${sim.language}/simulation/${sim.id}`)).data;
-        console.log(`+ [${sim.language}] ${sim.id}`);
-      } catch (e) {
-        console.error(`Failed to get the page for ${sim.language} ${sim.id}`);
         return;
       }
-      const $ = cheerio.load(data);
-      const [id, language] = getIdAndLanguage($('.sim-download').attr('href'));
-      catalog.push({
-        categories: await getItemCategories(sim.id),
-        id,
-        language,
-        title: $('.simulation-main-title').text().trim(),
-        // difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),    // TODO
-        topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
-        description: $('.simulation-panel-indent[itemprop]').text()
-      } as Simulation);
     }
   );
 
-  console.log(`Got ${pages.length} pages`);
+  const multibar = new progress.MultiBar(barOptions, progress.Presets.shades_grey);
+  const bars = {};
+  simIds.forEach(({lang, data}) => bars[lang] = multibar.create(data.length, 0, {prefix: lang, postfix: 'N/A'}));
 
-  try {
-    await fs.writeFileSync(`${outDir}catalog.json`, JSON.stringify(catalog), 'utf8');
-    console.log('Saved Catalog');
-  } catch (e) {
-    console.error(`Failed to save the catalog`);
-  }
+  const catalog = new SimulationsList();
+  let urlsToGet = [];
 
-  const simUrls = catalog.map(sim => `https://phet.colorado.edu/sims/html/${sim.id}/latest/${sim.id}_${sim.language}.html`);
-  const imgUrls = simUrls
-    .map(url => url.split('_')[0])
-    .sort()
-    .filter((url, index, arr) => url !== arr[index - 1])
-    .map(url => url + `-${config.imageResolution}.png`);
-  const urlsToGet = simUrls.concat(imgUrls);
+  await Promise.all(
+    simIds.map(async ({lang, data}) =>
+      await asyncPool(
+        config.workers,
+        data,
+        async (id) => {
+          let data: string;
+          try {
+            data = (await axios.get(`https://phet.colorado.edu/${lang}/simulation/${id}`)).data;
+            if (!multibar.terminal.isTTY()) console.log(`+ [${lang}] ${id}`);
+          } catch (e) {
+            console.error(`Failed to get the page for ${lang} ${id}`);
+            return;
+          }
+          const $ = cheerio.load(data);
+          const [realId, realLanguage] = getIdAndLanguage($('.sim-download').attr('href'));
+          catalog.add(lang, {
+            categories: await getItemCategories(realId),
+            id: realId,
+            language: realLanguage,
+            title: $('.simulation-main-title').text().trim(),
+            // difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),    // TODO
+            topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
+            description: $('.simulation-panel-indent[itemprop]').text()
+          } as Simulation);
+
+          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${realLanguage}.html`);
+          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
+          if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
+        }
+      )));
+
+  multibar.stop();
+  urlsToGet = Array.from(new Set(urlsToGet));
+
+  await catalog.persist(`${outDir}catalog.json`);
+
+  console.log(`Getting documents and images...`);
+  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
+  bar.start(urlsToGet.length, 0, {prefix: '', postfix: 'N/A'});
 
   await asyncPool(
     config.workers,
@@ -179,7 +184,8 @@ const getSims = async () => {
         }
         const writeStream = fs.createWriteStream(outDir + fileName)
           .on('close', _ => {
-            console.log(`Got ${url}`);
+            bar.increment(1, {prefix: '', postfix: fileName});
+            if (!bar.terminal.isTTY()) console.log(` + ${path.basename(fileName)}`);
             resolve();
           });
 
@@ -195,14 +201,15 @@ const getSims = async () => {
       });
     }
   );
-
-  console.log('Got the stuff!');  // TODO: Better logs
+  bar.stop();
 };
 
 
 // leave IIFE here until global refactoring
 (async () => {
+  console.log(`Starting build with [${config.languagesToGet.length}] languages...`);
   await fetchCategoriesTree();
   await fetchSubCategories();
   await getSims();
+  console.log('Done.');
 })();

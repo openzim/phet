@@ -3,13 +3,10 @@ export type Category = {
     slug: string
 };
 
-export type SimulationWithoutAdditional = {
+export type Simulation = {
     id: string,
     language: string,
-};
-
-export type Simulation = SimulationWithoutAdditional & {
-    title: string
+    title: string,
     categories: Category[],
     difficulty: string[],
     topics: string[],
@@ -24,3 +21,11 @@ export type Catalog = {
         [langCode: string]: Simulation[]
     }
 };
+
+export type LanguageItemPair<T> = {
+    [lang: string]: T
+};
+
+export type SetByLanguage<T> = [
+    LanguageItemPair<T>
+];

@@ -48,7 +48,7 @@
   },
   "scripts": {
     "setup": "node steps/setup.js",
-    "get": "node_modules/ts-node/dist/bin.js steps/getCategory.ts",
+    "get": "node_modules/ts-node/dist/bin.js steps/get.ts",
     "transform": "node --no-warnings node_modules/ts-node/dist/bin.js steps/transform.ts",
     "export-prebuild": "npm run build && node_modules/browserify/bin/cmd.js res/js/index.js -t babelify --presets [es2015] -o res/js/dist.js",
     "export": "npm run export-prebuild && node_modules/ts-node/dist/bin.js steps/export.ts",
