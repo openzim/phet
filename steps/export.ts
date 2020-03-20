@@ -133,7 +133,7 @@ const exportData = async () =>
         Publisher: 'Kiwix',
         Language: languageCode,
         Date: (new Date()).toISOString(),
-        Tags: 'phets;_category:PhET;_pictures:yes;_videos:no;_ftindex:no;_details:no',
+        Tags: '_category:phet;_pictures:yes;_videos:no',
         // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
         // todo: remove this further
         // @ts-ignore
