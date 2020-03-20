@@ -44,7 +44,7 @@ const fetchCategoriesTree = async () => {
 
       // extract the sims
       const sims = $('.simulation-index a').toArray();
-      if (sims.length === 0) console.warn(`Failed to get sims for category ${categoryTitle}`);
+      if (sims.length === 0) console.error(`Failed to get sims for category ${categoryTitle}`);
       console.debug(`- ${categorySlug}: ${sims.length}`);
 
       sims.map((item) => {
@@ -73,7 +73,7 @@ const fetchSubCategories = async () => {
 
       // extract the sims
       const sims = $('.simulation-index a').toArray();
-      if (sims.length === 0) console.warn(`Failed to get sims for sub-category ${subCatTitle}`);
+      if (sims.length === 0) console.error(`Failed to get sims for sub-category ${subCatTitle}`);
       console.debug(` - ${subCatSlug}: ${sims.length}`);
 
       sims.map((item) => {
