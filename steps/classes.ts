@@ -22,21 +22,34 @@ export class Base64Entity {
 
 
 export class SimulationsList {
-  public items: LanguageItemPair<Simulation>[] = [];
+  public items: LanguageItemPair<Simulation[]>[] = [];
 
   add(lang: string, item: Simulation): void {
     if (!this.items[lang]) this.items[lang] = [];
     this.items[lang].push(item);
   }
 
-  async persist(file): Promise<void> {
-    // todo sort
-
+  async persist(file: string): Promise<void> {
     try {
-      await fs.promises.writeFile(file, JSON.stringify(this.items), 'utf8');
+      await fs.promises.writeFile(file, JSON.stringify(this.getFlatSortedItems()), 'utf8');
       console.log('Saved Catalog');
     } catch (e) {
       console.error(`Failed to save the catalog`);
     }
+  }
+
+  private getFlatSortedItems(): Simulation[] {
+    return Object.values(this.items).reduce((acc, items) => {
+      const sorted = Object.values(items).sort(SimulationsList.getComparator('title'));
+      return acc.concat(sorted);
+    }, []);
+  }
+
+  private static getComparator(propName: string) {
+    return (a, b) => {
+      if (a[propName] > b[propName]) return 1;
+      if (a[propName] < b[propName]) return -1;
+      return 0;
+    };
   }
 }
