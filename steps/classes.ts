@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as op from 'object-path';
-import {LanguageItemPair, Simulation} from './types';
+import {LanguageDescriptor, LanguageItemPair, Simulation} from './types';
 
 
 export class Base64Entity {
@@ -25,6 +25,11 @@ export class Base64Entity {
 
 export class SimulationsList {
   public items: LanguageItemPair<Simulation[]>[] = [];
+  private languages: LanguageItemPair<LanguageDescriptor>;
+
+  constructor(languages) {
+    this.languages = languages;
+  }
 
   add(lang: string, item: Simulation): void {
     if (!this.items[lang]) this.items[lang] = [];
@@ -42,7 +47,7 @@ export class SimulationsList {
 
   private getSimIdsByLanguages(): LanguageItemPair<Simulation[]> {
     const result = {};
-    Object.entries(this.items).forEach(([lang, sims]) => op.set(result, lang, Object.values(sims).sort(SimulationsList.getComparator('title'))));
+    Object.entries(this.items).forEach(([lang, sims]) => op.set(result, this.languages[lang].localName, Object.values(sims).sort(SimulationsList.getComparator('title'))));
     return result;
   }
 

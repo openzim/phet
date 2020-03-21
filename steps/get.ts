@@ -8,7 +8,7 @@ import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
 
 import * as config from '../config';
-import {Category, SetByLanguage, Simulation} from './types';
+import {Category, LanguageDescriptor, LanguageItemPair, SetByLanguage, Simulation} from './types';
 import {SimulationsList} from './classes';
 
 
@@ -30,7 +30,7 @@ const getIdAndLanguage = (url: string) => /([^_]*)_([^]*)\./.exec(path.basename(
 
 
 // common data
-const languages = {};
+const languages: LanguageItemPair<LanguageDescriptor> = {};
 const categoriesTree = {};
 const subCategoriesList = {};
 
@@ -121,9 +121,10 @@ const fetchSubCategories = async () => {
   )));
 };
 
-// todo move to class
-const getItemCategories = (item): Category[] => {
-  const categoryTitles = categoriesTree[item];
+
+const getItemCategories = (lang: string, slug: string): Category[] => {
+  // fallback to english
+  const categoryTitles = op.get(categoriesTree, `${lang}.${slug}`, op.get(categoriesTree, `en.${slug}`));
   return categoryTitles ? categoryTitles.map(title => ({
     title,
     slug: subCategoriesList[title] || slugify(title, {lower: true})
@@ -159,7 +160,7 @@ const getSims = async () => {
   const bars = {};
   simIds.forEach(({lang, data}) => bars[lang] = multibar.create(data.length, 0, {prefix: lang, postfix: 'N/A'}));
 
-  const catalog = new SimulationsList();
+  const catalog = new SimulationsList(languages);
   let urlsToGet = [];
 
   await Promise.all(
@@ -176,7 +177,7 @@ const getSims = async () => {
             const $ = cheerio.load(data);
             const [realId, realLanguage] = getIdAndLanguage($('.sim-download').attr('href'));
             catalog.add(lang, {
-              categories: getItemCategories(realId),
+              categories: getItemCategories(lang, realId),
               id: realId,
               language: realLanguage,
               title: $('.simulation-main-title').text().trim(),

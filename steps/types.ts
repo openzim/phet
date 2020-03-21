@@ -22,6 +22,14 @@ export type Catalog = {
     }
 };
 
+export type LanguageDescriptor = {
+    slug: string,
+    name: string,
+    localName: string,
+    url: string,
+    count: number
+};
+
 export type LanguageItemPair<T> = {
     [lang: string]: T
 };

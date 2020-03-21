@@ -101,13 +101,13 @@ const exportData = async () => {
             }));
             await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
           } catch (err) {
-            throw err;  // todo
+            throw err;
           }
         })
       );
 
       const languageMappings = Object.entries(languages).reduce((acc, [lang, item]) => {
-        acc[lang] = item.localName;
+        acc[item.name] = item.localName;
         return acc;
       }, {});
 
