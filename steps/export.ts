@@ -107,7 +107,7 @@ const exportData = async () => {
       );
 
       const languageMappings = Object.entries(languages).reduce((acc, [lang, item]) => {
-        acc[item.name] = item.localName;
+        acc[lang] = item.localName;
         return acc;
       }, {});
 

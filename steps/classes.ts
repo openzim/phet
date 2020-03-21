@@ -47,7 +47,10 @@ export class SimulationsList {
 
   private getSimIdsByLanguages(): LanguageItemPair<Simulation[]> {
     const result = {};
-    Object.entries(this.items).forEach(([lang, sims]) => op.set(result, this.languages[lang].localName, Object.values(sims).sort(SimulationsList.getComparator('title'))));
+    Object.entries(this.items)
+      .forEach(([lang, sims]) => op.set(result, lang, Object.values(sims)
+        .sort(SimulationsList.getComparator('title'))
+      ));
     return result;
   }
 
