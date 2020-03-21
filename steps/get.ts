@@ -29,63 +29,103 @@ const error = function (...args: any[]) {
 const getIdAndLanguage = (url: string) => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
 
 
-// todo move to class
+// common data
+const languages = {};
 const categoriesTree = {};
 const subCategoriesList = {};
+
+const fetchLanguages = async () => {
+  const response = await axios.get('https://phet.colorado.edu/en/simulations/translated');
+  const $ = cheerio.load(response.data);
+
+  const rows = $('.translated-sims tr').toArray();
+  rows.shift();
+  if (rows.length === 0) return console.error(`Failed to fetch languages`);
+
+  rows.forEach((item) => {
+    const url = $(item).find('td.list-highlight-background:first-child a').attr('href');
+    const slug = url.split('/').pop();
+    const name = $(item).find('td.list-highlight-background:first-child a span').text();
+    const localName = $(item).find('td.list-highlight-background').last().text();
+    const count = parseInt($(item).find('td.number').text(), 10);
+
+    // do not commit this
+    if (!['en', 'fr'].includes(slug)) return;
+
+    op.set(languages, slug, {slug, name, localName, url, count});
+  });
+  try {
+    await fs.promises.writeFile(`${outDir}languages.json`, JSON.stringify(languages), 'utf8');
+    console.log(`Got ${Object.keys(languages).length} languages`);
+  } catch (e) {
+    console.error(`Failed to save languages`);
+  }
+};
+
 const fetchCategoriesTree = async () => {
   console.log(`Getting categories...`);
   await asyncPool(
     config.workers,
-    config.categoriesToGet,
-    async (categoryTitle) => {
-      const categorySlug = slugify(categoryTitle, {lower: true});
-      const response = await axios.get(`https://phet.colorado.edu/en/simulations/category/${categorySlug}/index`);
-      const $ = cheerio.load(response.data);
+    Object.keys(languages),
+    async (lang) => await Promise.all(config.categoriesToGet.map(async (categoryTitle) => {
+      try {
+        const categorySlug = slugify(categoryTitle, {lower: true});
+        const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
+        const $ = cheerio.load(data);
 
-      // extract the sims
-      const sims = $('.simulation-index a').toArray();
-      if (sims.length === 0) console.error(`Failed to get sims for category ${categoryTitle}`);
-      console.debug(`- ${categorySlug}: ${sims.length}`);
+        // extract the sims
+        const sims = $('.simulation-index a').toArray();
+        if (sims.length === 0) console.error(`Failed to get sims for category ${categoryTitle}`);
+        console.debug(`- [${lang}] ${categorySlug}: ${sims.length}`);
 
-      sims.map((item) => {
-        const slug = $(item).attr('href').split('/').pop();
-        op.push(categoriesTree, slug, categoryTitle);
-      });
+        sims.map((item) => {
+          const slug = $(item).attr('href').split('/').pop();
+          op.push(categoriesTree, `${lang}.${slug}`, categoryTitle);
+        });
 
-      // gather sub-categories
-      const subCategories = $('.side-nav ul.parents ul.children a').toArray();
-      subCategories.map((item) => {
-        const title = $(item).text();
-        const slug = $(item).attr('href').split('/').pop();
-        op.set(subCategoriesList, `${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
-      });
-    }
-  );
+        // gather sub-categories
+        const subCategories = $('.side-nav ul.parents ul.children a').toArray();
+        subCategories.map((item) => {
+          const title = $(item).text();
+          const slug = $(item).attr('href').split('/').pop();
+          op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
+        });
+      } catch (err) {
+        console.error(`Failed to get categories for ${lang}`);
+        return;
+      }
+    })
+  ));
 };
 
 const fetchSubCategories = async () => {
   await asyncPool(
     config.workers,
     Object.entries(subCategoriesList),
-    async ([subCatTitle, subCatSlug]) => {
-      const response = await axios.get(`https://phet.colorado.edu/en/simulations/category/${subCatSlug}/index`);
-      const $ = cheerio.load(response.data);
+    async ([lang, subcats]) => await Promise.all(Object.entries(subcats).map(async ([subCatTitle, subCatSlug]) => {
+      try {
+        const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
+        const $ = cheerio.load(data);
 
-      // extract the sims
-      const sims = $('.simulation-index a').toArray();
-      if (sims.length === 0) console.error(`Failed to get sims for sub-category ${subCatTitle}`);
-      console.debug(` - ${subCatSlug}: ${sims.length}`);
+        // extract the sims
+        const sims = $('.simulation-index a').toArray();
+        if (sims.length === 0) console.error(`Failed to get sims for sub-category ${subCatTitle}`);
+        console.debug(` - [${lang}] ${subCatSlug}: ${sims.length}`);
 
-      sims.map((item) => {
-        const slug = $(item).attr('href').split('/').pop();
-        op.push(categoriesTree, slug, subCatTitle);
-      });
+        sims.map((item) => {
+          const slug = $(item).attr('href').split('/').pop();
+          op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
+        });
+      } catch (err) {
+        console.error(`Failed to get subcategories for ${lang}`);
+        return;
+      }
     }
-  );
+  )));
 };
 
 // todo move to class
-const getItemCategories = async (item): Promise<Category[]> => {
+const getItemCategories = (item): Category[] => {
   const categoryTitles = categoriesTree[item];
   return categoryTitles ? categoryTitles.map(title => ({
     title,
@@ -98,17 +138,19 @@ const getSims = async () => {
   console.log(`Gathering sim links...`);
   const simIds: SetByLanguage<string> = await asyncPool(
     config.workers,
-    config.languagesToGet,
+    Object.keys(languages),
     async (lang) => {
       try {
-        const $ = cheerio.load((await axios.get(`https://phet.colorado.edu/${lang}/offline-access`)).data);
+        const html = await axios.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
+        const $ = cheerio.load(html.data);
+        const data = $('.translated-sims .translated-name a[href*=".html"]')
+          .toArray()
+          .map(item => getIdAndLanguage($(item).attr('href')))
+          .filter(([id, language]) => language === lang)
+          .map(([id, language]) => id);
         return {
           lang,
-          data: $('.oa-html5 > a')
-            .toArray()
-            .map(item => getIdAndLanguage($(item).attr('href')))
-            .filter(([id, language]) => language === lang)
-            .map(([id, language]) => id)
+          data: [...new Set(data)]
         };
       } catch (e) {
         console.error(`Failed to get simulation list for ${lang}`);
@@ -134,25 +176,28 @@ const getSims = async () => {
           try {
             data = (await axios.get(`https://phet.colorado.edu/${lang}/simulation/${id}`)).data;
             if (!multibar.terminal.isTTY()) console.log(`+ [${lang}] ${id}`);
+
+            const $ = cheerio.load(data);
+            const [realId, realLanguage] = getIdAndLanguage($('.sim-download').attr('href'));
+            catalog.add(lang, {
+              categories: getItemCategories(realId),
+              id: realId,
+              language: realLanguage,
+              title: $('.simulation-main-title').text().trim(),
+              // difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),    // TODO
+              topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
+              description: $('.simulation-panel-indent[itemprop]').text()
+            } as Simulation);
+
+            urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${realLanguage}.html`);
+            urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
+            if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
           } catch (e) {
-            console.error(`Failed to get the page for ${lang} ${id}`);
+            // console.error(`Failed to get the page for ${lang} ${id}`);
+            console.error(`Failed to get: https://phet.colorado.edu/${lang}/simulation/${id}`);
+            if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
             return;
           }
-          const $ = cheerio.load(data);
-          const [realId, realLanguage] = getIdAndLanguage($('.sim-download').attr('href'));
-          catalog.add(lang, {
-            categories: await getItemCategories(realId),
-            id: realId,
-            language: realLanguage,
-            title: $('.simulation-main-title').text().trim(),
-            // difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),    // TODO
-            topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
-            description: $('.simulation-panel-indent[itemprop]').text()
-          } as Simulation);
-
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${realLanguage}.html`);
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
-          if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
         }
       )));
 
@@ -207,7 +252,7 @@ const getSims = async () => {
 
 // leave IIFE here until global refactoring
 (async () => {
-  console.log(`Starting build with [${config.languagesToGet.length}] languages...`);
+  await fetchLanguages();
   await fetchCategoriesTree();
   await fetchSubCategories();
   await getSims();
