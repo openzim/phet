@@ -63,7 +63,7 @@ const fetchLanguages = async () => {
 };
 
 const fetchCategoriesTree = async () => {
-  console.log(`Getting categories...`);
+  console.log(`Getting category trees...`);
   await asyncPool(
     config.workers,
     Object.keys(languages),
@@ -143,8 +143,7 @@ const getSims = async () => {
       try {
         const html = await axios.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
         const $ = cheerio.load(html.data);
-        const data = $('.translated-sims .translated-name a[href*=".html"]')
-          .toArray()
+        const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray()
           .map(item => getIdAndLanguage($(item).attr('href')))
           .filter(([id, language]) => language === lang)
           .map(([id, language]) => id);
@@ -193,7 +192,6 @@ const getSims = async () => {
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
             if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
           } catch (e) {
-            // console.error(`Failed to get the page for ${lang} ${id}`);
             console.error(`Failed to get: https://phet.colorado.edu/${lang}/simulation/${id}`);
             if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
             return;
