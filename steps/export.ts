@@ -15,10 +15,11 @@ import * as progress from 'cli-progress';
 import {ZimCreator, ZimArticle} from '@openzim/libzim';
 
 import * as config from '../config';
-import {Catalog, Simulation} from './types';
+import {Catalog} from './types';
 
 // @ts-ignore
-import * as sims from '../state/get/catalog.json';
+import * as languages from '../state/get/languages.json';
+import * as simsByLanguage from '../state/get/catalog.json';
 
 (ncp as any).limit = 16;
 
@@ -55,10 +56,24 @@ const getISO6393 = (lang = 'en') => {
 };
 
 
-const exportData = async () =>
+const exportData = async () => {
+  const now = new Date();
+  const targets = Object.keys(languages)
+    .map(lang => {
+      return {
+        // todo refactor this
+        output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+        languages: [lang]
+      };
+    }).concat({
+      // todo refactor this
+      output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+      languages: Object.keys(languages)
+    });
+
   await asyncPool(
     1,
-    config.buildCombinations,
+    targets,
     async (combination) => {
       const targetDir = `${outDir}${combination.output}/`;
 
@@ -91,17 +106,13 @@ const exportData = async () =>
         })
       );
 
-      // Generate Catalog.json file
-      const simsByLanguage = (sims as Simulation[]).reduce((acc, sim) => {
-        if (!!~combination.languages.indexOf(sim.language)) {
-          const lang = config.languageMappings[sim.language];
-          acc[lang] = (acc[lang] || []).concat(sim);
-        }
+      const languageMappings = Object.entries(languages).reduce((acc, [lang, item]) => {
+        acc[lang] = item.localName;
         return acc;
       }, {});
 
       const catalog: Catalog = {
-        languageMappings: config.languageMappings,
+        languageMappings,
         simsByLanguage
       };
 
@@ -114,7 +125,7 @@ const exportData = async () =>
           .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
 
       await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*.ts', 'template.html'], nodir: true})
-        .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)) // todo test this
+        .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`))
       );
 
       const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
@@ -132,7 +143,7 @@ const exportData = async () =>
         Creator: 'University of Colorado',
         Publisher: 'Kiwix',
         Language: languageCode,
-        Date: (new Date()).toISOString(),
+        Date: now.toISOString(),
         Tags: 'phets;_category:PhET;_pictures:yes;_videos:no;_ftindex:no;_details:no',
         // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
         // todo: remove this further
@@ -160,5 +171,6 @@ const exportData = async () =>
       console.log('Done Writing');
     }
   );
+};
 
-(async () => exportData())();
+(async () => await exportData())();

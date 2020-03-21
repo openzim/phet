@@ -1,5 +1,7 @@
 import * as fs from 'fs';
+import * as op from 'object-path';
 import {LanguageItemPair, Simulation} from './types';
+
 
 export class Base64Entity {
   public data: string;
@@ -29,20 +31,19 @@ export class SimulationsList {
     this.items[lang].push(item);
   }
 
-  async persist(file: string): Promise<void> {
+  async persist(dir: string): Promise<void> {
     try {
-      await fs.promises.writeFile(file, JSON.stringify(this.getFlatSortedItems()), 'utf8');
+      await fs.promises.writeFile(`${dir}catalog.json`, JSON.stringify(this.getSimIdsByLanguages()), 'utf8');
       console.log('Saved Catalog');
     } catch (e) {
       console.error(`Failed to save the catalog`);
     }
   }
 
-  private getFlatSortedItems(): Simulation[] {
-    return Object.values(this.items).reduce((acc, items) => {
-      const sorted = Object.values(items).sort(SimulationsList.getComparator('title'));
-      return acc.concat(sorted);
-    }, []);
+  private getSimIdsByLanguages(): LanguageItemPair<Simulation[]> {
+    const result = {};
+    Object.entries(this.items).forEach(([lang, sims]) => op.set(result, lang, Object.values(sims).sort(SimulationsList.getComparator('title'))));
+    return result;
   }
 
   private static getComparator(propName: string) {

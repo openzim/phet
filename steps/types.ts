@@ -8,7 +8,7 @@ export type Simulation = {
     language: string,
     title: string,
     categories: Category[],
-    difficulty: string[],
+    difficulty?: string[],
     topics: string[],
     description: string
 };

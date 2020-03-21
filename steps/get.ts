@@ -49,9 +49,6 @@ const fetchLanguages = async () => {
     const localName = $(item).find('td.list-highlight-background').last().text();
     const count = parseInt($(item).find('td.number').text(), 10);
 
-    // do not commit this
-    if (!['en', 'fr'].includes(slug)) return;
-
     op.set(languages, slug, {slug, name, localName, url, count});
   });
   try {
@@ -202,7 +199,7 @@ const getSims = async () => {
   multibar.stop();
   urlsToGet = Array.from(new Set(urlsToGet));
 
-  await catalog.persist(`${outDir}catalog.json`);
+  await catalog.persist(outDir);
 
   console.log(`Getting documents and images...`);
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
