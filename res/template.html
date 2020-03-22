@@ -46,7 +46,7 @@
 					Selected language:
 					<select value="{{selectedLanguage}}">
 						{{#each languages}}
-							<option value='{{.}}'>{{.}}</option>
+							<option value='{{getSlug(this)}}'>{{getSlug(this)}}</option>
 						{{/each}}
 					</select>
 				</label>

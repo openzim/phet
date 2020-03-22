@@ -8,18 +8,18 @@ import * as glob from 'glob';
 import * as path from 'path';
 import {promisify} from 'util';
 import * as rimraf from 'rimraf';
+import * as op from 'object-path';
 import * as cheerio from 'cheerio';
 import * as iso6393 from 'iso-639-3';
 import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
-import {ZimCreator, ZimArticle} from '@openzim/libzim';
+import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
-import * as config from '../config';
 import {Catalog} from './types';
-
 // @ts-ignore
 import * as languages from '../state/get/languages.json';
-import * as simsByLanguage from '../state/get/catalog.json';
+// @ts-ignore
+import * as sims from '../state/get/catalog.json';
 
 (ncp as any).limit = 16;
 
@@ -106,8 +106,13 @@ const exportData = async () => {
         })
       );
 
-      const languageMappings = Object.entries(languages).reduce((acc, [lang, item]) => {
-        acc[lang] = item.localName;
+      const languageMappings = combination.languages.reduce((acc, langCode) => {
+        op.set(acc, langCode, languages[langCode].localName);
+        return acc;
+      }, {});
+
+      const simsByLanguage = combination.languages.reduce((acc, langCode) => {
+        op.set(acc, langCode, sims[langCode]);
         return acc;
       }, {});
 
