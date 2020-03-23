@@ -51,6 +51,9 @@ const fetchLanguages = async () => {
     const localName = $(item).find('td.list-highlight-background').last().text();
     const count = parseInt($(item).find('td.number').text(), 10);
 
+    // don't commit this
+    if (!['en', 'ru', 'sv', 'az'].includes(slug)) return;
+
     op.set(languages, slug, {slug, name, localName, url, count});
   });
   try {
@@ -168,7 +171,7 @@ const getSims = async () => {
   bar.stop();
 
   log.info(`Gathering sim links...`);
-  const simCount = simIds.length + simIds.reduce((acc, {data}) => acc + data.length, 0);
+  const simCount = simIds.reduce((acc, {data}) => acc + data.length, 0);
   bar.start(simCount, 0, {prefix: '', postfix: 'N/A'});
 
   const catalog = new SimulationsList(languages);
