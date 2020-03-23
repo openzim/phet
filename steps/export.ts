@@ -148,8 +148,8 @@ const exportData = async () => {
         Creator: 'University of Colorado',
         Publisher: 'Kiwix',
         Language: languageCode,
-        Date: now.toISOString(),
-        Tags: 'phets;_category:PhET;_pictures:yes;_videos:no;_ftindex:no;_details:no',
+        Date: (new Date()).toISOString(),
+        Tags: '_category:phet;_pictures:yes;_videos:no',
         // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
         // todo: remove this further
         // @ts-ignore
