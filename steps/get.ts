@@ -142,9 +142,9 @@ const getSims = async () => {
         const html = await axios.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
         const $ = cheerio.load(html.data);
         const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray()
-          .map(item => getIdAndLanguage($(item).attr('href')))
-          .filter(([id, language]) => language === lang)
-          .map(([id, language]) => id);
+          .map(item => [...getIdAndLanguage($(item).attr('href')), $(item).find('span').text()])
+          .filter(([id, language, title]) => language === lang)
+          .map(([id, language, title]) => ({id, title: title.replace(' (HTML5)', '')}));
         return {
           lang,
           data: [...new Set(data)]
@@ -168,7 +168,7 @@ const getSims = async () => {
       await asyncPool(
         config.workers,
         data,
-        async (id) => {
+        async ({id, title}) => {
           let data: string;
           try {
             data = (await axios.get(`https://phet.colorado.edu/${lang}/simulation/${id}`)).data;
@@ -189,7 +189,7 @@ const getSims = async () => {
               categories: getItemCategories(lang, realId),
               id: realId,
               language: lang,
-              title: $('.simulation-main-title').text().trim(),
+              title: title || $('.simulation-main-title').text().trim(),
               topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
               description: $('.simulation-panel-indent[itemprop]').text()
             } as Simulation);
