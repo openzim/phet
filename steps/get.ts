@@ -157,7 +157,7 @@ const getSims = async () => {
           .map(([id, language, title]) => ({id, title: title.replace(' (HTML5)', '')}));
         return {
           lang,
-          data: [...new Set(data)]
+          data: Array.from(new Set(data))
         };
       } catch (e) {
         console.error(`Failed to get simulation list for ${lang}`);
