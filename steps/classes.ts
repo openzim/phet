@@ -36,6 +36,16 @@ export class SimulationsList {
     this.items[lang].push(item);
   }
 
+  addWithFallbackLanguage(id: string, lang: string, fallbackLanguage: string = 'en'): void {
+    const fallbackItem = this.getItem(fallbackLanguage, id);
+    if (!fallbackItem) throw new Error(`There\'s no fallback item for ${id}`);
+    this.add(lang, {...fallbackItem, fallbackLanguage});
+  }
+
+  private getItem(lang: string, id: string) {
+    return ((op.get(this.items, `${lang}`) || []).filter(x => x.id === id) || []).shift();
+  }
+
   async persist(dir: string): Promise<void> {
     try {
       await fs.promises.writeFile(`${dir}catalog.json`, JSON.stringify(this.getSimIdsByLanguages()), 'utf8');

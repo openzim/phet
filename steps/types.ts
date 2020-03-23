@@ -6,6 +6,7 @@ export type Category = {
 export type Simulation = {
     id: string,
     language: string,
+    fallbackLanguage?: string;
     title: string,
     categories: Category[],
     difficulty?: string[],

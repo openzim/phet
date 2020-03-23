@@ -26,7 +26,7 @@ const error = function (...args: any[]) {
   if (config.verbose) console.error.apply(console, arguments);
 };
 
-const getIdAndLanguage = (url: string) => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
+const getIdAndLanguage = (url: string): string[] => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
 
 
 // common data
@@ -82,7 +82,7 @@ const fetchCategoriesTree = async () => {
 
         // gather sub-categories
         const subCategories = $('.side-nav ul.parents ul.children a').toArray();
-        subCategories.map((item) => {
+        return subCategories.map((item) => {
           const title = $(item).text();
           const slug = $(item).attr('href').split('/').pop();
           op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
@@ -173,20 +173,28 @@ const getSims = async () => {
           try {
             data = (await axios.get(`https://phet.colorado.edu/${lang}/simulation/${id}`)).data;
             if (!multibar.terminal.isTTY()) console.log(`+ [${lang}] ${id}`);
+          } catch (e) {
+            const status = op.get(e, 'response.status');
+            if (status === 404) {
+              // todo reuse catalog
+              data = (await axios.get(`https://phet.colorado.edu/en/simulation/${id}`)).data;
+              if (!multibar.terminal.isTTY()) console.log(`+ [${lang} > en] ${id}`);
+            }
+          }
 
+          try {
             const $ = cheerio.load(data);
-            const [realId, realLanguage] = getIdAndLanguage($('.sim-download').attr('href'));
+            const [realId] = getIdAndLanguage($('.sim-download').attr('href'));
             catalog.add(lang, {
               categories: getItemCategories(lang, realId),
               id: realId,
-              language: realLanguage,
+              language: lang,
               title: $('.simulation-main-title').text().trim(),
-              // difficulty: categories.filter(c => c[0].title === 'By Grade Level').map(c => c[1].title),    // TODO
               topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
               description: $('.simulation-panel-indent[itemprop]').text()
             } as Simulation);
 
-            urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${realLanguage}.html`);
+            urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
             if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
           } catch (e) {
