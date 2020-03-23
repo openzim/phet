@@ -66,6 +66,7 @@ const fetchLanguages = async () => {
 
 const fetchCategoriesTree = async () => {
   console.log(`Getting category trees...`);
+  const fallbackLanguages = new Set();
   await asyncPool(
     config.workers,
     popValueUpIfExists(Object.keys(languages), 'en'),
@@ -93,11 +94,12 @@ const fetchCategoriesTree = async () => {
           op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
         });
       } catch (err) {
-        console.error(`Failed to get categories for ${lang}`);
+        fallbackLanguages.add(lang);
         return;
       }
     })
   ));
+  if (fallbackLanguages.size > 0) console.log(`Note: the following languages will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
 };
 
 const fetchSubCategories = async () => {
