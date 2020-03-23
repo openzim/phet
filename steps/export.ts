@@ -1,3 +1,5 @@
+import {log} from '../lib/logger';
+
 const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
@@ -15,7 +17,7 @@ import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
-import {Catalog} from './types';
+import {Catalog} from '../lib/types';
 // @ts-ignore
 import * as languages from '../state/get/languages.json';
 // @ts-ignore
@@ -135,7 +137,7 @@ const exportData = async () => {
 
       const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
 
-      console.log(`Creating ${combination.output}.zim ...`);
+      log.info(`Creating ${combination.output}.zim ...`);
 
       const creator = new ZimCreator({
         fileName: `./dist/${combination.output}.zim`,
@@ -173,7 +175,7 @@ const exportData = async () => {
       });
       bar.stop();
       await creator.finalise();
-      console.log('Done Writing');
+      log.info('Done Writing');
     }
   );
 };

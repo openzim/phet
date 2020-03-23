@@ -12,15 +12,17 @@ import * as imageminSvgo from 'imagemin-svgo';
 import * as imageminGifsicle from 'imagemin-gifsicle';
 import * as imageminPngcrush from 'imagemin-pngcrush';
 import * as imageminJpegoptim from 'imagemin-jpegoptim';
+
+import {log} from '../lib/logger';
 import * as config from '../config.js';
-import {Base64Entity} from './classes';
+import {Base64Entity} from '../lib/classes';
 
 
 const inDir = 'state/get/';
 const outDir = 'state/transform/';
 
 const transform = async () => {
-  console.log('Converting images...');
+  log.info('Converting images...');
   const images: string[] = await Promise.all(glob.sync(`${inDir}/*.{jpg,jpeg,png,svg}`, {}));
   const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
 
@@ -38,14 +40,14 @@ const transform = async () => {
     })
       .catch(err => {
         const failedFile = err.message.match(/Error in file: (.*)/)[1].trim();
-        console.log(err.message);
-        fs.unlink(failedFile, () => console.log('The following file is invalid and was deleted:', failedFile));
+        log.info(err.message);
+        fs.unlink(failedFile, () => log.info('The following file is invalid and was deleted:', failedFile));
       })
       .finally(() => bar.increment())
   );
   bar.stop();
 
-  console.log('Processing documents...');
+  log.info('Processing documents...');
   const documents: string[] = await Promise.all(glob.sync(`${inDir}/*.html`, {}));
 
   bar.start(documents.length, 0);
@@ -61,15 +63,15 @@ const transform = async () => {
         data = await extractLanguageElements(basename, data);
         return fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
       } catch (err) {
-        console.error(`Error while processing the file: ${file}`);
-        console.error(err.message);
+        log.error(`Error while processing the file: ${file}`);
+        log.error(err.message);
       } finally {
         bar.increment();
       }
     }
   );
   bar.stop();
-  console.log('Done.');
+  log.info('Done.');
 };
 
 

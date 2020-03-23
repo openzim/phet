@@ -7,9 +7,10 @@ import * as cheerio from 'cheerio';
 import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
 
+import {log} from '../lib/logger';
 import * as config from '../config';
-import {Category, LanguageDescriptor, LanguageItemPair, SetByLanguage, Simulation} from './types';
-import {SimulationsList} from './classes';
+import {SimulationsList} from '../lib/classes';
+import {Category, LanguageDescriptor, LanguageItemPair, SetByLanguage, Simulation} from '../lib/types';
 
 
 const outDir = 'state/get/';
@@ -17,14 +18,10 @@ const outDir = 'state/get/';
 const barOptions = {
   clearOnComplete: false,
   autopadding: true,
-  hideCursor: true,
+  // hideCursor: true,
   format: '{prefix} {bar} {percentage}% | ETA: {eta}s | {value}/{total} | {postfix}'
 };
 
-
-const error = function (...args: any[]) {
-  if (config.verbose) console.error.apply(console, arguments);
-};
 
 const getIdAndLanguage = (url: string): string[] => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
 
@@ -45,7 +42,7 @@ const fetchLanguages = async () => {
 
   const rows = $('.translated-sims tr').toArray();
   rows.shift();
-  if (rows.length === 0) return console.error(`Failed to fetch languages`);
+  if (rows.length === 0) return log.error(`Failed to fetch languages`);
 
   rows.forEach((item) => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href');
@@ -58,48 +55,48 @@ const fetchLanguages = async () => {
   });
   try {
     await fs.promises.writeFile(`${outDir}languages.json`, JSON.stringify(languages), 'utf8');
-    console.log(`Got ${Object.keys(languages).length} languages`);
+    log.info(`Got ${Object.keys(languages).length} languages`);
   } catch (e) {
-    console.error(`Failed to save languages`);
+    log.error(`Failed to save languages`);
   }
 };
 
 const fetchCategoriesTree = async () => {
-  console.log(`Getting category trees...`);
+  log.info(`Getting category trees...`);
   const fallbackLanguages = new Set();
   await asyncPool(
     config.workers,
     popValueUpIfExists(Object.keys(languages), 'en'),
     async (lang) => await Promise.all(config.categoriesToGet.map(async (categoryTitle) => {
-      try {
-        const categorySlug = slugify(categoryTitle, {lower: true});
-        const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
-        const $ = cheerio.load(data);
+        try {
+          const categorySlug = slugify(categoryTitle, {lower: true});
+          const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
+          const $ = cheerio.load(data);
 
-        // extract the sims
-        const sims = $('.simulation-index a').toArray();
-        if (sims.length === 0) console.error(`Failed to get sims for category ${categoryTitle}`);
-        console.debug(`- [${lang}] ${categorySlug}: ${sims.length}`);
+          // extract the sims
+          const sims = $('.simulation-index a').toArray();
+          if (sims.length === 0) log.error(`Failed to get sims for category ${categoryTitle}`);
+          log.debug(`- [${lang}] ${categorySlug}: ${sims.length}`);
 
-        sims.map((item) => {
-          const slug = $(item).attr('href').split('/').pop();
-          op.push(categoriesTree, `${lang}.${slug}`, categoryTitle);
-        });
+          sims.map((item) => {
+            const slug = $(item).attr('href').split('/').pop();
+            op.push(categoriesTree, `${lang}.${slug}`, categoryTitle);
+          });
 
-        // gather sub-categories
-        const subCategories = $('.side-nav ul.parents ul.children a').toArray();
-        return subCategories.map((item) => {
-          const title = $(item).text();
-          const slug = $(item).attr('href').split('/').pop();
-          op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
-        });
-      } catch (err) {
-        fallbackLanguages.add(lang);
-        return;
-      }
-    })
-  ));
-  if (fallbackLanguages.size > 0) console.log(`Note: the following languages will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
+          // gather sub-categories
+          const subCategories = $('.side-nav ul.parents ul.children a').toArray();
+          return subCategories.map((item) => {
+            const title = $(item).text();
+            const slug = $(item).attr('href').split('/').pop();
+            op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
+          });
+        } catch (err) {
+          fallbackLanguages.add(lang);
+          return;
+        }
+      })
+    ));
+  if (fallbackLanguages.size > 0) log.warn('The following languages will use english metadata', fallbackLanguages);
 };
 
 const fetchSubCategories = async () => {
@@ -107,25 +104,25 @@ const fetchSubCategories = async () => {
     config.workers,
     Object.entries(subCategoriesList),
     async ([lang, subcats]) => await Promise.all(Object.entries(subcats).map(async ([subCatTitle, subCatSlug]) => {
-      try {
-        const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
-        const $ = cheerio.load(data);
+        try {
+          const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
+          const $ = cheerio.load(data);
 
-        // extract the sims
-        const sims = $('.simulation-index a').toArray();
-        if (sims.length === 0) console.error(`Failed to get sims for sub-category ${subCatTitle}`);
-        console.debug(` - [${lang}] ${subCatSlug}: ${sims.length}`);
+          // extract the sims
+          const sims = $('.simulation-index a').toArray();
+          if (sims.length === 0) log.error(`Failed to get sims for sub-category ${subCatTitle}`);
+          log.debug(` - [${lang}] ${subCatSlug}: ${sims.length}`);
 
-        sims.map((item) => {
-          const slug = $(item).attr('href').split('/').pop();
-          op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
-        });
-      } catch (err) {
-        console.error(`Failed to get subcategories for ${lang}`);
-        return;
+          sims.map((item) => {
+            const slug = $(item).attr('href').split('/').pop();
+            op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
+          });
+        } catch (err) {
+          log.error(`Failed to get subcategories for ${lang}`);
+          return;
+        }
       }
-    }
-  )));
+    )));
 };
 
 
@@ -140,7 +137,7 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 
 
 const getSims = async () => {
-  console.log(`Gathering "translated" index pages...`);
+  log.info(`Gathering "translated" index pages...`);
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
   bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
 
@@ -155,22 +152,24 @@ const getSims = async () => {
           .map(item => [...getIdAndLanguage($(item).attr('href')), $(item).find('span').text()])
           .filter(([id, language, title]) => language === lang)
           .map(([id, language, title]) => ({id, title: title.replace(' (HTML5)', '')}));
+        if (!data) throw new Error();
         return {
           lang,
           data: Array.from(new Set(data))
         };
       } catch (e) {
-        console.error(`Failed to get simulation list for ${lang}`);
+        log.error(`Failed to get simulation list for ${lang}`);
         return;
       } finally {
         bar.increment(1, {prefix: '', postfix: lang});
       }
     }
-  );
+  ) || [];
   bar.stop();
 
-  console.log(`Gathering sim links...`);
-  bar.start(simIds.length, 0, {prefix: '', postfix: 'N/A'});
+  log.info(`Gathering sim links...`);
+  const simCount = simIds.length + simIds.reduce((acc, {data}) => acc + data.length, 0);
+  bar.start(simCount, 0, {prefix: '', postfix: 'N/A'});
 
   const catalog = new SimulationsList(languages);
   let urlsToGet = [];
@@ -207,13 +206,14 @@ const getSims = async () => {
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
           } catch (e) {
-            console.error(`Failed to parse: https://phet.colorado.edu/${lang}/simulation/${id}`);
+            log.warn(`Failed to parse: https://phet.colorado.edu/${lang}/simulation/${id}`);
+            log.error(e);
           } finally {
-            if (!bar.terminal.isTTY()) console.log(`+ [${lang} > en] ${id}`);
+            bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
+            if (!bar.terminal.isTTY()) log.info(`+ [${lang}] ${id}`);
           }
         }
       );
-      bar.increment(1, {prefix: '', postfix: lang});
     }));
 
   bar.stop();
@@ -221,7 +221,7 @@ const getSims = async () => {
 
   await catalog.persist(outDir);
 
-  console.log(`Getting documents and images...`);
+  log.info(`Getting documents and images...`);
   bar.start(urlsToGet.length, 0, {prefix: '', postfix: 'N/A'});
 
   await asyncPool(
@@ -233,7 +233,9 @@ const getSims = async () => {
         try {
           data = (await axios.get(url, {responseType: 'stream'})).data;
         } catch (e) {
-          console.error(`Failed to get url ${url}`);
+          const status = op.get(e, 'response.status');
+          log.warn(`Failed to get url ${url}: status: ${status}`);
+          log.error(e);
           return;
         }
         let fileName = url.split('/').pop();
@@ -244,16 +246,16 @@ const getSims = async () => {
         const writeStream = fs.createWriteStream(outDir + fileName)
           .on('close', _ => {
             bar.increment(1, {prefix: '', postfix: fileName});
-            if (!bar.terminal.isTTY()) console.log(` + ${path.basename(fileName)}`);
+            if (!bar.terminal.isTTY()) log.info(` + ${path.basename(fileName)}`);
             resolve();
           });
 
         data.on('response', function (response) {
           if (response.statusCode === 200) return;
-          error(`${fileName} gave a ${response.statusCode}`);
+          log.error(`${fileName} gave a ${response.statusCode}`);
 
           fs.unlink(outDir + fileName, function (err) {
-            if (err) error(`Failed to delete item: ${err}`);
+            if (err) log.error(`Failed to delete item: ${err}`);
           });
           reject();
         }).pipe(writeStream);
@@ -270,5 +272,5 @@ const getSims = async () => {
   await fetchCategoriesTree();
   await fetchSubCategories();
   await getSims();
-  console.log('Done.');
+  log.info('Done.');
 })();

@@ -1,8 +1,6 @@
 const fs = require('fs');
 const rimraf = require('rimraf');
 
-const error = console.error.bind(console);
-
 rimraf('state', function (err) {
     if (err) console.error(err);
     else {

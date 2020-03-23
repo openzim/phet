@@ -41,7 +41,8 @@
     "sweetalert2": "^8.11.1",
     "tiny-async-pool": "^1.1.0",
     "ts-node": "^8.1.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "tslint": "^6.1.0"

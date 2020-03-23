@@ -1,4 +1,4 @@
-import {Category, LanguageDescriptor, Simulation} from '../../steps/types';
+import {Category, LanguageDescriptor, Simulation} from '../../lib/types';
 import * as ArrayFrom from 'array-from';
 
 if (!(Array as any).from) (Array as any).from = ArrayFrom;
