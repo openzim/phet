@@ -28,6 +28,11 @@ const error = function (...args: any[]) {
 
 const getIdAndLanguage = (url: string): string[] => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
 
+const popValueUpIfExists = (items: string[], value: string) => {
+  const index = items.indexOf(value);
+  if (index !== -1 && items.splice(items.indexOf(value), 1)) items.unshift('en');
+  return items;
+};
 
 // common data
 const languages: LanguageItemPair<LanguageDescriptor> = {};
@@ -63,7 +68,7 @@ const fetchCategoriesTree = async () => {
   console.log(`Getting category trees...`);
   await asyncPool(
     config.workers,
-    Object.keys(languages),
+    popValueUpIfExists(Object.keys(languages), 'en'),
     async (lang) => await Promise.all(config.categoriesToGet.map(async (categoryTitle) => {
       try {
         const categorySlug = slugify(categoryTitle, {lower: true});
