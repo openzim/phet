@@ -140,7 +140,10 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 
 
 const getSims = async () => {
-  console.log(`Gathering sim links...`);
+  console.log(`Gathering "translated" index pages...`);
+  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
+  bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
+
   const simIds: SetByLanguage<string> = await asyncPool(
     config.workers,
     Object.keys(languages),
@@ -159,19 +162,21 @@ const getSims = async () => {
       } catch (e) {
         console.error(`Failed to get simulation list for ${lang}`);
         return;
+      } finally {
+        bar.increment(1, {prefix: '', postfix: lang});
       }
     }
   );
+  bar.stop();
 
-  const multibar = new progress.MultiBar(barOptions, progress.Presets.shades_grey);
-  const bars = {};
-  simIds.forEach(({lang, data}) => bars[lang] = multibar.create(data.length, 0, {prefix: lang, postfix: 'N/A'}));
+  console.log(`Gathering sim links...`);
+  bar.start(simIds.length, 0, {prefix: '', postfix: 'N/A'});
 
   const catalog = new SimulationsList(languages);
   let urlsToGet = [];
 
   await Promise.all(
-    simIds.map(async ({lang, data}) =>
+    simIds.map(async ({lang, data}) => {
       await asyncPool(
         config.workers,
         data,
@@ -179,13 +184,11 @@ const getSims = async () => {
           let data: string;
           try {
             data = (await axios.get(`https://phet.colorado.edu/${lang}/simulation/${id}`)).data;
-            if (!multibar.terminal.isTTY()) console.log(`+ [${lang}] ${id}`);
           } catch (e) {
             const status = op.get(e, 'response.status');
             if (status === 404) {
               // todo reuse catalog
               data = (await axios.get(`https://phet.colorado.edu/en/simulation/${id}`)).data;
-              if (!multibar.terminal.isTTY()) console.log(`+ [${lang} > en] ${id}`);
             }
           }
 
@@ -203,22 +206,22 @@ const getSims = async () => {
 
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
-            if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
           } catch (e) {
-            console.error(`Failed to get: https://phet.colorado.edu/${lang}/simulation/${id}`);
-            if (bars[lang]) bars[lang].increment(1, {prefix: lang, postfix: id});
-            return;
+            console.error(`Failed to parse: https://phet.colorado.edu/${lang}/simulation/${id}`);
+          } finally {
+            if (!bar.terminal.isTTY()) console.log(`+ [${lang} > en] ${id}`);
           }
         }
-      )));
+      );
+      bar.increment(1, {prefix: '', postfix: lang});
+    }));
 
-  multibar.stop();
+  bar.stop();
   urlsToGet = Array.from(new Set(urlsToGet));
 
   await catalog.persist(outDir);
 
   console.log(`Getting documents and images...`);
-  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
   bar.start(urlsToGet.length, 0, {prefix: '', postfix: 'N/A'});
 
   await asyncPool(
