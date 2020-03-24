@@ -3,6 +3,7 @@ import axios from 'axios';
 import * as path from 'path';
 import slugify from 'slugify';
 import * as op from 'object-path';
+import * as rax from 'retry-axios';
 import * as cheerio from 'cheerio';
 import {RateLimit} from 'async-sema';
 import asyncPool from 'tiny-async-pool';
@@ -16,6 +17,22 @@ import {Category, LanguageDescriptor, LanguageItemPair, SetByLanguage, Simulatio
 
 
 const outDir = 'state/get/';
+
+const ax = axios.create();
+ax.defaults.raxConfig = {
+  instance: ax,
+  retry: 3,
+  noResponseRetries: 2,
+  retryDelay: 1000,
+  httpMethodsToRetry: ['GET'],
+  statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
+  backoffType: 'exponential',
+  onRetryAttempt: err => {
+    const cfg = rax.getConfig(err);
+    log.info(`Retry attempt #${cfg.currentRetryAttempt}`);
+  }
+};
+rax.attach(ax);
 
 const barOptions = {
   clearOnComplete: false,
@@ -43,7 +60,7 @@ const categoriesTree = {};
 const subCategoriesList = {};
 
 const fetchLanguages = async () => {
-  const response = await axios.get('https://phet.colorado.edu/en/simulations/translated');
+  const response = await ax.get('https://phet.colorado.edu/en/simulations/translated');
   const $ = cheerio.load(response.data);
 
   const rows = $('.translated-sims tr').toArray();
@@ -77,7 +94,7 @@ const fetchCategoriesTree = async () => {
       try {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
-        const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
+        const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
         const $ = cheerio.load(data);
 
         // extract the sims
@@ -113,7 +130,7 @@ const fetchSubCategories = async () => {
     async ([lang, subcats]) => await Promise.all(Object.entries(subcats).map(async ([subCatTitle, subCatSlug]) => {
         try {
           await delay();
-          const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
+          const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
           const $ = cheerio.load(data);
 
           // extract the sims
@@ -155,7 +172,7 @@ const getSims = async () => {
     async (lang) => {
       try {
         await delay();
-        const html = await axios.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
+        const html = await ax.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
         const $ = cheerio.load(html.data);
         const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray();
         if (!data) throw new Error('Got empty data');
@@ -201,14 +218,14 @@ const getSims = async () => {
         let url = `https://phet.colorado.edu/${lang}/simulation/${id}`;
         try {
           try {
-            data = (await axios.get(url)).data;
+            data = (await ax.get(url)).data;
           } catch (e) {
             status = op.get(e, 'response.status');
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
               url = `https://phet.colorado.edu/en/simulation/${id}`;
-              data = (await axios.get(url)).data;
+              data = (await ax.get(url)).data;
             }
           }
 
@@ -254,7 +271,7 @@ const getSims = async () => {
       return new Promise(async (resolve, reject) => {
         let data;
         try {
-          data = (await axios.get(url, {responseType: 'stream'})).data;
+          data = (await ax.get(url, {responseType: 'stream'})).data;
         } catch (e) {
           const status = op.get(e, 'response.status');
           log.error(`Failed to get url ${url}: status: ${status}`);
