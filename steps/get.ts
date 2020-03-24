@@ -24,7 +24,10 @@ const barOptions = {
 };
 
 
-const getIdAndLanguage = (url: string): string[] => /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
+const getIdAndLanguage = (url: string): string[] => {
+  if (!url) throw new Error('Got empty url');
+  return /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
+};
 
 const popValueUpIfExists = (items: string[], value: string) => {
   const index = items.indexOf(value);
@@ -149,14 +152,18 @@ const getSims = async () => {
       try {
         const html = await axios.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
         const $ = cheerio.load(html.data);
-        const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray()
-          .map(item => [...getIdAndLanguage($(item).attr('href')), $(item).find('span').text()])
+        const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray();
+        if (!data) throw new Error('Got empty data');
+        const list = data.map(item => {
+          const link = $(item).attr('href');
+          if (!link) throw new Error('Got empty link');
+          return [...getIdAndLanguage(link), $(item).find('span').text()];
+        })
           .filter(([id, language, title]) => language === lang)
           .map(([id, language, title]) => ({id, title: title.replace(' (HTML5)', '')}));
-        if (!data) throw new Error();
         return {
           lang,
-          data: Array.from(new Set(data))
+          data: Array.from(new Set(list))
         };
       } catch (e) {
         log.error(`Failed to get simulation list for ${lang}`);
