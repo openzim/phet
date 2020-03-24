@@ -182,13 +182,14 @@ const getSims = async () => {
       data,
       async ({id, title}) => {
         let data: string;
+        let status: number;
         let fallback = false;
         let url = `https://phet.colorado.edu/${lang}/simulation/${id}`;
         try {
           try {
             data = (await axios.get(url)).data;
           } catch (e) {
-            const status = op.get(e, 'response.status');
+            status = op.get(e, 'response.status');
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
@@ -197,7 +198,7 @@ const getSims = async () => {
             }
           }
 
-          if (!data) throw new Error(`Got no data from ${url}`);
+          if (!data) throw new Error(`Got no data (status = ${status}) from ${url}`);
           const $ = cheerio.load(data);
           const link = $('.sim-download').attr('href');
           const [realId] = getIdAndLanguage(link);
