@@ -149,7 +149,7 @@ const getSims = async () => {
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
   bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
 
-  const simIds: SetByLanguage<string> = await asyncPool(
+  const simIds: SetByLanguage<string> = (await asyncPool(
     config.workers,
     Object.keys(languages),
     async (lang) => {
@@ -178,7 +178,8 @@ const getSims = async () => {
         bar.increment(1, {prefix: '', postfix: lang});
       }
     }
-  ) || [];
+  ) || [])
+    .filter(x => !!x);
   bar.stop();
 
   log.info(`Gathering sim links...`);
