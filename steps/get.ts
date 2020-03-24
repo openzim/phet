@@ -4,6 +4,7 @@ import * as path from 'path';
 import slugify from 'slugify';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
+import {RateLimit} from 'async-sema';
 import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
 
@@ -36,6 +37,7 @@ const popValueUpIfExists = (items: string[], value: string) => {
 };
 
 // common data
+const delay = RateLimit(config.rps);
 const languages: LanguageItemPair<LanguageDescriptor> = {};
 const categoriesTree = {};
 const subCategoriesList = {};
@@ -72,34 +74,35 @@ const fetchCategoriesTree = async () => {
     config.workers,
     popValueUpIfExists(Object.keys(languages), 'en'),
     async (lang) => await Promise.all(config.categoriesToGet.map(async (categoryTitle) => {
-        try {
-          const categorySlug = slugify(categoryTitle, {lower: true});
-          const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
-          const $ = cheerio.load(data);
+      try {
+        await delay();
+        const categorySlug = slugify(categoryTitle, {lower: true});
+        const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
+        const $ = cheerio.load(data);
 
-          // extract the sims
-          const sims = $('.simulation-index a').toArray();
-          if (sims.length === 0) log.error(`Failed to get sims for category ${categoryTitle}`);
-          log.debug(`- [${lang}] ${categorySlug}: ${sims.length}`);
+        // extract the sims
+        const sims = $('.simulation-index a').toArray();
+        if (sims.length === 0) log.error(`Failed to get sims for category ${categoryTitle}`);
+        log.debug(`- [${lang}] ${categorySlug}: ${sims.length}`);
 
-          sims.map((item) => {
-            const slug = $(item).attr('href').split('/').pop();
-            op.push(categoriesTree, `${lang}.${slug}`, categoryTitle);
-          });
+        sims.map((item) => {
+          const slug = $(item).attr('href').split('/').pop();
+          op.push(categoriesTree, `${lang}.${slug}`, categoryTitle);
+        });
 
-          // gather sub-categories
-          const subCategories = $('.side-nav ul.parents ul.children a').toArray();
-          return subCategories.map((item) => {
-            const title = $(item).text();
-            const slug = $(item).attr('href').split('/').pop();
-            op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
-          });
-        } catch (e) {
-          fallbackLanguages.add(lang);
-          return;
-        }
-      })
-    ));
+        // gather sub-categories
+        const subCategories = $('.side-nav ul.parents ul.children a').toArray();
+        return subCategories.map((item) => {
+          const title = $(item).text();
+          const slug = $(item).attr('href').split('/').pop();
+          op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
+        });
+      } catch (e) {
+        fallbackLanguages.add(lang);
+        return;
+      }
+    }))
+  );
   if (fallbackLanguages.size > 0) log.warn(`The following (${fallbackLanguages.size}) language(s) will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
 };
 
@@ -109,6 +112,7 @@ const fetchSubCategories = async () => {
     Object.entries(subCategoriesList),
     async ([lang, subcats]) => await Promise.all(Object.entries(subcats).map(async ([subCatTitle, subCatSlug]) => {
         try {
+          await delay();
           const data = (await axios.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
           const $ = cheerio.load(data);
 
@@ -150,6 +154,7 @@ const getSims = async () => {
     Object.keys(languages),
     async (lang) => {
       try {
+        await delay();
         const html = await axios.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
         const $ = cheerio.load(html.data);
         const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray();
@@ -188,6 +193,7 @@ const getSims = async () => {
       config.workers,
       data,
       async ({id, title}) => {
+        await delay();
         let data: string;
         let status: number;
         let fallback = false;
@@ -243,6 +249,7 @@ const getSims = async () => {
     config.workers,
     urlsToGet,
     async (url) => {
+      await delay();
       return new Promise(async (resolve, reject) => {
         let data;
         try {
