@@ -14,6 +14,7 @@ import * as imageminPngcrush from 'imagemin-pngcrush';
 import * as imageminJpegoptim from 'imagemin-jpegoptim';
 
 import {log} from '../lib/logger';
+import welcome from '../lib/welcome';
 import * as config from '../config.js';
 import {Base64Entity} from '../lib/classes';
 
@@ -123,4 +124,7 @@ const extractBase64 = async (fileName, html): Promise<string> => {
   return html;
 };
 
-(async () => transform())();
+(async () => {
+  welcome('transform');
+  await transform();
+})();

@@ -9,6 +9,7 @@ import * as progress from 'cli-progress';
 
 import {log} from '../lib/logger';
 import * as config from '../config';
+import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
 import {Category, LanguageDescriptor, LanguageItemPair, SetByLanguage, Simulation} from '../lib/types';
 
@@ -96,7 +97,7 @@ const fetchCategoriesTree = async () => {
         }
       })
     ));
-  if (fallbackLanguages.size > 0) log.warn('The following languages will use english metadata', fallbackLanguages);
+  if (fallbackLanguages.size > 0) log.warn(`The following (${fallbackLanguages.size}) language(s) will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
 };
 
 const fetchSubCategories = async () => {
@@ -274,8 +275,9 @@ const getSims = async () => {
 
 // leave IIFE here until global refactoring
 (async () => {
+  welcome('get');
   await fetchLanguages();
-  // await fetchCategoriesTree();
+  await fetchCategoriesTree();
   await fetchSubCategories();
   await getSims();
   log.info('Done.');

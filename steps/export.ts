@@ -17,6 +17,7 @@ import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
+import welcome from '../lib/welcome';
 import {Catalog} from '../lib/types';
 // @ts-ignore
 import * as languages from '../state/get/languages.json';
@@ -180,4 +181,7 @@ const exportData = async () => {
   );
 };
 
-(async () => await exportData())();
+(async () => {
+  welcome('export');
+  await exportData();
+})();
