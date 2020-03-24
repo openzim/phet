@@ -181,19 +181,21 @@ const getSims = async () => {
       data,
       async ({id, title}) => {
         let data: string;
-        let url: string;
+        let fallback = false;
+        let url = `https://phet.colorado.edu/${lang}/simulation/${id}`;
         try {
-          url = `https://phet.colorado.edu/${lang}/simulation/${id}`;
-          data = (await axios.get(url)).data;
-        } catch (e) {
-          const status = op.get(e, 'response.status');
-          if (status === 404) {
-            // todo reuse catalog
-            data = (await axios.get(`https://phet.colorado.edu/en/simulation/${id}`)).data;
+          try {
+            data = (await axios.get(url)).data;
+          } catch (e) {
+            const status = op.get(e, 'response.status');
+            if (status === 404) {
+              // todo reuse catalog
+              fallback = true;
+              url = `https://phet.colorado.edu/en/simulation/${id}`;
+              data = (await axios.get(url)).data;
+            }
           }
-        }
 
-        try {
           if (!data) throw new Error(`Got no data from ${url}`);
           const $ = cheerio.load(data);
           const link = $('.sim-download').attr('href');
@@ -214,7 +216,7 @@ const getSims = async () => {
           log.error(e);
         } finally {
           bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
-          if (!bar.terminal.isTTY()) log.info(`+ [${lang}] ${id}`);
+          if (!bar.terminal.isTTY()) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
         }
       }
     ))
