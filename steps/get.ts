@@ -1,13 +1,12 @@
 import * as fs from 'fs';
-import axios, {AxiosResponse} from 'axios';
 import * as path from 'path';
 import slugify from 'slugify';
 import * as op from 'object-path';
 import * as rax from 'retry-axios';
 import * as cheerio from 'cheerio';
 import {RateLimit} from 'async-sema';
-import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
+import axios, {AxiosResponse} from 'axios';
 
 import {log} from '../lib/logger';
 import * as config from '../config';
@@ -37,7 +36,6 @@ rax.attach(ax);
 const barOptions = {
   clearOnComplete: false,
   autopadding: true,
-  // hideCursor: true,
   format: '{prefix} {bar} {percentage}% | ETA: {eta}s | {value}/{total} | {postfix}'
 };
 
@@ -60,9 +58,7 @@ const categoriesTree = {};
 const subCategoriesList = {};
 
 const fetchLanguages = async () => {
-  const response = await ax.get('https://phet.colorado.edu/en/simulations/translated');
-  const $ = cheerio.load(response.data);
-
+  const $ = cheerio.load((await ax.get('https://phet.colorado.edu/en/simulations/translated')).data);
   const rows = $('.translated-sims tr').toArray();
   rows.shift();
   if (rows.length === 0) return log.error(`Failed to fetch languages`);
@@ -87,15 +83,12 @@ const fetchLanguages = async () => {
 const fetchCategoriesTree = async () => {
   log.info(`Getting category trees...`);
   const fallbackLanguages = new Set();
-  await asyncPool(
-    config.workers,
-    popValueUpIfExists(Object.keys(languages), 'en'),
+  await Promise.all(popValueUpIfExists(Object.keys(languages), 'en').map(
     async (lang) => await Promise.all(config.categoriesToGet.map(async (categoryTitle) => {
       try {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
-        const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data;
-        const $ = cheerio.load(data);
+        const $ = cheerio.load((await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data);
 
         // extract the sims
         const sims = $('.simulation-index a').toArray();
@@ -108,46 +101,44 @@ const fetchCategoriesTree = async () => {
         });
 
         // gather sub-categories
-        const subCategories = $('.side-nav ul.parents ul.children a').toArray();
-        return subCategories.map((item) => {
-          const title = $(item).text();
-          const slug = $(item).attr('href').split('/').pop();
-          op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
-        });
+        return $('.side-nav ul.parents ul.children a').toArray()
+          .map((item) => {
+            const title = $(item).text();
+            const slug = $(item).attr('href').split('/').pop();
+            op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
+          });
       } catch (e) {
         fallbackLanguages.add(lang);
         return;
       }
     }))
-  );
+  ));
   if (fallbackLanguages.size > 0) log.warn(`The following (${fallbackLanguages.size}) language(s) will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
 };
 
 const fetchSubCategories = async () => {
-  await asyncPool(
-    config.workers,
-    Object.entries(subCategoriesList),
+  await Promise.all(Object.entries(subCategoriesList).map(
     async ([lang, subcats]) => await Promise.all(Object.entries(subcats).map(async ([subCatTitle, subCatSlug]) => {
-        try {
-          await delay();
-          const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
-          const $ = cheerio.load(data);
+      try {
+        await delay();
+        const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
+        const $ = cheerio.load(data);
 
-          // extract the sims
-          const sims = $('.simulation-index a').toArray();
-          if (sims.length === 0) log.error(`Failed to get sims for sub-category ${subCatTitle}`);
-          log.debug(` - [${lang}] ${subCatSlug}: ${sims.length}`);
+        // extract the sims
+        const sims = $('.simulation-index a').toArray();
+        if (sims.length === 0) log.error(`Failed to get sims for sub-category ${subCatTitle}`);
+        log.debug(` - [${lang}] ${subCatSlug}: ${sims.length}`);
 
-          sims.map((item) => {
-            const slug = $(item).attr('href').split('/').pop();
-            op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
-          });
-        } catch (e) {
-          log.error(`Failed to get subcategories for ${lang}`);
-          log.error(e);
-        }
+        sims.map((item) => {
+          const slug = $(item).attr('href').split('/').pop();
+          op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
+        });
+      } catch (e) {
+        log.error(`Failed to get subcategories for ${lang}`);
+        log.error(e);
       }
-    )));
+    }))
+  ));
 };
 
 
@@ -166,10 +157,10 @@ const getSims = async () => {
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
   bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
 
-  const simIds: SetByLanguage<string> = (await asyncPool(
-    config.workers,
-    Object.keys(languages),
-    async (lang) => {
+  // todo
+  // @ts-ignore
+  const simIds: SetByLanguage<string> = await Promise.all(Object.keys(languages)
+    .map(async (lang) => {
       try {
         await delay();
         const html = await ax.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
@@ -195,8 +186,7 @@ const getSims = async () => {
         bar.increment(1, {prefix: '', postfix: lang});
       }
     }
-  ) || [])
-    .filter(x => !!x);
+  ));
   bar.stop();
 
   log.info(`Gathering sim links...`);
@@ -207,10 +197,10 @@ const getSims = async () => {
   let urlsToGet = [];
 
   await Promise.all(
-    simIds.map(async ({lang, data}) => await asyncPool(
-      config.workers,
-      data,
-      async ({id, title}) => {
+    simIds.map(async ({lang, data}) => await Promise.all(data
+      // todo
+      // @ts-ignore
+      .map(async ({id, title}) => {
         await delay();
         let response: AxiosResponse;
         let status: number;
@@ -252,7 +242,7 @@ const getSims = async () => {
           bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
           if (!bar.terminal.isTTY()) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
         }
-      }
+      })
     ))
   );
 
@@ -264,45 +254,41 @@ const getSims = async () => {
   log.info(`Getting documents and images...`);
   bar.start(urlsToGet.length, 0, {prefix: '', postfix: 'N/A'});
 
-  await asyncPool(
-    config.workers,
-    urlsToGet,
-    async (url) => {
-      await delay();
-      return new Promise(async (resolve, reject) => {
-        let data;
-        try {
-          data = (await ax.get(url, {responseType: 'stream'})).data;
-        } catch (e) {
-          const status = op.get(e, 'response.status');
-          log.error(`Failed to get url ${url}: status: ${status}`);
-          log.error(e);
-          return;
-        }
-        let fileName = url.split('/').pop();
-        if (fileName.slice(-4) === '.png') {
-          const fileParts = fileName.split('-');
-          fileName = fileParts.slice(0, -1).join('-') + '.png';
-        }
-        const writeStream = fs.createWriteStream(outDir + fileName)
-          .on('close', _ => {
-            bar.increment(1, {prefix: '', postfix: fileName});
-            if (!bar.terminal.isTTY()) log.info(` + ${path.basename(fileName)}`);
-            resolve();
-          });
+  await Promise.all(urlsToGet.map(async (url) => {
+    await delay();
+    return new Promise(async (resolve, reject) => {
+      let data;
+      try {
+        data = (await ax.get(url, {responseType: 'stream'})).data;
+      } catch (e) {
+        const status = op.get(e, 'response.status');
+        log.error(`Failed to get url ${url}: status: ${status}`);
+        log.error(e);
+        return;
+      }
+      let fileName = url.split('/').pop();
+      if (fileName.slice(-4) === '.png') {
+        const fileParts = fileName.split('-');
+        fileName = fileParts.slice(0, -1).join('-') + '.png';
+      }
+      const writeStream = fs.createWriteStream(outDir + fileName)
+        .on('close', _ => {
+          bar.increment(1, {prefix: '', postfix: fileName});
+          if (!bar.terminal.isTTY()) log.info(` + ${path.basename(fileName)}`);
+          resolve();
+        });
 
-        data.on('response', function (response) {
-          if (response.statusCode === 200) return;
-          log.error(`${fileName} gave a ${response.statusCode}`);
+      data.on('response', function (response) {
+        if (response.statusCode === 200) return;
+        log.error(`${fileName} gave a ${response.statusCode}`);
 
-          fs.unlink(outDir + fileName, function (err) {
-            if (err) log.error(`Failed to delete item: ${err}`);
-          });
-          reject();
-        }).pipe(writeStream);
-      });
-    }
-  );
+        fs.unlink(outDir + fileName, function (err) {
+          if (err) log.error(`Failed to delete item: ${err}`);
+        });
+        reject();
+      }).pipe(writeStream);
+    });
+  }));
   bar.stop();
 };
 
