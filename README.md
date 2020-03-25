@@ -17,9 +17,16 @@ The above will eventually output a ZIM file to ```dist/```
 [![latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 
+## Command line arguments 
+~~~
+    -- includeLanguages lang_1 [lang_2] [lang_3] ... 
+    -- excludeLanguages lang_1 [lang_2] [lang_3] ...
+~~~
+Example: `npm run get -- --includeLanguages en ru fr`
+
 ## Config
 
-The only way to configure behaviour is through environment variables. Sample `.env` file:
+Another way to configure behaviour is through environment variables. Sample `.env` file:
 ~~~
 # request per second, affects GET step
 PHET_RPS=2

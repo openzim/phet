@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import slugify from 'slugify';
+import * as yargs from 'yargs';
 import * as op from 'object-path';
 import * as rax from 'retry-axios';
 import * as cheerio from 'cheerio';
@@ -15,6 +16,10 @@ import {SimulationsList} from '../lib/classes';
 import {Category, LanguageDescriptor, LanguageItemPair, Simulation} from '../lib/types';
 
 dotenv.config();
+
+const {argv} = yargs
+  .array('includeLanguages')
+  .array('excludeLanguages');
 
 const outDir = 'state/get/';
 const imageResolution = 600;
@@ -80,6 +85,10 @@ const fetchLanguages = async () => {
     const name = $(item).find('td.list-highlight-background:first-child a span').text();
     const localName = $(item).find('td.list-highlight-background').last().text();
     const count = parseInt($(item).find('td.number').text(), 10);
+
+    if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(slug)) return;
+    if (argv.excludeLanguages && (argv.excludeLanguages as string[] || []).includes(slug)) return;
+
     op.set(languages, slug, {slug, name, localName, url, count});
   });
   try {
