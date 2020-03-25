@@ -1,14 +1,13 @@
-import * as dotenv from 'dotenv';
 import * as fs from 'fs';
+import got from 'got';
 import * as path from 'path';
 import slugify from 'slugify';
 import * as yargs from 'yargs';
+import * as dotenv from 'dotenv';
 import * as op from 'object-path';
-import * as rax from 'retry-axios';
 import * as cheerio from 'cheerio';
 import {RateLimit} from 'async-sema';
 import * as progress from 'cli-progress';
-import axios, {AxiosResponse} from 'axios';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
@@ -32,22 +31,41 @@ const categoriesToGet = [
 ];
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 
-
-const ax = axios.create();
-ax.defaults.raxConfig = {
-  instance: ax,
-  retry: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-  noResponseRetries: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-  retryDelay: process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 1000,
-  httpMethodsToRetry: ['GET'],
-  statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
-  backoffType: 'exponential',
-  onRetryAttempt: err => {
-    const cfg = rax.getConfig(err);
-    log.info(`Retry attempt #${cfg.currentRetryAttempt}`);
+const options = {
+  prefixUrl: 'https://phet.colorado.edu',
+  retry: {
+    limit: 5,
+    calculateDelay: ({attemptCount, retryOptions, error, computedValue}) => 1000 * Math.pow(2, attemptCount) + Math.random() * 100,
+  //   methods: ['GET'],
+  //   statusCodes: ['408', '413', '429', '500', '502', '503', '504', '521', '522', '524'],
+    maxRetryAfter: undefined,
+    errorCodes: ['ETIMEDOUT', 'ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN'],
+    timeout: 5000,
+    hooks: {
+      beforeRetry: [
+        (options, error, retryCount) => {
+          log.warn(error);
+        }
+      ]
+    }
   }
 };
-rax.attach(ax);
+
+// const ax = axios.create();
+// const retryConfig = {
+//   retry: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
+//   noResponseRetries: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
+//   retryDelay: process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 1000,
+//   httpMethodsToRetry: ['GET'],
+//   statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
+//   backoffType: 'exponential',
+//   onRetryAttempt: async err => {
+//     const cfg = rax.getConfig(err);
+//     log.info(`Retry attempt #${cfg.currentRetryAttempt}`);
+//   }
+// } as RetryConfig;
+// const interceptorId = rax.attach();
+
 
 const barOptions = {
   clearOnComplete: false,
@@ -74,7 +92,7 @@ const categoriesTree = {};
 const subCategoriesList = {};
 
 const fetchLanguages = async () => {
-  const $ = cheerio.load((await ax.get('https://phet.colorado.edu/en/simulations/translated')).data);
+  const $ = cheerio.load((await got('/en/simulations/translated', {...options})).body);
   const rows = $('.translated-sims tr').toArray();
   rows.shift();
   if (rows.length === 0) return log.error(`Failed to fetch languages`);
@@ -108,7 +126,7 @@ const fetchCategoriesTree = async () => {
       try {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
-        const $ = cheerio.load((await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${categorySlug}/index`)).data);
+        const $ = cheerio.load((await got(`/${lang}/simulations/category/${categorySlug}/index`, {...options})).body);
 
         // extract the sims
         const sims = $('.simulation-index a').toArray();
@@ -141,8 +159,7 @@ const fetchSubCategories = async () => {
     async ([lang, subcats]) => await Promise.all(Array.from(new Set(Object.entries(subcats))).map(async ([subCatTitle, subCatSlug]) => {
       try {
         await delay();
-        const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
-        const $ = cheerio.load(data);
+        const $ = cheerio.load((await got(`/${lang}/simulations/category/${subCatSlug}/index`, {...options})).body);
 
         // extract the sims
         const sims = $('.simulation-index a').toArray();
@@ -181,8 +198,7 @@ const getSims = async () => {
     .map(async (lang) => {
       try {
         await delay();
-        const html = await ax.get(`https://phet.colorado.edu/en/simulations/translated/${lang}`);
-        const $ = cheerio.load(html.data);
+        const $ = cheerio.load((await got(`/en/simulations/translated/${lang}`, {...options})).body);
         const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray();
         if (!data) throw new Error('Got empty data');
         const list = data.map(item => {
@@ -218,20 +234,20 @@ const getSims = async () => {
       const catalog = new SimulationsList(lang);
       await Promise.all(data.map(async ({id, title}) => {
         await delay();
-        let response: AxiosResponse;
+        let response;
         let status: number;
         let fallback = false;
-        let url = `https://phet.colorado.edu/${lang}/simulation/${id}`;
+        let url = `/${lang}/simulation/${id}`;
         try {
           try {
-            response = await ax.get(url);
+            response = await got(url, {...options});
           } catch (e) {
             status = op.get(e, 'response.status');
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
-              url = `https://phet.colorado.edu/en/simulation/${id}`;
-              response = await ax.get(url);
+              url = `/en/simulation/${id}`;
+              response = await got(url, {...options});
             }
           }
           if (!response) throw new Error(`Got no response from ${url}`);
@@ -274,7 +290,7 @@ const getSims = async () => {
     return new Promise(async (resolve, reject) => {
       let data;
       try {
-        data = (await ax.get(url, {responseType: 'stream'})).data;
+        data = await got.stream(url);
       } catch (e) {
         const status = op.get(e, 'response.status');
         log.error(`Failed to get url ${url}: status: ${status}`);
