@@ -21,9 +21,13 @@ The above will eventually output a ZIM file to ```dist/```
 
 The only way to configure behaviour is through environment variables. Sample `.env` file:
 ~~~
+# request per second, affects GET step
 PHET_RPS=2
+# async workers on TRANSFORM step (keep it equal to number of CPU cores) 
 PHET_WORKERS=10
+# number of retries on GET step
 PHET_RETRIES=5
+# initial delay before retries (with exponential backoff)
 PHET_RETRY_DELAY=1000
 ~~~
 
