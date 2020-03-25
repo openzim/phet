@@ -31,7 +31,7 @@ const categoriesToGet = [
 ];
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 
-const retryDelay = process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 5
+const retryDelay = process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 5;
 const options = {
   prefixUrl: 'https://phet.colorado.edu',
   retry: {
@@ -233,12 +233,13 @@ const getSims = async () => {
               fallback = true;
               url = `/en/simulation/${id}`;
               response = await got(url, {...options});
+              status = response.statusCode;
             }
           }
           if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
-          const {data} = response;
-          if (!data) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
-          const $ = cheerio.load(data);
+          const {body} = response;
+          if (!body) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
+          const $ = cheerio.load(body);
           const link = $('.sim-download').attr('href');
           const [realId] = getIdAndLanguage(link);
           catalog.add({
@@ -278,7 +279,7 @@ const getSims = async () => {
         data = await got.stream(url);
       } catch (e) {
         const status = op.get(e, 'response.status');
-        log.error(`Failed to get url ${options.prefixUrl}${url}: status: ${status}`);
+        log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
         log.error(e);
         return;
       }
@@ -313,8 +314,8 @@ const getSims = async () => {
 (async () => {
   welcome('get');
   await fetchLanguages();
-  // await fetchCategoriesTree();
-  // await fetchSubCategories();
+  await fetchCategoriesTree();
+  await fetchSubCategories();
   await getSims();
   log.info('Done.');
 })();
