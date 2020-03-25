@@ -138,7 +138,7 @@ const fetchCategoriesTree = async () => {
 
 const fetchSubCategories = async () => {
   await Promise.all(Object.entries(subCategoriesList).map(
-    async ([lang, subcats]) => await Promise.all(Object.entries(subcats).map(async ([subCatTitle, subCatSlug]) => {
+    async ([lang, subcats]) => await Promise.all(Array.from(new Set(Object.entries(subcats))).map(async ([subCatTitle, subCatSlug]) => {
       try {
         await delay();
         const data = (await ax.get(`https://phet.colorado.edu/${lang}/simulations/category/${subCatSlug}/index`)).data;
