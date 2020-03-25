@@ -227,7 +227,7 @@ const getSims = async () => {
           try {
             response = await got(url, {...options});
           } catch (e) {
-            status = op.get(e, 'response.status');
+            status = op.get(e, 'response.statusCode');
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
@@ -235,9 +235,9 @@ const getSims = async () => {
               response = await got(url, {...options});
             }
           }
-          if (!response) throw new Error(`Got no response from ${url}`);
+          if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
           const {data} = response;
-          if (!data) throw new Error(`Got no data (status = ${status}) from ${url}`);
+          if (!data) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
           const $ = cheerio.load(data);
           const link = $('.sim-download').attr('href');
           const [realId] = getIdAndLanguage(link);
@@ -253,7 +253,7 @@ const getSims = async () => {
           urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
           urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
         } catch (e) {
-          log.error(`Failed to parse: ${url}`);
+          log.error(`Failed to parse: ${options.prefixUrl}${url}`);
           log.error(e);
         } finally {
           bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
@@ -278,7 +278,7 @@ const getSims = async () => {
         data = await got.stream(url);
       } catch (e) {
         const status = op.get(e, 'response.status');
-        log.error(`Failed to get url ${url}: status: ${status}`);
+        log.error(`Failed to get url ${options.prefixUrl}${url}: status: ${status}`);
         log.error(e);
         return;
       }
@@ -313,8 +313,8 @@ const getSims = async () => {
 (async () => {
   welcome('get');
   await fetchLanguages();
-  await fetchCategoriesTree();
-  await fetchSubCategories();
+  // await fetchCategoriesTree();
+  // await fetchSubCategories();
   await getSims();
   log.info('Done.');
 })();
