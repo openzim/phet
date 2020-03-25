@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import axios from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import * as path from 'path';
 import slugify from 'slugify';
 import * as op from 'object-path';
@@ -21,7 +21,7 @@ const outDir = 'state/get/';
 const ax = axios.create();
 ax.defaults.raxConfig = {
   instance: ax,
-  retry: 3,
+  retry: 5,
   noResponseRetries: 2,
   retryDelay: 1000,
   httpMethodsToRetry: ['GET'],
@@ -212,23 +212,24 @@ const getSims = async () => {
       data,
       async ({id, title}) => {
         await delay();
-        let data: string;
+        let response: AxiosResponse;
         let status: number;
         let fallback = false;
         let url = `https://phet.colorado.edu/${lang}/simulation/${id}`;
         try {
           try {
-            data = (await ax.get(url)).data;
+            response = await ax.get(url);
           } catch (e) {
             status = op.get(e, 'response.status');
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
               url = `https://phet.colorado.edu/en/simulation/${id}`;
-              data = (await ax.get(url)).data;
+              response = await ax.get(url);
             }
           }
-
+          if (!response) throw new Error(`Got no response from ${url}`);
+          const {data} = response;
           if (!data) throw new Error(`Got no data (status = ${status}) from ${url}`);
           const $ = cheerio.load(data);
           const link = $('.sim-download').attr('href');
