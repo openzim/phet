@@ -34,7 +34,3 @@ export type LanguageDescriptor = {
 export type LanguageItemPair<T> = {
   [lang: string]: T,
 };
-
-export type SetByLanguage<T> = [
-  LanguageItemPair<T>
-];

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import * as op from 'object-path';
-import {LanguageDescriptor, LanguageItemPair, Simulation} from './types';
+import * as path from 'path';
+import {Simulation} from './types';
 
 
 export class Base64Entity {
@@ -24,44 +24,38 @@ export class Base64Entity {
 
 
 export class SimulationsList {
-  public items: LanguageItemPair<Simulation[]>[] = [];
-  private languages: LanguageItemPair<LanguageDescriptor>;
+  public items: Simulation[] = [];
+  private readonly language: string;
 
-  constructor(languages) {
-    this.languages = languages;
+  add(item: Simulation): void {
+    this.items.push(item);
   }
 
-  add(lang: string, item: Simulation): void {
-    if (!this.items[lang]) this.items[lang] = [];
-    this.items[lang].push(item);
+  constructor(lang: string) {
+    this.language = lang;
   }
 
-  addWithFallbackLanguage(id: string, lang: string, fallbackLanguage: string = 'en'): void {
-    const fallbackItem = this.getItem(fallbackLanguage, id);
-    if (!fallbackItem) throw new Error(`There\'s no fallback item for ${id}`);
-    this.add(lang, {...fallbackItem, fallbackLanguage});
-  }
+  // addWithFallbackLanguage(id: string, lang: string, fallbackLanguage: string = 'en'): void {
+  //   const fallbackItem = this.getItem(fallbackLanguage, id);
+  //   if (!fallbackItem) throw new Error(`There\'s no fallback item for ${id}`);
+  //   this.add(lang, {...fallbackItem, fallbackLanguage});
+  // }
 
-  private getItem(lang: string, id: string) {
-    return ((op.get(this.items, `${lang}`) || []).filter(x => x.id === id) || []).shift();
+  private getItem(id: string) {
+    return (this.items.filter(x => x.id === id) || []).shift();
   }
 
   async persist(dir: string): Promise<void> {
+    const file = path.join(dir, `${this.language}.json`);
     try {
-      await fs.promises.writeFile(`${dir}catalog.json`, JSON.stringify(this.getSimIdsByLanguages()), 'utf8');
-      console.log('Saved Catalog');
+      await fs.promises.writeFile(file, JSON.stringify(this.getSortedItems()), 'utf8');
     } catch (e) {
-      console.error(`Failed to save the catalog`);
+      console.error(`Failed to save the catalog ${file}`);
     }
   }
 
-  private getSimIdsByLanguages(): LanguageItemPair<Simulation[]> {
-    const result = {};
-    Object.entries(this.items)
-      .forEach(([lang, sims]) => op.set(result, lang, Object.values(sims)
-        .sort(SimulationsList.getComparator('title'))
-      ));
-    return result;
+  private getSortedItems(): Simulation[] {
+    return this.items.sort(SimulationsList.getComparator('title'));
   }
 
   private static getComparator(propName: string) {

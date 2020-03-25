@@ -12,7 +12,7 @@ import {log} from '../lib/logger';
 import * as config from '../config';
 import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
-import {Category, LanguageDescriptor, LanguageItemPair, SetByLanguage, Simulation} from '../lib/types';
+import {Category, LanguageDescriptor, LanguageItemPair, Simulation} from '../lib/types';
 
 
 const outDir = 'state/get/';
@@ -157,9 +157,7 @@ const getSims = async () => {
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
   bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
 
-  // todo
-  // @ts-ignore
-  const simIds: SetByLanguage<string> = await Promise.all(Object.keys(languages)
+  const simIds = await Promise.all(Object.keys(languages)
     .map(async (lang) => {
       try {
         await delay();
@@ -193,14 +191,12 @@ const getSims = async () => {
   const simCount = simIds.reduce((acc, {data}) => acc + data.length, 0);
   bar.start(simCount, 0, {prefix: '', postfix: 'N/A'});
 
-  const catalog = new SimulationsList(languages);
   let urlsToGet = [];
 
   await Promise.all(
-    simIds.map(async ({lang, data}) => await Promise.all(data
-      // todo
-      // @ts-ignore
-      .map(async ({id, title}) => {
+    simIds.map(async ({lang, data}) => {
+      const catalog = new SimulationsList(lang);
+      await Promise.all(data.map(async ({id, title}) => {
         await delay();
         let response: AxiosResponse;
         let status: number;
@@ -224,7 +220,7 @@ const getSims = async () => {
           const $ = cheerio.load(data);
           const link = $('.sim-download').attr('href');
           const [realId] = getIdAndLanguage(link);
-          catalog.add(lang, {
+          catalog.add({
             categories: getItemCategories(lang, realId),
             id: realId,
             language: lang,
@@ -242,14 +238,13 @@ const getSims = async () => {
           bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
           if (!bar.terminal.isTTY()) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
         }
-      })
-    ))
+      }));
+      return await catalog.persist(path.join(outDir, 'catalogs'));
+    })
   );
 
   bar.stop();
   urlsToGet = Array.from(new Set(urlsToGet));
-
-  await catalog.persist(outDir);
 
   log.info(`Getting documents and images...`);
   bar.start(urlsToGet.length, 0, {prefix: '', postfix: 'N/A'});
