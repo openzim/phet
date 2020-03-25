@@ -31,14 +31,15 @@ const categoriesToGet = [
 ];
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 
+const retryDelay = process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 5
 const options = {
   prefixUrl: 'https://phet.colorado.edu',
   retry: {
-    limit: 5,
-    calculateDelay: ({attemptCount, retryOptions, error, computedValue}) => 1000 * Math.pow(2, attemptCount) + Math.random() * 100,
+    limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
+    calculateDelay: ({attemptCount, retryOptions, error, computedValue}) => retryDelay * Math.pow(2, attemptCount) + Math.random() * 100,
   //   methods: ['GET'],
   //   statusCodes: ['408', '413', '429', '500', '502', '503', '504', '521', '522', '524'],
-    maxRetryAfter: undefined,
+  //   maxRetryAfter: undefined,
     errorCodes: ['ETIMEDOUT', 'ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN'],
     timeout: 5000,
     hooks: {
@@ -50,22 +51,6 @@ const options = {
     }
   }
 };
-
-// const ax = axios.create();
-// const retryConfig = {
-//   retry: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-//   noResponseRetries: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-//   retryDelay: process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 1000,
-//   httpMethodsToRetry: ['GET'],
-//   statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
-//   backoffType: 'exponential',
-//   onRetryAttempt: async err => {
-//     const cfg = rax.getConfig(err);
-//     log.info(`Retry attempt #${cfg.currentRetryAttempt}`);
-//   }
-// } as RetryConfig;
-// const interceptorId = rax.attach();
-
 
 const barOptions = {
   clearOnComplete: false,
