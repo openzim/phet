@@ -17,17 +17,15 @@ The above will eventually output a ZIM file to ```dist/```
 [![latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 
-## Notes
-
-It is likely that the export to ZIM will fail - modify the ```export2zim``` file to point at a working zimwriterfs executable.
-
-Hopefully this step will be removed once there are bindings for libzim and node.
-
 ## Config
 
-The only way to configure behaviour is through ```config.json```. It accepts the following properties:
-* languages:Array - PhET country codes (possible values can be found below)
-* languageMapping:Object<string, string> - Mapping between language code and displayName
+The only way to configure behaviour is through environment variables. Sample `.env` file:
+~~~
+PHET_RPS=2
+PHET_WORKERS=10
+PHET_RETRIES=5
+PHET_RETRY_DELAY=1000
+~~~
 
 ## About
 
