@@ -15,12 +15,12 @@ import * as imageminJpegoptim from 'imagemin-jpegoptim';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
-import * as config from '../config.js';
 import {Base64Entity} from '../lib/classes';
-
 
 const inDir = 'state/get/';
 const outDir = 'state/transform/';
+const workers = process.env.PHET_WORKERS || 10;
+
 
 const transform = async () => {
   log.info('Converting images...');
@@ -29,7 +29,7 @@ const transform = async () => {
 
   bar.start(images.length, 0);
   await asyncPool(
-    config.workers,
+    workers,
     images,
     async (file) => imagemin([file], outDir, {
       plugins: [
@@ -53,7 +53,7 @@ const transform = async () => {
 
   bar.start(documents.length, 0);
   await asyncPool(
-    config.workers,
+    workers,
     documents,
     async (file) => {
       try {

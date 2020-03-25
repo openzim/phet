@@ -1,3 +1,4 @@
+import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import slugify from 'slugify';
@@ -9,20 +10,30 @@ import * as progress from 'cli-progress';
 import axios, {AxiosResponse} from 'axios';
 
 import {log} from '../lib/logger';
-import * as config from '../config';
 import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
 import {Category, LanguageDescriptor, LanguageItemPair, Simulation} from '../lib/types';
 
+dotenv.config();
 
 const outDir = 'state/get/';
+const imageResolution = 600;
+const categoriesToGet = [
+  'Physics',
+  'Biology',
+  'Chemistry',
+  'Earth Science',
+  'Math'
+];
+const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
+
 
 const ax = axios.create();
 ax.defaults.raxConfig = {
   instance: ax,
-  retry: 5,
-  noResponseRetries: 2,
-  retryDelay: 1000,
+  retry: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
+  noResponseRetries: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
+  retryDelay: process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 1000,
   httpMethodsToRetry: ['GET'],
   statusCodesToRetry: [[100, 199], [429, 429], [500, 599]],
   backoffType: 'exponential',
@@ -52,7 +63,7 @@ const popValueUpIfExists = (items: string[], value: string) => {
 };
 
 // common data
-const delay = RateLimit(config.rps);
+const delay = RateLimit(rps);
 const languages: LanguageItemPair<LanguageDescriptor> = {};
 const categoriesTree = {};
 const subCategoriesList = {};
@@ -84,7 +95,7 @@ const fetchCategoriesTree = async () => {
   log.info(`Getting category trees...`);
   const fallbackLanguages = new Set();
   await Promise.all(popValueUpIfExists(Object.keys(languages), 'en').map(
-    async (lang) => await Promise.all(config.categoriesToGet.map(async (categoryTitle) => {
+    async (lang) => await Promise.all(categoriesToGet.map(async (categoryTitle) => {
       try {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
@@ -230,7 +241,7 @@ const getSims = async () => {
           } as Simulation);
 
           urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${config.imageResolution}.png`);
+          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
         } catch (e) {
           log.error(`Failed to parse: ${url}`);
           log.error(e);

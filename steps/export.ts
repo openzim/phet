@@ -1,11 +1,5 @@
-import {log} from '../lib/logger';
-
-const catalogsDir = 'state/get/catalogs';
-const inDir = 'state/transform/';
-const outDir = 'state/export/';
-const resDir = 'res/';
-
 import * as fs from 'fs';
+
 import * as ncp from 'ncp';
 import * as glob from 'glob';
 import * as path from 'path';
@@ -17,10 +11,18 @@ import * as iso6393 from 'iso-639-3';
 import * as progress from 'cli-progress';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
+import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
 import {Catalog, Simulation} from '../lib/types';
 // @ts-ignore
 import * as languages from '../state/get/languages.json';
+
+
+const catalogsDir = 'state/get/catalogs';
+const inDir = 'state/transform/';
+const outDir = 'state/export/';
+const resDir = 'res/';
+
 
 (ncp as any).limit = 16;
 

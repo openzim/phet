@@ -21,6 +21,7 @@
     "browserify": "16.2.3",
     "cheerio": "^0.22.0",
     "cli-progress": "^3.6.0",
+    "dotenv": "^8.2.0",
     "glob": "^7.1.6",
     "handlebars": "^4.4.5",
     "hoek": "^6.1.3",
