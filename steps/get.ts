@@ -36,12 +36,12 @@ const options = {
   prefixUrl: 'https://phet.colorado.edu',
   retry: {
     limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-    calculateDelay: ({attemptCount, retryOptions, error, computedValue}) => retryDelay * Math.pow(2, attemptCount) + Math.random() * 100,
+    // calculateDelay: ({attemptCount, retryOptions, error, computedValue}) => retryDelay * Math.pow(2, attemptCount) + Math.random() * 100,
   //   methods: ['GET'],
   //   statusCodes: ['408', '413', '429', '500', '502', '503', '504', '521', '522', '524'],
   //   maxRetryAfter: undefined,
-    errorCodes: ['ETIMEDOUT', 'ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN'],
-    timeout: 5000,
+  //   errorCodes: ['ETIMEDOUT', 'ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN'],
+    timeout: 3000,
     hooks: {
       beforeRetry: [
         (options, error, retryCount) => {
