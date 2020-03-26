@@ -27,16 +27,16 @@ Example: `npm run get -- --includeLanguages en ru fr`
 
 ## Config
 
-Another way to configure behaviour is through environment variables. Sample `.env` file:
+Another way to configure behaviour is through environment variables. Sample `.env` file (with default values):
 ~~~
-# request per second, affects GET step
-PHET_RPS=2
+# request per second, affects GET step only
+PHET_RPS=8
 # async workers on TRANSFORM step (keep it equal to number of CPU cores) 
 PHET_WORKERS=10
-# number of retries on GET step
+# number of retries on GET step (delay grow with exponential backoff)
 PHET_RETRIES=5
-# initial delay before retries (with exponential backoff)
-PHET_RETRY_DELAY=1000
+# display verbose errors 
+PHET_VERBOSE_ERRORS=false
 ~~~
 
 ## About

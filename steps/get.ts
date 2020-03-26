@@ -30,17 +30,12 @@ const categoriesToGet = [
   'Math'
 ];
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
+const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
-const retryDelay = process.env.PHET_RETRY_DELAY ? parseInt(process.env.PHET_RETRY_DELAY, 10) : 5;
 const options = {
   prefixUrl: 'https://phet.colorado.edu',
   retry: {
     limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-    // calculateDelay: ({attemptCount, retryOptions, error, computedValue}) => retryDelay * Math.pow(2, attemptCount) + Math.random() * 100,
-  //   methods: ['GET'],
-  //   statusCodes: ['408', '413', '429', '500', '502', '503', '504', '521', '522', '524'],
-  //   maxRetryAfter: undefined,
-  //   errorCodes: ['ETIMEDOUT', 'ECONNRESET', 'EADDRINUSE', 'ECONNREFUSED', 'EPIPE', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN'],
     timeout: 3000,
     hooks: {
       beforeRetry: [
@@ -156,8 +151,12 @@ const fetchSubCategories = async () => {
           op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
         });
       } catch (e) {
-        log.error(`Failed to get subcategories for ${lang}`);
-        log.error(e);
+        if (verbose) {
+          log.error(`Failed to get subcategories for ${lang}`);
+          log.error(e);
+        } else {
+          log.warn(`Unable to get simulations under subcategory subCatSlug for language ${lang}. Skipping it.`);
+        }
       }
     }))
   ));
@@ -198,8 +197,12 @@ const getSims = async () => {
           data: Array.from(new Set(list))
         };
       } catch (e) {
-        log.error(`Failed to get simulation list for ${lang}`);
-        log.error(e);
+        if (verbose) {
+          log.error(`Failed to get simulation list for ${lang}`);
+          log.error(e);
+        } else {
+          log.warn(`Unable to get the simulations list for language ${lang}. Skipping it.`);
+        }
         return;
       } finally {
         bar.increment(1, {prefix: '', postfix: lang});
@@ -254,8 +257,12 @@ const getSims = async () => {
           urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
           urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
         } catch (e) {
-          log.error(`Failed to parse: ${options.prefixUrl}${url}`);
-          log.error(e);
+          if (verbose) {
+            log.error(`Failed to parse: ${options.prefixUrl}${url}`);
+            log.error(e);
+          } else {
+            log.warn(`Unable to get the simulation ${id} for language ${lang}. Skipping it.`);
+          }
         } finally {
           bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
           if (!bar.terminal.isTTY()) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
@@ -278,10 +285,15 @@ const getSims = async () => {
       try {
         data = await got.stream(url);
       } catch (e) {
-        const status = op.get(e, 'response.status');
-        log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
-        log.error(e);
-        return;
+        if (verbose) {
+          const status = op.get(e, 'response.status');
+          log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
+          log.error(e);
+          return;
+        } else {
+          log.warn(`Unable to get simulation data from ${url}. Skipping it.`);
+          return;
+        }
       }
       let fileName = url.split('/').pop();
       if (fileName.slice(-4) === '.png') {
