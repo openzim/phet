@@ -52,10 +52,10 @@
   },
   "scripts": {
     "setup": "node steps/setup.js",
-    "get": "node --no-warnings --max-old-space-size=4096 node_modules/ts-node/dist/bin.js steps/get.ts",
-    "transform": "node --no-warnings --max-old-space-size=4096 node_modules/ts-node/dist/bin.js steps/transform.ts",
+    "get": "node --no-warnings --max-old-space-size=8192 node_modules/ts-node/dist/bin.js steps/get.ts",
+    "transform": "node --no-warnings --max-old-space-size=8192 node_modules/ts-node/dist/bin.js steps/transform.ts",
     "export-prebuild": "npm run build && node_modules/browserify/bin/cmd.js res/js/index.js -t babelify --presets [es2015] -o res/js/dist.js",
-    "export": "npm run export-prebuild && node --no-warnings --max-old-space-size=4096 node_modules/ts-node/dist/bin.js steps/export.ts",
+    "export": "npm run export-prebuild && node --no-warnings --max-old-space-size=8192 node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "echo \"Error: no test specified\" && exit 1",
     "snyk-protect": "snyk protect",
