@@ -18,7 +18,7 @@ The above will eventually output a ZIM file to ```dist/```
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 
 ## Command line arguments
-Affects to GET step only: 
+Available on GET and EXPORT steps only: 
 ~~~
     --includeLanguages lang_1 [lang_2] [lang_3] ... 
     --excludeLanguages lang_1 [lang_2] [lang_3] ...

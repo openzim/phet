@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as ncp from 'ncp';
 import * as glob from 'glob';
 import * as path from 'path';
+import * as yargs from 'yargs';
 import {promisify} from 'util';
 import * as rimraf from 'rimraf';
 import * as op from 'object-path';
@@ -15,8 +16,18 @@ import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
 import {Catalog, Simulation} from '../lib/types';
 // @ts-ignore
-import * as languages from '../state/get/languages.json';
+import * as langs from '../state/get/languages.json';
 
+const {argv} = yargs
+  .array('includeLanguages')
+  .array('excludeLanguages');
+
+const languages = Object.entries(langs)
+  .reduce((acc, [key, value]) => {
+    if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(key)) return acc;
+    if (argv.excludeLanguages && (argv.excludeLanguages as string[] || []).includes(key)) return acc;  // noinspection RedundantIfStatementJS
+    return {...acc, [key]: value};
+  }, {});
 
 const catalogsDir = 'state/get/catalogs';
 const inDir = 'state/transform/';
