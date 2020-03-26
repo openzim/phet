@@ -25,6 +25,7 @@ const resDir = 'res/';
 
 
 (ncp as any).limit = 16;
+const rimrafPromised = promisify(rimraf);
 
 const namespaces = {
   js: '-',
@@ -69,6 +70,110 @@ const getISO6393 = (lang = 'en') => {
 };
 
 
+const exportTarget = async (target) => {
+  const targetDir = `${outDir}${target.output}/`;
+
+  await rimrafPromised(targetDir);
+  await fs.promises.mkdir(targetDir);
+
+  await Promise.all(glob.sync(`${inDir}/*.html`, {})
+    .filter(fileName => !!~target.languages.indexOf(getLanguage(fileName)))
+    .map(async (fileName) => {
+      try {
+        let html = await fs.promises.readFile(fileName, 'utf8');
+        const $ = cheerio.load(html);
+
+        const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
+        await fs.promises.copyFile(`${fileName.split('_')[0]}.png`, `${targetDir}${path.basename(fileName).split('_')[0]}.png`);
+
+        await Promise.all(filesToCopy.map(async fileName => {
+          if (fileName.length > 40) return;
+          const ext = path.extname(fileName).slice(1);
+          html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
+
+          let file = await fs.promises.readFile(`${fileName}`, 'utf8');
+          file = addKiwixPrefixes(file, targetDir);
+          return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
+        }));
+        await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
+      } catch (err) {
+        throw err;
+      }
+    })
+  );
+
+  const languageMappings = target.languages.reduce((acc, langCode) => {
+    op.set(acc, langCode, languages[langCode].localName);
+    return acc;
+  }, {});
+
+  const simsByLanguage = await target.languages.reduce(async (acc, langCode) => {
+    const cat = await getCatalog(langCode);
+    op.set(acc, langCode, cat);
+    return acc;
+  }, {});
+
+  const catalog: Catalog = {
+    languageMappings,
+    simsByLanguage
+  };
+
+  // Generate index file
+  const templateHTML = await fs.promises.readFile(resDir + 'template.html', 'utf8');
+  // Pretty hacky - doing a replace on the HTML. Investigate other ways
+  await fs.promises.writeFile(targetDir + 'index.html',
+    templateHTML
+      .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
+      .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${target.output}";`), 'utf8');
+
+  await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*.ts', 'template.html'], nodir: true})
+    .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`))
+  );
+
+  const languageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul';
+
+  log.info(`Creating ${target.output}.zim ...`);
+
+  const creator = new ZimCreator({
+    fileName: `./dist/${target.output}.zim`,
+    welcome: 'index.html',
+    fullTextIndexLanguage: languageCode
+  }, {
+    Name: `phets_${languageCode}`,
+    Title: 'PhET Interactive Simulations',
+    Description: 'Interactive simulations for Science and Math',
+    Creator: 'University of Colorado',
+    Publisher: 'Kiwix',
+    Language: languageCode,
+    Date: (new Date()).toISOString(),
+    Tags: '_category:phet;_pictures:yes;_videos:no',
+    // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
+    // todo: remove this further
+    // @ts-ignore
+    Source: `https://phet.colorado.edu/${target.languages[0]}/simulations/`,
+    Scraper: 'openzim/phet'
+  });
+
+  const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+  const files = glob.sync(`${targetDir}/*`, {});
+  bar.start(files.length, 0);
+
+  await Promise.all(files.map(async (url) => {
+    await creator.addArticle(
+      new ZimArticle({
+        url: path.basename(url),
+        data: await fs.promises.readFile(url),
+        ns: getNamespaceByExt(path.extname(url).slice(1))
+      })
+    );
+    bar.increment();
+  }));
+  bar.stop();
+  await creator.finalise();
+  log.info('Created.');
+};
+
+
 const exportData = async () => {
   const now = new Date();
   const targets = Object.keys(languages)
@@ -84,111 +189,13 @@ const exportData = async () => {
       languages: Object.keys(languages)
     });
 
-  await targets.map(async (combination) => {
-    const targetDir = `${outDir}${combination.output}/`;
-
-    await promisify(rimraf)(targetDir);
-    await fs.promises.mkdir(targetDir);
-
-    await Promise.all(glob.sync(`${inDir}/*.html`, {})
-      .filter(fileName => !!~combination.languages.indexOf(getLanguage(fileName)))
-      .map(async (fileName) => {
-        try {
-          let html = await fs.promises.readFile(fileName, 'utf8');
-          const $ = cheerio.load(html);
-
-          const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
-          await fs.promises.copyFile(`${fileName.split('_')[0]}.png`, `${targetDir}${path.basename(fileName).split('_')[0]}.png`);
-
-          await Promise.all(filesToCopy.map(async fileName => {
-            if (fileName.length > 40) return;
-            const ext = path.extname(fileName).slice(1);
-            html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
-
-            let file = await fs.promises.readFile(`${fileName}`, 'utf8');
-            file = addKiwixPrefixes(file, targetDir);
-            return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
-          }));
-          await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
-        } catch (err) {
-          throw err;
-        }
-      })
-    );
-
-    const languageMappings = combination.languages.reduce((acc, langCode) => {
-      op.set(acc, langCode, languages[langCode].localName);
-      return acc;
-    }, {});
-
-    const simsByLanguage = await combination.languages.reduce(async (acc, langCode) => {
-      const cat = await getCatalog(langCode);
-      op.set(acc, langCode, cat);
-      return acc;
-    }, {});
-
-    const catalog: Catalog = {
-      languageMappings,
-      simsByLanguage
-    };
-
-    // Generate index file
-    const templateHTML = await fs.promises.readFile(resDir + 'template.html', 'utf8');
-    // Pretty hacky - doing a replace on the HTML. Investigate other ways
-    await fs.promises.writeFile(targetDir + 'index.html',
-      templateHTML
-        .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
-        .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${combination.output}";`), 'utf8');
-
-    await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*.ts', 'template.html'], nodir: true})
-      .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`))
-    );
-
-    const languageCode = combination.languages.length > 1 ? 'mul' : getISO6393(combination.languages[0]) || 'mul';
-
-    log.info(`Creating ${combination.output}.zim ...`);
-
-    const creator = new ZimCreator({
-      fileName: `./dist/${combination.output}.zim`,
-      welcome: 'index.html',
-      fullTextIndexLanguage: languageCode
-    }, {
-      Name: `phets_${languageCode}`,
-      Title: 'PhET Interactive Simulations',
-      Description: 'Interactive simulations for Science and Math',
-      Creator: 'University of Colorado',
-      Publisher: 'Kiwix',
-      Language: languageCode,
-      Date: (new Date()).toISOString(),
-      Tags: '_category:phet;_pictures:yes;_videos:no',
-      // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
-      // todo: remove this further
-      // @ts-ignore
-      Source: `https://phet.colorado.edu/${combination.languages[0]}/simulations/`,
-      Scraper: 'openzim/phet'
-    });
-
-    const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
-    const files = glob.sync(`${targetDir}/*`, {});
-    bar.start(files.length, 0);
-
-    await Promise.all(files.map(async (url) => {
-      await creator.addArticle(
-        new ZimArticle({
-          url: path.basename(url),
-          data: await fs.promises.readFile(url),
-          ns: getNamespaceByExt(path.extname(url).slice(1))
-        })
-      );
-      bar.increment();
-    }));
-    bar.stop();
-    await creator.finalise();
-    log.info('Done Writing');
-  });
+  for (const target of targets) {
+    await exportTarget(target);
+  }
 };
 
 (async () => {
   welcome('export');
   await exportData();
+  log.info('Done.');
 })();

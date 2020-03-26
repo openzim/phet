@@ -127,4 +127,5 @@ const extractBase64 = async (fileName, html): Promise<string> => {
 (async () => {
   welcome('transform');
   await transform();
+  log.info('Done.');
 })();
