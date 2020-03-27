@@ -2,12 +2,13 @@ import * as fs from 'fs';
 import * as md5 from 'md5';
 import * as glob from 'glob';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
-import * as minifier from 'html-minifier';
 import * as imagemin from 'imagemin';
 import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
+import * as minifier from 'html-minifier';
 import * as imageminSvgo from 'imagemin-svgo';
 import * as imageminGifsicle from 'imagemin-gifsicle';
 import * as imageminPngcrush from 'imagemin-pngcrush';
@@ -17,9 +18,13 @@ import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
 import {Base64Entity} from '../lib/classes';
 
+dotenv.config();
+
 const inDir = 'state/get/';
 const outDir = 'state/transform/';
 const workers = process.env.PHET_WORKERS || 10;
+
+const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
 
 const transform = async () => {
@@ -85,8 +90,17 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
     .filter(x => x)
     .map(async (script, index) => {
       const newFileName = md5(script);
-      await fs.promises.writeFile(`${outDir}${newFileName}.js`, script.trim(), 'utf8');
-      return html.replace(script, `</script><script src='${newFileName}.js'>`);
+      try {
+        await fs.promises.writeFile(`${outDir}${newFileName}.js`, script.trim(), 'utf8');
+        html = html.replace(script, `</script><script src='${newFileName}.js'>`);
+      } catch (e) {
+        if (verbose) {
+          log.error(`Failed to extract script from ${fileName}`);
+          log.error(e);
+        } else {
+          log.warn(`Unable to extract script from ${fileName}. Skipping it.`);
+        }
+      }
     })
   );
   return html;
