@@ -187,16 +187,16 @@ const exportTarget = async (target) => {
   const files = glob.sync(`${targetDir}/*`, {});
   bar.start(files.length, 0);
 
-  await Promise.all(files.map(async (url) => {
+  for (const file of files) {
     await creator.addArticle(
       new ZimArticle({
-        url: path.basename(url),
-        data: await fs.promises.readFile(url),
-        ns: getNamespaceByExt(path.extname(url).slice(1))
+        url: path.basename(file),
+        data: await fs.promises.readFile(file),
+        ns: getNamespaceByExt(path.extname(file).slice(1))
       })
     );
     bar.increment();
-  }));
+  }
   bar.stop();
   await creator.finalise();
   log.info('Created.');
