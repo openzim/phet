@@ -4,7 +4,7 @@ import * as glob from 'glob';
 import * as path from 'path';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
-import {minify} from 'html-minifier';
+import * as minifier from 'html-minifier';
 import * as imagemin from 'imagemin';
 import asyncPool from 'tiny-async-pool';
 import * as progress from 'cli-progress';
@@ -96,7 +96,7 @@ const removeStrings = (html): string => {
   const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
   if (htmlSplit.length === 1) return html;
   html = htmlSplit[0] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[1];
-  html = minify(html, {removeComments: true});
+  html = minifier.minify(html, {removeComments: true});
   return html;
 };
 
