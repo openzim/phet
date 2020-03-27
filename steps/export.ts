@@ -210,14 +210,15 @@ const exportData = async () => {
     output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
     languages: Object.keys(languages)
   }];
-  if (!argv.mulOnly) targets.concat(
-    Object.keys(languages)
-      .map(lang => ({
-          // todo refactor this
-          output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
-          languages: [lang]
-      }))
-  );
+  if (!argv.mulOnly) {
+    for (const lang of Object.keys(languages)) {
+      targets.push({
+        // todo refactor this
+        output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+        languages: [lang]
+      });
+    }
+  }
 
   for (const target of targets) {
     await exportTarget(target);
