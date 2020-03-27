@@ -88,14 +88,17 @@ const getISO6393 = (lang = 'en') => {
 
 
 const extractResources = async (target, targetDir: string): Promise<void> => {
-  for (const fileName of glob.sync(`${inDir}/*_@(${target.languages.join('|')}).html`, {})) { // todo
-    // if (!!~target.languages.indexOf(getLanguage(fileName)))
+  const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+  const files = glob.sync(`${inDir}/*_@(${target.languages.join('|')}).html`, {});
+  bar.start(files.length, 0);
+
+  for (const file of files) { // todo
     try {
-      let html = await fs.promises.readFile(fileName, 'utf8');
+      let html = await fs.promises.readFile(file, 'utf8');
       const $ = cheerio.load(html);
 
       const filesToExtract = $('[src]').toArray().map(a => $(a).attr('src'));
-      await fs.promises.copyFile(`${fileName.split('_')[0]}.png`, `${targetDir}${path.basename(fileName).split('_')[0]}.png`);
+      await fs.promises.copyFile(`${file.split('_')[0]}.png`, `${targetDir}${path.basename(file).split('_')[0]}.png`);
 
       await Promise.all(filesToExtract.map(async fileName => {
         if (fileName.length > 40) return;
@@ -106,16 +109,19 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
         file = addKiwixPrefixes(file, targetDir);
         return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
       }));
-      await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
+      await fs.promises.writeFile(`${targetDir}${path.basename(file)}`, html, 'utf8');
     } catch (e) {
       if (verbose) {
-        log.error(`Failed to extract resources from: ${fileName}`);
+        log.error(`Failed to extract resources from: ${file}`);
         log.error(e);
       } else {
-        log.warn(`Unable to extract resources from: ${fileName}. Skipping it.`);
+        log.warn(`Unable to extract resources from: ${file}. Skipping it.`);
       }
+    } finally {
+      bar.increment();
     }
   }
+  bar.stop();
 };
 
 const exportTarget = async (target) => {
