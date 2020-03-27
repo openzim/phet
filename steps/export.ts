@@ -92,7 +92,7 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
   const files = glob.sync(`${inDir}/*_@(${target.languages.join('|')}).html`, {});
   bar.start(files.length, 0);
 
-  for (const file of files) { // todo
+  for (const file of files) {
     try {
       let html = await fs.promises.readFile(file, 'utf8');
       const $ = cheerio.load(html);
@@ -105,7 +105,7 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
         const ext = path.extname(fileName).slice(1);
         html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
 
-        let file = await fs.promises.readFile(`${fileName}`, 'utf8');
+        let file = await fs.promises.readFile(`${inDir}${fileName}`, 'utf8');
         file = addKiwixPrefixes(file, targetDir);
         return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
       }));
@@ -191,6 +191,7 @@ const exportTarget = async (target) => {
     await creator.addArticle(
       new ZimArticle({
         url: path.basename(file),
+        // title:
         data: await fs.promises.readFile(file),
         ns: getNamespaceByExt(path.extname(file).slice(1))
       })
