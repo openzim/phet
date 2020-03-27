@@ -44,10 +44,13 @@ const transform = async () => {
         imageminGifsicle()
       ]
     })
-      .catch(err => {
-        const failedFile = err.message.match(/Error in file: (.*)/)[1].trim();
-        log.info(err.message);
-        fs.unlink(failedFile, () => log.info('The following file is invalid and was deleted:', failedFile));
+      .catch(e => {
+        if (verbose) {
+          log.error(`Error while processing the image: ${file}`);
+          log.error(e);
+        } else {
+          log.warn(`Unable to processing the image ${file}. Skipping it.`);
+        }
       })
       .finally(() => bar.increment())
   );
@@ -67,10 +70,14 @@ const transform = async () => {
         data = await extractBase64(basename, data);
         data = removeStrings(data);
         data = await extractLanguageElements(basename, data);
-        return fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
-      } catch (err) {
-        log.error(`Error while processing the file: ${file}`);
-        log.error(err.message);
+        return await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
+      } catch (e) {
+        if (verbose) {
+          log.error(`Error while processing the document: ${file}`);
+          log.error(e);
+        } else {
+          log.warn(`Unable to processing the document ${file}. Skipping it.`);
+        }
       } finally {
         bar.increment();
       }
