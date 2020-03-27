@@ -23,6 +23,11 @@ Available on GET and EXPORT steps only:
     --includeLanguages lang_1 [lang_2] [lang_3] ... 
     --excludeLanguages lang_1 [lang_2] [lang_3] ...
 ~~~
+Available on EXPORT step only:
+~~~
+    # skip ZIM files for individual languages 
+    --mulOnly 
+~~~
 Example: `npm run get -- --includeLanguages en ru fr`
 
 ## Config
