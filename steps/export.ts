@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as yargs from 'yargs';
 import {promisify} from 'util';
 import * as rimraf from 'rimraf';
+import * as dotenv from 'dotenv';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
 import * as iso6393 from 'iso-639-3';
@@ -18,9 +19,12 @@ import {Catalog, Simulation} from '../lib/types';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
 
+dotenv.config();
+
 const {argv} = yargs
   .array('includeLanguages')
-  .array('excludeLanguages');
+  .array('excludeLanguages')
+  .boolean('mulOnly');
 
 const languages = Object.entries(langs)
   .reduce((acc, [key, value]) => {
@@ -34,11 +38,13 @@ const inDir = 'state/transform/';
 const outDir = 'state/export/';
 const resDir = 'res/';
 
+const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
 (ncp as any).limit = 16;
 const rimrafPromised = promisify(rimraf);
 
 const namespaces = {
+  // ico: '-',
   js: '-',
   css: '-',
   svg: 'I',
@@ -60,7 +66,7 @@ const getCatalog = async (lang): Promise<Simulation[]> => {
     return JSON.parse(file.toString());
   } catch (e) {
     log.error(`Failed to get catalog for language ${lang}`);
-    log.error(e);
+    if (verbose) log.error(e);
   }
 };
 
@@ -81,37 +87,43 @@ const getISO6393 = (lang = 'en') => {
 };
 
 
+const extractResources = async (target, targetDir: string): Promise<void> => {
+  for (const fileName of glob.sync(`${inDir}/*_@(${target.languages.join('|')}).html`, {})) { // todo
+    // if (!!~target.languages.indexOf(getLanguage(fileName)))
+    try {
+      let html = await fs.promises.readFile(fileName, 'utf8');
+      const $ = cheerio.load(html);
+
+      const filesToExtract = $('[src]').toArray().map(a => $(a).attr('src'));
+      await fs.promises.copyFile(`${fileName.split('_')[0]}.png`, `${targetDir}${path.basename(fileName).split('_')[0]}.png`);
+
+      await Promise.all(filesToExtract.map(async fileName => {
+        if (fileName.length > 40) return;
+        const ext = path.extname(fileName).slice(1);
+        html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
+
+        let file = await fs.promises.readFile(`${fileName}`, 'utf8');
+        file = addKiwixPrefixes(file, targetDir);
+        return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
+      }));
+      await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
+    } catch (e) {
+      if (verbose) {
+        log.error(`Failed to extract resources from: ${fileName}`);
+        log.error(e);
+      } else {
+        log.warn(`Unable to extract resources from: ${fileName}. Skipping it.`);
+      }
+    }
+  }
+};
+
 const exportTarget = async (target) => {
   const targetDir = `${outDir}${target.output}/`;
 
   await rimrafPromised(targetDir);
   await fs.promises.mkdir(targetDir);
-
-  await Promise.all(glob.sync(`${inDir}/*.html`, {})
-    .filter(fileName => !!~target.languages.indexOf(getLanguage(fileName)))
-    .map(async (fileName) => {
-      try {
-        let html = await fs.promises.readFile(fileName, 'utf8');
-        const $ = cheerio.load(html);
-
-        const filesToCopy = $('[src]').toArray().map(a => $(a).attr('src'));
-        await fs.promises.copyFile(`${fileName.split('_')[0]}.png`, `${targetDir}${path.basename(fileName).split('_')[0]}.png`);
-
-        await Promise.all(filesToCopy.map(async fileName => {
-          if (fileName.length > 40) return;
-          const ext = path.extname(fileName).slice(1);
-          html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
-
-          let file = await fs.promises.readFile(`${fileName}`, 'utf8');
-          file = addKiwixPrefixes(file, targetDir);
-          return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
-        }));
-        await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, html, 'utf8');
-      } catch (err) {
-        throw err;
-      }
-    })
-  );
+  await extractResources(target, targetDir);
 
   const languageMappings = target.languages.reduce((acc, langCode) => {
     op.set(acc, langCode, languages[langCode].localName);
@@ -187,18 +199,19 @@ const exportTarget = async (target) => {
 
 const exportData = async () => {
   const now = new Date();
-  const targets = Object.keys(languages)
-    .map(lang => {
-      return {
-        // todo refactor this
-        output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
-        languages: [lang]
-      };
-    }).concat({
-      // todo refactor this
-      output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
-      languages: Object.keys(languages)
-    });
+  const targets = [{
+    // todo refactor this
+    output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+    languages: Object.keys(languages)
+  }];
+  if (!argv.mulOnly) targets.concat(
+    Object.keys(languages)
+      .map(lang => ({
+          // todo refactor this
+          output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+          languages: [lang]
+      }))
+  );
 
   for (const target of targets) {
     await exportTarget(target);
