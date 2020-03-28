@@ -23,7 +23,7 @@ const {argv} = yargs
 
 const outDir = 'state/get/';
 const imageResolution = 600;
-const categoriesToGet = [
+const rootCategories = [
   'Physics',
   'Biology',
   'Chemistry',
@@ -37,14 +37,7 @@ const options = {
   prefixUrl: 'https://phet.colorado.edu',
   retry: {
     limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-    timeout: 3000,
-    hooks: {
-      beforeRetry: [
-        (options, error, retryCount) => {
-          log.warn(error);
-        }
-      ]
-    }
+    timeout: 3000
   }
 };
 
@@ -57,14 +50,17 @@ const popValueUpIfExists = (items: string[], value: string) => {
 // common data
 const delay = RateLimit(rps);
 const languages: LanguageItemPair<LanguageDescriptor> = {};
-const categoriesTree = {};
-const subCategoriesList = {};
+const simsTree = {};
+const categoriesList = {};
 
-const fetchLanguages = async () => {
+const fetchLanguages = async (): Promise<void> => {
   const $ = cheerio.load((await got('/en/simulations/translated', {...options})).body);
   const rows = $('.translated-sims tr').toArray();
   rows.shift();
-  if (rows.length === 0) return log.error(`Failed to fetch languages`);
+  if (rows.length === 0) {
+    log.error(`Failed to fetch languages`);
+    return;
+  }
 
   rows.forEach((item) => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href');
@@ -87,33 +83,26 @@ const fetchLanguages = async () => {
   }
 };
 
-const fetchCategoriesTree = async () => {
+const fetchCategoriesTree = async (): Promise<void> => {
   log.info(`Getting category trees...`);
   const fallbackLanguages = new Set();
   await Promise.all(popValueUpIfExists(Object.keys(languages), 'en').map(
-    async (lang) => await Promise.all(categoriesToGet.map(async (categoryTitle) => {
+    async (lang) => await Promise.all(rootCategories.map(async (categoryTitle) => {
       try {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
         const $ = cheerio.load((await got(`/${lang}/simulations/category/${categorySlug}/index`, {...options})).body);
 
-        // extract the sims
-        const sims = $('.simulation-index a').toArray();
-        if (sims.length === 0) log.error(`Failed to get sims for category ${categoryTitle}`);
-        log.debug(`- [${lang}] ${categorySlug}: ${sims.length}`);
-
-        sims.map((item) => {
-          const slug = $(item).attr('href').split('/').pop();
-          op.push(categoriesTree, `${lang}.${slug}`, categoryTitle);
-        });
+        const translatedCat = $('.regular-page-title').text().split('  ')?.shift() || categoryTitle;
+        op.set(categoriesList, `${lang}.${translatedCat}`, `${categorySlug}`);
+        log.debug(`+ [${lang}] ${categorySlug}`);
 
         // gather sub-categories
-        const translatedCat = $('.side-nav ul.parents .parent a').text();
         return $('.side-nav ul.parents ul.children a').toArray()
           .map((item) => {
             const title = $(item).text();
             const slug = $(item).attr('href').split('/').pop();
-            op.set(subCategoriesList, `${lang}.${translatedCat || categoryTitle} / ${title}`, `${categorySlug}/${slug}`);
+            op.set(categoriesList, `${lang}.${translatedCat} / ${title}`, `${categorySlug}/${slug}`);
           });
       } catch (e) {
         fallbackLanguages.add(lang);
@@ -124,8 +113,8 @@ const fetchCategoriesTree = async () => {
   if (fallbackLanguages.size > 0) log.warn(`The following (${fallbackLanguages.size}) language(s) will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
 };
 
-const fetchSubCategories = async () => {
-  await Promise.all(Object.entries(subCategoriesList).map(
+const fetchSimsList = async (): Promise<void> => {
+  await Promise.all(Object.entries(categoriesList).map(
     async ([lang, subcats]) => await Promise.all(Array.from(new Set(Object.entries(subcats))).map(async ([subCatTitle, subCatSlug]) => {
       try {
         await delay();
@@ -138,7 +127,7 @@ const fetchSubCategories = async () => {
 
         sims.map((item) => {
           const slug = $(item).attr('href').split('/').pop();
-          op.push(categoriesTree, `${lang}.${slug}`, subCatTitle);
+          op.push(simsTree, `${lang}.${slug}`, subCatTitle);
         });
       } catch (e) {
         if (verbose) {
@@ -155,15 +144,15 @@ const fetchSubCategories = async () => {
 
 const getItemCategories = (lang: string, slug: string): Category[] => {
   // fallback to english
-  const categoryTitles = op.get(categoriesTree, `${lang}.${slug}`, op.get(categoriesTree, `en.${slug}`));
+  const categoryTitles = op.get(simsTree, `${lang}.${slug}`, op.get(simsTree, `en.${slug}`));
   return categoryTitles ? categoryTitles.map(title => ({
     title,
-    slug: subCategoriesList[title] || slugify(title, {lower: true})
+    slug: categoriesList[title] ?? slugify(title, {lower: true})
   })) : [];
 };
 
 
-const getSims = async () => {
+const fetchSims = async (): Promise<void> => {
   log.info(`Gathering "translated" index pages...`);
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
   bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
@@ -317,7 +306,7 @@ const getSims = async () => {
   welcome('get');
   await fetchLanguages();
   await fetchCategoriesTree();
-  await fetchSubCategories();
-  await getSims();
+  await fetchSimsList();
+  await fetchSims();
   log.info('Done.');
 })();
