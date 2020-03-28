@@ -7,7 +7,7 @@ import * as dotenv from 'dotenv';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
 import {RateLimit} from 'async-sema';
-import * as progress from 'cli-progress';
+import {Presets, SingleBar} from 'cli-progress';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
@@ -154,7 +154,7 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 
 const fetchSims = async (): Promise<void> => {
   log.info(`Gathering "translated" index pages...`);
-  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
+  const bar = new SingleBar(barOptions, Presets.shades_classic);
   bar.start(Object.keys(languages).length, 0);
 
   const simIds = await Promise.all(Object.keys(languages)
@@ -244,7 +244,7 @@ const fetchSims = async (): Promise<void> => {
           }
         } finally {
           bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
-          if (!bar.terminal.isTTY()) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
+          if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
         }
       }));
       return await catalog.persist(path.join(outDir, 'catalogs'));
@@ -282,7 +282,7 @@ const fetchSims = async (): Promise<void> => {
       const writeStream = fs.createWriteStream(outDir + fileName)
         .on('close', _ => {
           bar.increment(1, {prefix: '', postfix: fileName});
-          if (!bar.terminal.isTTY()) log.info(` + ${path.basename(fileName)}`);
+          if (!process.stdout.isTTY) log.info(` + ${path.basename(fileName)}`);
           resolve();
         });
 

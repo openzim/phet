@@ -1,6 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as glob from 'glob';
 import * as op from 'object-path';
+import {SingleBar} from 'cli-progress';
+import asyncPool from 'tiny-async-pool';
 
 import {log} from './logger';
 import {Simulation} from './types';
@@ -104,7 +107,7 @@ export class Catalog {
       op.set(acc, langCode, this.languages[langCode].localName);
       return acc;
     }, {});
-    }
+  }
 
   private async fetchSimsByLanguage(): Promise<void> {
     for (const langCode of this.target.languages) {
@@ -121,6 +124,60 @@ export class Catalog {
     } catch (e) {
       log.error(`Failed to get catalog for language ${lang}`);
       log.error(e);
+    }
+  }
+}
+
+
+export class Transformer {
+
+  private readonly source: string;
+  private readonly bar: SingleBar;
+  private readonly handler: (any) => Promise<any>;
+  private readonly verbose: boolean;
+  private readonly workers: number;
+
+  constructor({source, bar, handler, verbose = false, serial = false, workers = 0}) {
+    this.source = source;
+    this.bar = bar;
+    this.handler = handler;
+    this.verbose = verbose;
+    this.workers = workers;
+  }
+
+  public async transform(): Promise<any[]> {
+    const items: string[] = await Promise.all(glob.sync(this.source, {}));
+    this.bar.start(items.length, 0);
+
+    let result = [];
+    if (this.workers === 0) {
+      for (const item of items) {
+        result.push(await this.handle(item));
+      }
+    } else {
+      result = await asyncPool(
+        this.workers,
+        items,
+        (item) => this.handle(item)
+      );
+    }
+    this.bar.stop();
+    return result;
+  }
+
+  private async handle(item) {
+    try {
+      await this.handler(item);
+    } catch (e) {
+      if (this.verbose) {
+        log.error(`Error while processing: ${item}`);
+        log.error(e);
+      } else {
+        log.warn(`Unable to processing ${item}. Skipping it.`);
+      }
+    } finally {
+      this.bar.increment(1, {prefix: '', postfix: path.basename(item)});
+      if (!process.stdout.isTTY) log.info(` + ${path.basename(item)}`);
     }
   }
 }

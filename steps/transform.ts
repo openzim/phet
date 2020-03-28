@@ -6,10 +6,10 @@ import * as dotenv from 'dotenv';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
 import * as imagemin from 'imagemin';
-import asyncPool from 'tiny-async-pool';
-import * as progress from 'cli-progress';
+
 import * as minifier from 'html-minifier';
 import * as imageminSvgo from 'imagemin-svgo';
+import {Presets, SingleBar} from 'cli-progress';
 import * as imageminGifsicle from 'imagemin-gifsicle';
 import * as imageminPngcrush from 'imagemin-pngcrush';
 import * as imageminJpegoptim from 'imagemin-jpegoptim';
@@ -17,82 +17,50 @@ import * as imageminJpegoptim from 'imagemin-jpegoptim';
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
 import {barOptions} from '../lib/common';
-import {Base64Entity} from '../lib/classes';
+import {Base64Entity, Transformer} from '../lib/classes';
+
 
 dotenv.config();
 
 const inDir = 'state/get/';
 const outDir = 'state/transform/';
-const workers = process.env.PHET_WORKERS || 10;
-
+const workers = process.env.PHET_WORKERS !== undefined ? parseInt(process.env.PHET_WORKERS, 10) : 10;
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
-
 
 const convertImages = async (): Promise<void> => {
   log.info('Converting images...');
-  const images: string[] = await Promise.all(glob.sync(`${inDir}/*.{jpg,jpeg,png,svg}`, {}));
-  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
-
-  bar.start(images.length, 0);
-  await asyncPool(
+  const transformer = new Transformer({
+    source: `${inDir}/*.{jpg,jpeg,png,svg}`,
+    bar: new SingleBar(barOptions, Presets.shades_classic),
     workers,
-    images,
-    async (file) => imagemin([file], outDir, {
-      plugins: [
-        imageminJpegoptim(),
-        imageminPngcrush(),
-        imageminSvgo(),
-        imageminGifsicle()
-      ]
+    handler: async (file) => await imagemin([file], outDir, {
+      glob: false,
+      plugins: [imageminJpegoptim(), imageminPngcrush(), imageminSvgo(), imageminGifsicle()]
     })
-      .catch(e => {
-        if (verbose) {
-          log.error(`Error while processing the image: ${file}`);
-          log.error(e);
-        } else {
-          log.warn(`Unable to processing the image ${file}. Skipping it.`);
-        }
-      })
-      .finally(() => {
-        bar.increment(1, {prefix: '', postfix: path.basename(file)});
-        if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
-      })
-  );
-  bar.stop();
+  });
+  await transformer.transform();
 };
 
 const convertDocuments = async (): Promise<void> => {
-  log.info('Processing documents...');
-  const documents: string[] = await Promise.all(glob.sync(`${inDir}/*.html`, {}));
-  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
-  bar.start(documents.length, 0);
-
-  for (const file of documents) {
-    try {
+  log.info('Converting documents...');
+  const transformer = new Transformer({
+    source: `${inDir}/*.html`,
+    bar: new SingleBar(barOptions, Presets.shades_classic),
+    workers,
+    handler: async (file) => {
       let data = await fs.promises.readFile(file, 'utf8');
       const basename = path.basename(file);
       data = await extractBase64(basename, data);
       data = removeStrings(data);
       data = await extractLanguageElements(basename, data);
       await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
-    } catch (e) {
-      if (verbose) {
-        log.error(`Error while processing the document: ${file}`);
-        log.error(e);
-      } else {
-        log.warn(`Unable to processing the document ${file}. Skipping it.`);
-      }
-    } finally {
-      bar.increment(1, {prefix: '', postfix: path.basename(file)});
-      if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
     }
-  }
-  bar.stop();
+  });
+  await transformer.transform();
 };
 
 const extractLanguageElements = async (fileName, html): Promise<string> => {
   const $ = cheerio.load(html);
-
   await Promise.all($('script')
     .toArray()
     .map(script => op.get(script, 'children.0.data', ''))

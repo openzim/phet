@@ -9,15 +9,15 @@ import * as rimraf from 'rimraf';
 import * as dotenv from 'dotenv';
 import * as cheerio from 'cheerio';
 import * as iso6393 from 'iso-639-3';
-import * as progress from 'cli-progress';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
 import {log} from '../lib/logger';
+import {Target} from '../lib/types';
 import welcome from '../lib/welcome';
 import {Catalog} from '../lib/classes';
+import {Presets, SingleBar} from 'cli-progress';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
-import {Target} from '../lib/types';
 
 dotenv.config();
 
@@ -78,7 +78,7 @@ const getISO6393 = (lang = 'en') => {
 
 
 const extractResources = async (target, targetDir: string): Promise<void> => {
-  const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+  const bar = new SingleBar({}, Presets.shades_classic);
   const files = glob.sync(`${inDir}/*_@(${target.languages.join('|')}).html`, {});
   bar.start(files.length, 0);
 
@@ -109,7 +109,7 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
       }
     } finally {
       bar.increment();
-      if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
+      if (!process.stdout.isTTY) log.info(` + ${path.basename(file)}`);
     }
   }
   bar.stop();
@@ -161,7 +161,7 @@ const exportTarget = async (target: Target) => {
     Scraper: 'openzim/phet'
   });
 
-  const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+  const bar = new SingleBar({}, Presets.shades_classic);
   const files = glob.sync(`${targetDir}/*`, {});
   bar.start(files.length, 0);
 
