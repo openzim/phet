@@ -14,15 +14,6 @@ export type Simulation = {
   description: string
 };
 
-export type Catalog = {
-  languageMappings: {
-    [langCode: string]: string,
-  }
-  simsByLanguage: {
-    [langCode: string]: Simulation[]
-  }
-};
-
 export type LanguageDescriptor = {
   slug: string,
   name: string,
@@ -33,4 +24,9 @@ export type LanguageDescriptor = {
 
 export type LanguageItemPair<T> = {
   [lang: string]: T,
+};
+
+export type Target = {
+  output: string,
+  languages: string[]
 };

@@ -1,6 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as op from 'object-path';
+
+import {log} from './logger';
 import {Simulation} from './types';
+import {getIdAndLanguage} from './common';
 
 
 export class Base64Entity {
@@ -64,5 +68,60 @@ export class SimulationsList {
       if (a[propName] < b[propName]) return -1;
       return 0;
     };
+  }
+}
+
+
+export class Catalog {
+  public languageMappings: { [langCode: string]: string };
+  public simsByLanguage: { [langCode: string]: Simulation[] };
+
+  private readonly catalogsDir: string;
+  private readonly target;
+  private readonly languages;
+  private titlesById = {};
+
+
+  constructor({target, languages, catalogsDir}) {
+    this.catalogsDir = catalogsDir;
+    this.target = target;
+    this.languages = languages;
+  }
+
+  public async init() {
+    this.fetchLanguageMappings();
+    this.fetchSimsByLanguage();
+  }
+
+  public getTitle(filename: string): string {
+    if (path.extname(filename) !== '.html') return filename;
+    const [simId, language] = getIdAndLanguage(filename);
+    return op.get(this.titlesById, [language, simId]);
+  }
+
+  private fetchLanguageMappings(): void {
+    this.languageMappings = this.target.languages.reduce((acc, langCode) => {
+      op.set(acc, langCode, this.languages[langCode].localName);
+      return acc;
+    }, {});
+    }
+
+  private fetchSimsByLanguage(): void {
+    this.simsByLanguage = this.target.languages.reduce(async (acc, langCode) => {
+      const cat = await this.getCatalog(langCode);
+      op.set(acc, langCode, cat);
+      cat.forEach((item) => op.set(this.titlesById, [langCode, item.id], item.title));
+      return acc;
+    }, {});
+  }
+
+  private async getCatalog(lang): Promise<Simulation[]> {
+    try {
+      const file = await fs.promises.readFile(path.join(this.catalogsDir, `${lang}.json`));
+      return JSON.parse(file.toString());
+    } catch (e) {
+      log.error(`Failed to get catalog for language ${lang}`);
+      log.error(e);
+    }
   }
 }

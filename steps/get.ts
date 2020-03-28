@@ -11,8 +11,8 @@ import * as progress from 'cli-progress';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
-import {barOptions} from '../lib/common';
 import {SimulationsList} from '../lib/classes';
+import {barOptions, getIdAndLanguage} from '../lib/common';
 import {Category, LanguageDescriptor, LanguageItemPair, Simulation} from '../lib/types';
 
 dotenv.config();
@@ -46,11 +46,6 @@ const options = {
       ]
     }
   }
-};
-
-const getIdAndLanguage = (url: string): string[] => {
-  if (!url) throw new Error('Got empty url');
-  return /([^_]*)_([^]*)\./.exec(path.basename(url)).slice(1, 3);
 };
 
 const popValueUpIfExists = (items: string[], value: string) => {

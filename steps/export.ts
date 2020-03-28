@@ -7,7 +7,6 @@ import * as yargs from 'yargs';
 import {promisify} from 'util';
 import * as rimraf from 'rimraf';
 import * as dotenv from 'dotenv';
-import * as op from 'object-path';
 import * as cheerio from 'cheerio';
 import * as iso6393 from 'iso-639-3';
 import * as progress from 'cli-progress';
@@ -15,9 +14,10 @@ import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
-import {Catalog, Simulation} from '../lib/types';
+import {Catalog} from '../lib/classes';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
+import {Target} from '../lib/types';
 
 dotenv.config();
 
@@ -59,16 +59,6 @@ const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-';
 const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`;
 
 const getLanguage = (fileName) => fileName.split('_').pop().split('.')[0];
-
-const getCatalog = async (lang): Promise<Simulation[]> => {
-  try {
-    const file = await fs.promises.readFile(path.join(catalogsDir, `${lang}.json`));
-    return JSON.parse(file.toString());
-  } catch (e) {
-    log.error(`Failed to get catalog for language ${lang}`);
-    if (verbose) log.error(e);
-  }
-};
 
 const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
   const resources = file.match(/[0-9a-f]{32}\.(svg|jpg|jpeg|png|js)/g) || [];
@@ -119,33 +109,21 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
       }
     } finally {
       bar.increment();
+      if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
     }
   }
   bar.stop();
 };
 
-const exportTarget = async (target) => {
+const exportTarget = async (target: Target) => {
   const targetDir = `${outDir}${target.output}/`;
 
   await rimrafPromised(targetDir);
   await fs.promises.mkdir(targetDir);
   await extractResources(target, targetDir);
 
-  const languageMappings = target.languages.reduce((acc, langCode) => {
-    op.set(acc, langCode, languages[langCode].localName);
-    return acc;
-  }, {});
-
-  const simsByLanguage = await target.languages.reduce(async (acc, langCode) => {
-    const cat = await getCatalog(langCode);
-    op.set(acc, langCode, cat);
-    return acc;
-  }, {});
-
-  const catalog: Catalog = {
-    languageMappings,
-    simsByLanguage
-  };
+  const catalog = new Catalog({target, languages, catalogsDir});
+  await catalog.init();
 
   // Generate index file
   const templateHTML = await fs.promises.readFile(resDir + 'template.html', 'utf8');
@@ -191,7 +169,7 @@ const exportTarget = async (target) => {
     await creator.addArticle(
       new ZimArticle({
         url: path.basename(file),
-        // title:
+        title: catalog.getTitle(path.basename(file)),
         data: await fs.promises.readFile(file),
         ns: getNamespaceByExt(path.extname(file).slice(1))
       })
@@ -206,7 +184,7 @@ const exportTarget = async (target) => {
 
 const exportData = async () => {
   const now = new Date();
-  const targets = [{
+  const targets: Target[] = [{
     // todo refactor this
     output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
     languages: Object.keys(languages)
