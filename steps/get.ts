@@ -155,7 +155,7 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 const fetchSims = async (): Promise<void> => {
   log.info(`Gathering "translated" index pages...`);
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
-  bar.start(Object.keys(languages).length, 0, {prefix: '', postfix: 'N/A'});
+  bar.start(Object.keys(languages).length, 0);
 
   const simIds = await Promise.all(Object.keys(languages)
     .map(async (lang) => {
@@ -192,7 +192,7 @@ const fetchSims = async (): Promise<void> => {
 
   log.info(`Gathering sim links...`);
   const simCount = simIds.reduce((acc, {data}) => acc + data.length, 0);
-  bar.start(simCount, 0, {prefix: '', postfix: 'N/A'});
+  bar.start(simCount, 0);
 
   let urlsToGet = [];
 
@@ -255,7 +255,7 @@ const fetchSims = async (): Promise<void> => {
   urlsToGet = Array.from(new Set(urlsToGet));
 
   log.info(`Getting documents and images...`);
-  bar.start(urlsToGet.length, 0, {prefix: '', postfix: 'N/A'});
+  bar.start(urlsToGet.length, 0);
 
   await Promise.all(urlsToGet.map(async (url) => {
     await delay();

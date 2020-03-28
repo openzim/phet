@@ -54,7 +54,7 @@ const convertImages = async (): Promise<void> => {
         }
       })
       .finally(() => {
-        bar.increment();
+        bar.increment(1, {prefix: '', postfix: path.basename(file)});
         if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
       })
   );
@@ -65,19 +65,15 @@ const convertDocuments = async (): Promise<void> => {
   log.info('Processing documents...');
   const documents: string[] = await Promise.all(glob.sync(`${inDir}/*.html`, {}));
   const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
-  bar.start(documents.length * 5, 0);
+  bar.start(documents.length, 0);
 
   for (const file of documents) {
     try {
       let data = await fs.promises.readFile(file, 'utf8');
-      bar.increment();
       const basename = path.basename(file);
       data = await extractBase64(basename, data);
-      bar.increment();
       data = removeStrings(data);
-      bar.increment();
       data = await extractLanguageElements(basename, data);
-      bar.increment();
       await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
     } catch (e) {
       if (verbose) {
@@ -87,7 +83,7 @@ const convertDocuments = async (): Promise<void> => {
         log.warn(`Unable to processing the document ${file}. Skipping it.`);
       }
     } finally {
-      bar.increment();
+      bar.increment(1, {prefix: '', postfix: path.basename(file)});
       if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
     }
   }
