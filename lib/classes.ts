@@ -90,11 +90,11 @@ export class Catalog {
 
   public async init() {
     this.fetchLanguageMappings();
-    this.fetchSimsByLanguage();
+    await this.fetchSimsByLanguage();
   }
 
   public getTitle(filename: string): string {
-    if (path.extname(filename) !== '.html') return filename;
+    if (path.extname(filename) !== '.html' || ['index.html', 'template.html'].includes(filename)) return filename;
     const [simId, language] = getIdAndLanguage(filename);
     return op.get(this.titlesById, [language, simId]);
   }
@@ -106,8 +106,8 @@ export class Catalog {
     }, {});
     }
 
-  private fetchSimsByLanguage(): void {
-    this.simsByLanguage = this.target.languages.reduce(async (acc, langCode) => {
+  private async fetchSimsByLanguage(): Promise<void> {
+    this.simsByLanguage = await this.target.languages.reduce(async (acc, langCode) => {
       const cat = await this.getCatalog(langCode);
       op.set(acc, langCode, cat);
       cat.forEach((item) => op.set(this.titlesById, [langCode, item.id], item.title));
