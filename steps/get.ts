@@ -11,6 +11,7 @@ import * as progress from 'cli-progress';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
+import {barOptions} from '../lib/common';
 import {SimulationsList} from '../lib/classes';
 import {Category, LanguageDescriptor, LanguageItemPair, Simulation} from '../lib/types';
 
@@ -46,13 +47,6 @@ const options = {
     }
   }
 };
-
-const barOptions = {
-  clearOnComplete: false,
-  autopadding: true,
-  format: '{prefix} {bar} {percentage}% | ETA: {eta}s | {value}/{total} | {postfix}'
-};
-
 
 const getIdAndLanguage = (url: string): string[] => {
   if (!url) throw new Error('Got empty url');

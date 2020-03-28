@@ -16,6 +16,7 @@ import * as imageminJpegoptim from 'imagemin-jpegoptim';
 
 import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
+import {barOptions} from '../lib/common';
 import {Base64Entity} from '../lib/classes';
 
 dotenv.config();
@@ -27,10 +28,10 @@ const workers = process.env.PHET_WORKERS || 10;
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
 
-const transform = async () => {
+const convertImages = async (): Promise<void> => {
   log.info('Converting images...');
   const images: string[] = await Promise.all(glob.sync(`${inDir}/*.{jpg,jpeg,png,svg}`, {}));
-  const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
+  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
 
   bar.start(images.length, 0);
   await asyncPool(
@@ -52,41 +53,46 @@ const transform = async () => {
           log.warn(`Unable to processing the image ${file}. Skipping it.`);
         }
       })
-      .finally(() => bar.increment())
-  );
-  bar.stop();
-
-  log.info('Processing documents...');
-  const documents: string[] = await Promise.all(glob.sync(`${inDir}/*.html`, {}));
-
-  bar.start(documents.length, 0);
-  await asyncPool(
-    workers,
-    documents,
-    async (file) => {
-      try {
-        let data = (await fs.promises.readFile(file, 'utf8'));
-        const basename = path.basename(file);
-        data = await extractBase64(basename, data);
-        data = removeStrings(data);
-        data = await extractLanguageElements(basename, data);
-        return await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
-      } catch (e) {
-        if (verbose) {
-          log.error(`Error while processing the document: ${file}`);
-          log.error(e);
-        } else {
-          log.warn(`Unable to processing the document ${file}. Skipping it.`);
-        }
-      } finally {
+      .finally(() => {
         bar.increment();
-      }
-    }
+        if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
+      })
   );
   bar.stop();
-  log.info('Done.');
 };
 
+const convertDocuments = async (): Promise<void> => {
+  log.info('Processing documents...');
+  const documents: string[] = await Promise.all(glob.sync(`${inDir}/*.html`, {}));
+  const bar = new progress.SingleBar(barOptions, progress.Presets.shades_classic);
+  bar.start(documents.length * 5, 0);
+
+  for (const file of documents) {
+    try {
+      let data = await fs.promises.readFile(file, 'utf8');
+      bar.increment();
+      const basename = path.basename(file);
+      data = await extractBase64(basename, data);
+      bar.increment();
+      data = removeStrings(data);
+      bar.increment();
+      data = await extractLanguageElements(basename, data);
+      bar.increment();
+      await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
+    } catch (e) {
+      if (verbose) {
+        log.error(`Error while processing the document: ${file}`);
+        log.error(e);
+      } else {
+        log.warn(`Unable to processing the document ${file}. Skipping it.`);
+      }
+    } finally {
+      bar.increment();
+      if (!bar.terminal.isTTY()) log.info(` + ${path.basename(file)}`);
+    }
+  }
+  bar.stop();
+};
 
 const extractLanguageElements = async (fileName, html): Promise<string> => {
   const $ = cheerio.load(html);
@@ -147,6 +153,10 @@ const extractBase64 = async (fileName, html): Promise<string> => {
 
 (async () => {
   welcome('transform');
-  await transform();
+
+  // don't commit this
+  // await convertImages();
+
+  await convertDocuments();
   log.info('Done.');
 })();
