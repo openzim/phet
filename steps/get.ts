@@ -108,11 +108,12 @@ const fetchCategoriesTree = async () => {
         });
 
         // gather sub-categories
+        const translatedCat = $('.side-nav ul.parents .parent a').text();
         return $('.side-nav ul.parents ul.children a').toArray()
           .map((item) => {
             const title = $(item).text();
             const slug = $(item).attr('href').split('/').pop();
-            op.set(subCategoriesList, `${lang}.${categoryTitle}/${title}`, `${categorySlug}/${slug}`);
+            op.set(subCategoriesList, `${lang}.${translatedCat || categoryTitle} / ${title}`, `${categorySlug}/${slug}`);
           });
       } catch (e) {
         fallbackLanguages.add(lang);
