@@ -73,8 +73,8 @@ export class SimulationsList {
 
 
 export class Catalog {
-  public languageMappings: { [langCode: string]: string };
-  public simsByLanguage: { [langCode: string]: Simulation[] };
+  public languageMappings: { [langCode: string]: string } = {};
+  public simsByLanguage: { [langCode: string]: Simulation[] } = {};
 
   private readonly catalogsDir: string;
   private readonly target;
@@ -107,12 +107,11 @@ export class Catalog {
     }
 
   private async fetchSimsByLanguage(): Promise<void> {
-    this.simsByLanguage = await this.target.languages.reduce(async (acc, langCode) => {
+    for (const langCode of this.target.languages) {
       const cat = await this.getCatalog(langCode);
-      op.set(acc, langCode, cat);
+      op.set(this.simsByLanguage, langCode, cat);
       cat.forEach((item) => op.set(this.titlesById, [langCode, item.id], item.title));
-      return acc;
-    }, {});
+    }
   }
 
   private async getCatalog(lang): Promise<Simulation[]> {

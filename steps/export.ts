@@ -184,15 +184,15 @@ const exportTarget = async (target: Target) => {
 
 const exportData = async () => {
   const now = new Date();
+
+  // todo refactor this
   const targets: Target[] = [{
-    // todo refactor this
     output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
     languages: Object.keys(languages)
   }];
   if (!argv.mulOnly) {
     for (const lang of Object.keys(languages)) {
       targets.push({
-        // todo refactor this
         output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
         languages: [lang]
       });
