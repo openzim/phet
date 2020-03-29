@@ -1,4 +1,4 @@
-FROM openzim/zimwriterfs:latest
+FROM node:10
 
 # Install necessary packages, npm and nodejs
 RUN apt-get update && \

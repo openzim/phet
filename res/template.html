@@ -43,18 +43,16 @@
 		<div class="language-container">
 			{{#if languages.length > 1}}
 				<label>
-					Selected language:
 					<select value="{{selectedLanguage}}">
 						{{#each languages}}
-							<option value='{{.}}'>{{.}}</option>
+							<option value='{{this[0]}}'>{{this[1]}}</option>
 						{{/each}}
 					</select>
 				</label>
 			{{/if}}
 			<label>
-				Categories
 				<select value='{{selectedCategory}}'>
-					<option value='all'>All</option>
+					<option value='all'>All categories</option>
 					{{#each categories}}
 						<option value='{{makeCategoryId(.)}}'>{{makeCategoryName(.)}}</option>
 					{{/each}}

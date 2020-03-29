@@ -2,88 +2,82 @@ import * as fs from 'fs';
 import * as md5 from 'md5';
 import * as glob from 'glob';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
-import {minify} from 'html-minifier';
 import * as imagemin from 'imagemin';
-import asyncPool from 'tiny-async-pool';
-import * as progress from 'cli-progress';
+
+import * as minifier from 'html-minifier';
 import * as imageminSvgo from 'imagemin-svgo';
+import {Presets, SingleBar} from 'cli-progress';
 import * as imageminGifsicle from 'imagemin-gifsicle';
 import * as imageminPngcrush from 'imagemin-pngcrush';
 import * as imageminJpegoptim from 'imagemin-jpegoptim';
-import * as config from '../config.js';
-import {Base64Entity} from './classes';
 
+import {log} from '../lib/logger';
+import welcome from '../lib/welcome';
+import {barOptions} from '../lib/common';
+import {Base64Entity, Transformer} from '../lib/classes';
+
+
+dotenv.config();
 
 const inDir = 'state/get/';
 const outDir = 'state/transform/';
+const workers = process.env.PHET_WORKERS !== undefined ? parseInt(process.env.PHET_WORKERS, 10) : 10;
+const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
-const transform = async () => {
-  console.log('Converting images...');
-  const images: string[] = await Promise.all(glob.sync(`${inDir}/*.{jpg,jpeg,png,svg}`, {}));
-  const bar = new progress.SingleBar({}, progress.Presets.shades_classic);
-
-  bar.start(images.length, 0);
-  await asyncPool(
-    config.workers,
-    images,
-    async (file) => imagemin([file], outDir, {
-      plugins: [
-        imageminJpegoptim(),
-        imageminPngcrush(),
-        imageminSvgo(),
-        imageminGifsicle()
-      ]
+const convertImages = async (): Promise<void> => {
+  log.info('Converting images...');
+  const transformer = new Transformer({
+    source: `${inDir}/*.{jpg,jpeg,png,svg}`,
+    bar: new SingleBar(barOptions, Presets.shades_classic),
+    workers,
+    handler: async (file) => await imagemin([file], outDir, {
+      glob: false,
+      plugins: [imageminJpegoptim(), imageminPngcrush(), imageminSvgo(), imageminGifsicle()]
     })
-      .catch(err => {
-        const failedFile = err.message.match(/Error in file: (.*)/)[1].trim();
-        console.log(err.message);
-        fs.unlink(failedFile, () => console.log('The following file is invalid and was deleted:', failedFile));
-      })
-      .finally(() => bar.increment())
-  );
-  bar.stop();
-
-  console.log('Processing documents...');
-  const documents: string[] = await Promise.all(glob.sync(`${inDir}/*.html`, {}));
-
-  bar.start(documents.length, 0);
-  await asyncPool(
-    config.workers,
-    documents,
-    async (file) => {
-      try {
-        let data = (await fs.promises.readFile(file, 'utf8'));
-        const basename = path.basename(file);
-        data = await extractBase64(basename, data);
-        data = removeStrings(data);
-        data = await extractLanguageElements(basename, data);
-        return fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
-      } catch (err) {
-        console.error(`Error while processing the file: ${file}`);
-        console.error(err.message);
-      } finally {
-        bar.increment();
-      }
-    }
-  );
-  bar.stop();
-  console.log('Done.');
+  });
+  await transformer.transform();
 };
 
+const convertDocuments = async (): Promise<void> => {
+  log.info('Converting documents...');
+  const transformer = new Transformer({
+    source: `${inDir}/*.html`,
+    bar: new SingleBar(barOptions, Presets.shades_classic),
+    workers,
+    handler: async (file) => {
+      let data = await fs.promises.readFile(file, 'utf8');
+      const basename = path.basename(file);
+      data = await extractBase64(basename, data);
+      data = removeStrings(data);
+      data = await extractLanguageElements(basename, data);
+      await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
+    }
+  });
+  await transformer.transform();
+};
 
 const extractLanguageElements = async (fileName, html): Promise<string> => {
   const $ = cheerio.load(html);
-
   await Promise.all($('script')
     .toArray()
     .map(script => op.get(script, 'children.0.data', ''))
     .filter(x => x)
     .map(async (script, index) => {
       const newFileName = md5(script);
-      await fs.promises.writeFile(`${outDir}${newFileName}.js`, script.trim(), 'utf8');
-      return html.replace(script, `</script><script src='${newFileName}.js'>`);
+      try {
+        await fs.promises.writeFile(`${outDir}${newFileName}.js`, script.trim(), 'utf8');
+        html = html.replace(script, `</script><script src='${newFileName}.js'>`);
+      } catch (e) {
+        if (verbose) {
+          log.error(`Failed to extract script from ${fileName}`);
+          log.error(e);
+        } else {
+          log.warn(`Unable to extract script from ${fileName}. Skipping it.`);
+        }
+      }
     })
   );
   return html;
@@ -93,7 +87,7 @@ const removeStrings = (html): string => {
   const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
   if (htmlSplit.length === 1) return html;
   html = htmlSplit[0] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[1];
-  html = minify(html, {removeComments: true});
+  html = minifier.minify(html, {removeComments: true});
   return html;
 };
 
@@ -121,4 +115,9 @@ const extractBase64 = async (fileName, html): Promise<string> => {
   return html;
 };
 
-(async () => transform())();
+(async () => {
+  welcome('transform');
+  await convertImages();
+  await convertDocuments();
+  log.info('Done.');
+})();
