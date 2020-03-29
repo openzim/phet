@@ -74,6 +74,11 @@ select {
     margin: 10px 0;
 }
 
+.language-container select {
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
 .card-cont {
     width: 90%;
     margin: 0 auto;
@@ -87,6 +92,7 @@ select {
     -webkit-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
     -moz-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
     box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
+    cursor: pointer;
 }
 
 .sim-card img {
@@ -94,7 +100,7 @@ select {
 }
 
 .sim-card .overlay {
-    background: rgba(24, 130, 159, 0.8);
+    cursor: pointer;
     position: absolute;
     top: 0;
     width: 100%;
@@ -106,10 +112,12 @@ select {
     font-weight: 200;
     position: absolute;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(36, 75, 89, 0.85);
     margin: 0;
-    padding: 20px 0;
-    width: 100%;
+    padding: 15px 10px;
+    left: 0;
+    right: 0;
+    width: auto;
 }
 
 .sim-card .fa-info-circle {
