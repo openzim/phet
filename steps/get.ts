@@ -72,7 +72,9 @@ const fetchLanguages = async (): Promise<void> => {
     if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(slug)) return;
     if (argv.excludeLanguages && (argv.excludeLanguages as string[] || []).includes(slug)) return;
 
-    op.set(languages, slug, {slug, name, localName, url, count});
+    if (!Object.keys(languages).includes(/^\w{2}/gm.exec(slug)?.shift())) {
+      op.set(languages, slug, {slug, name, localName, url, count});
+    }
   });
   try {
     await fs.promises.writeFile(`${outDir}languages.json`, JSON.stringify(languages), 'utf8');
