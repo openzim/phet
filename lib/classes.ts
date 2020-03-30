@@ -102,6 +102,12 @@ export class Catalog {
     return op.get(this.titlesById, [language, simId]);
   }
 
+  public isEmpty(): boolean {
+    const count = Object.keys(this.simsByLanguage).reduce((acc, langCode) =>
+      acc + op.get(this.simsByLanguage[langCode].length) as number, 0);
+    return count === 0;
+  }
+
   private fetchLanguageMappings(): void {
     this.languageMappings = this.target.languages.reduce((acc, langCode) => {
       op.set(acc, langCode, this.languages[langCode].localName);
