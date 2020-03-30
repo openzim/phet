@@ -124,6 +124,10 @@ const exportTarget = async (target: Target) => {
 
   const catalog = new Catalog({target, languages, catalogsDir});
   await catalog.init();
+  if (catalog.isEmpty()) {
+    log.info(`Skipping ${target.output}.zim (empty)`);
+    return;
+  }
 
   // Generate index file
   const templateHTML = await fs.promises.readFile(resDir + 'template.html', 'utf8');
