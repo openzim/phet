@@ -1,8 +1,8 @@
-import {Category, LanguageDescriptor, Simulation} from '../../lib/types';
+import swal from 'sweetalert2';
 import * as ArrayFrom from 'array-from';
+import {Category, Simulation} from '../../lib/types';
 
 if (!(Array as any).from) (Array as any).from = ArrayFrom;
-import swal from 'sweetalert2';
 
 declare global {
   interface Navigator {
@@ -28,20 +28,23 @@ let navigatorLanguage = (window.navigator &&
 ) || 'en';
 
 navigatorLanguage = window.importedData.languageMappings[navigatorLanguage.split('-')[0]];
-let languageToUse = window.importedData.simsByLanguage[navigatorLanguage] ? navigatorLanguage : Object.keys(window.importedData.simsByLanguage)[0];
+const languageToUse = window.importedData.simsByLanguage[navigatorLanguage] ? navigatorLanguage : Object.keys(window.importedData.simsByLanguage)[0];
 
-let currentLanguage = (localStorage && localStorage[window.lsPrefix + 'currentLanguage']) ?
+const currentLanguage = (localStorage && localStorage[window.lsPrefix + 'currentLanguage']) ?
   localStorage[window.lsPrefix + 'currentLanguage'] :
   languageToUse;
 
-let ractive = new Ractive({
+const currentCategory = (localStorage && localStorage[window.lsPrefix + 'currentCategory']) ?
+  localStorage[window.lsPrefix + 'currentCategory'] : 'all';
+
+const ractive = new Ractive({
   el: '#ractive-target',
   template: '#ractive-template',
   computed: {
     languages() {
       return Object.entries(this.get('languageMappings'));
     },
-    categories () {
+    categories() {
       const lang = this.get('selectedLanguage');
       const sims = this.get(`simulationsByLanguage.${lang}`);
       const makeCategoryId = this.get('makeCategoryId');
@@ -49,7 +52,7 @@ let ractive = new Ractive({
         .sort((a, b) => makeCategoryId(a) < makeCategoryId(b) ? -1 : 1)
         .filter((val, index, arr) => makeCategoryId(val) !== makeCategoryId(arr[index - 1] || []));
     },
-    simulations () {
+    simulations() {
       const lang = this.get('selectedLanguage');
       const sims = this.get(`simulationsByLanguage.${lang}`);
       const category = this.get('selectedCategory') || 'all';
@@ -66,6 +69,7 @@ let ractive = new Ractive({
   data: {
     simulationsByLanguage: window.importedData.simsByLanguage,
     selectedLanguage: currentLanguage,
+    selectedCategory: currentCategory,
     languageMappings: window.importedData.languageMappings,
 
     makeCategoryId(category: Category) {
@@ -75,17 +79,15 @@ let ractive = new Ractive({
       return category.title;
     },
     getSlug: (item) => {
-        return JSON.stringify(item);
-    },
-    // getTitle: ([k, v]) => {
-    //     return v;
-    // }
+      return JSON.stringify(item);
+    }
   },
   oninit() {
     this.observe('selectedLanguage', function (selectedLanguage) {
-      if (localStorage) {
-        localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
-      }
+      if (localStorage) localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
+    });
+    this.observe('selectedCategory', function (selectedCategory) {
+      if (localStorage) localStorage[window.lsPrefix + 'currentCategory'] = selectedCategory;
     });
     this.on('showConfirm', function (ev) {
       const simulation: Simulation = ev.context;
@@ -96,20 +98,20 @@ let ractive = new Ractive({
       swal.fire({
         title: `${simulation.title}`,
         html: `
-                <div>
-                    <img src='../I/${simulation.id}.png' />
-                </div>
-                <div class='flex-cont'>
-                    <div>
-                        <span>Categories</span>
-                        <ul>${categoryHTML}</ul>
-                    </div>
-                    <div>
-                        <span>Topics</span>
-                        <ul class='topics'>${topicsHTML}</ul>
-                    </div>
-                </div>
-                <div class='description'>${simulation.description}</div>`,
+          <div>
+            <img src='../I/${simulation.id}.png' />
+          </div>
+          <div class='flex-cont'>
+            <div>
+              <span>Categories</span>
+              <ul>${categoryHTML}</ul>
+            </div>
+            <div>
+              <span>Topics</span>
+              <ul class='topics'>${topicsHTML}</ul>
+            </div>
+          </div>
+          <div class='description'>${simulation.description}</div>`,
         showCloseButton: true,
         showCancelButton: true,
         confirmButtonText: 'Load'
