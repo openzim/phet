@@ -34,6 +34,9 @@ const currentLanguage = (localStorage && localStorage[window.lsPrefix + 'current
   localStorage[window.lsPrefix + 'currentLanguage'] :
   languageToUse;
 
+const currentCategory = (localStorage && localStorage[window.lsPrefix + 'currentCategory']) ?
+  localStorage[window.lsPrefix + 'currentCategory'] : 'all';
+
 const ractive = new Ractive({
   el: '#ractive-target',
   template: '#ractive-template',
@@ -66,6 +69,7 @@ const ractive = new Ractive({
   data: {
     simulationsByLanguage: window.importedData.simsByLanguage,
     selectedLanguage: currentLanguage,
+    selectedCategory: currentCategory,
     languageMappings: window.importedData.languageMappings,
 
     makeCategoryId(category: Category) {
@@ -80,9 +84,10 @@ const ractive = new Ractive({
   },
   oninit() {
     this.observe('selectedLanguage', function (selectedLanguage) {
-      if (localStorage) {
-        localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
-      }
+      if (localStorage) localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
+    });
+    this.observe('selectedCategory', function (selectedCategory) {
+      if (localStorage) localStorage[window.lsPrefix + 'currentCategory'] = selectedCategory;
     });
     this.on('showConfirm', function (ev) {
       const simulation: Simulation = ev.context;
