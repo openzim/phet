@@ -84,9 +84,7 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
 };
 
 const removeStrings = (html): string => {
-  const htmlSplit = html.split('// ### START THIRD PARTY LICENSE ENTRIES ###');
-  if (htmlSplit.length === 1) return html;
-  html = htmlSplit[0] + htmlSplit[1].split('// ### END THIRD PARTY LICENSE ENTRIES ###')[1];
+  html = html.replace(/(\/\/ This simulation uses following third-party resources.*?)(window\.phet\.chipper\.strings)/smg, '$2');
   html = minifier.minify(html, {removeComments: true});
   return html;
 };
