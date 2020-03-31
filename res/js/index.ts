@@ -27,7 +27,7 @@ let navigatorLanguage = (window.navigator &&
     window.navigator.language)
 ) || 'en';
 
-navigatorLanguage = window.importedData.languageMappings[navigatorLanguage.split('-')[0]];
+navigatorLanguage = navigatorLanguage.split('-')[0];
 const languageToUse = window.importedData.simsByLanguage[navigatorLanguage] ? navigatorLanguage : Object.keys(window.importedData.simsByLanguage)[0];
 
 const currentLanguage = (localStorage && localStorage[window.lsPrefix + 'currentLanguage']) ?
