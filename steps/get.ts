@@ -1,11 +1,12 @@
-import * as fs from 'fs';
 import got from 'got';
+import * as fs from 'fs';
 import * as path from 'path';
 import slugify from 'slugify';
 import * as yargs from 'yargs';
 import * as dotenv from 'dotenv';
 import * as op from 'object-path';
 import * as cheerio from 'cheerio';
+import * as ISO6391 from 'iso-639-1';
 import {RateLimit} from 'async-sema';
 import {Presets, SingleBar} from 'cli-progress';
 
@@ -66,7 +67,8 @@ const fetchLanguages = async (): Promise<void> => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href');
     const slug = url.split('/').pop();
     const name = $(item).find('td.list-highlight-background:first-child a span').text();
-    const localName = $(item).find('td.list-highlight-background').last().text();
+    // @ts-ignore
+    const localName = ISO6391.getNativeName(slug) ?? $(item).find('td.list-highlight-background').last().text();
     const count = parseInt($(item).find('td.number').text(), 10);
 
     if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(slug)) return;
