@@ -193,6 +193,10 @@ const exportData = async () => {
   const targets: Target[] = [{
     output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
     languages: Object.keys(languages)
+      .filter(lang => {
+        const langCode = /^(\w{2})_/gm.exec(lang)?.pop();
+        return !langCode || !Object.keys(languages).includes(langCode);
+      })
   }];
   if (!argv.mulOnly) {
     for (const lang of Object.keys(languages)) {
