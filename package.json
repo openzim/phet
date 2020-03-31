@@ -34,6 +34,7 @@
     "imagemin-pngcrush": "^6.0.0",
     "imagemin-pngquant": "^7.0.0",
     "imagemin-svgo": "^7.0.0",
+    "iso-639-1": "^2.1.1",
     "iso-639-3": "1.2.0",
     "js-yaml": "^3.13.1",
     "md5": "^2.2.1",
