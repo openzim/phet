@@ -57,7 +57,8 @@ export class SimulationsList {
     try {
       await fs.promises.writeFile(file, JSON.stringify(this.getSortedItems()), 'utf8');
     } catch (e) {
-      console.error(`Failed to save the catalog ${file}`);
+      log.error(`Failed to save the catalog ${file}`);
+      log.error(e);
     }
   }
 
@@ -179,7 +180,7 @@ export class Transformer {
         log.error(`Error while processing: ${item}`);
         log.error(e);
       } else {
-        log.warn(`Unable to processing ${item}. Skipping it.`);
+        log.warn(`Unable to process ${item}. Skipping it.`);
       }
     } finally {
       this.bar.increment(1, {prefix: '', postfix: path.basename(item)});
