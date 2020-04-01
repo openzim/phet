@@ -91,7 +91,7 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
       await fs.promises.copyFile(`${file.split('_')[0]}.png`, `${targetDir}${path.basename(file).split('_')[0]}.png`);
 
       await Promise.all(filesToExtract.map(async fileName => {
-        if (fileName.length > 40) return;
+        if (fileName.length > 40 || fileName.search(/this\.image/) !== -1) return;
         const ext = path.extname(fileName).slice(1);
         html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
 
