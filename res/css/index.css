@@ -64,7 +64,7 @@ label {
 }
 
 select {
-    width: 100%;
+    width: calc(100% - 12px);
     max-width: 300px;
     font-size: 1.5rem;
     padding: 10px;
