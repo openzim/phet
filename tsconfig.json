@@ -12,6 +12,9 @@
         "resolveJsonModule": true
     },
     "files": [
-        "res/js/index.ts"
+        "res/js/index.ts",
+        "steps/get.ts",
+        "steps/transform.ts",
+        "steps/export.ts"
     ]
 }
