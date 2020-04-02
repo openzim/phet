@@ -1,10 +1,5 @@
 language: node_js
 node_js:
   - "10"
-env:
-  - "PHET_RPS=4"
-  - "PHET_WORKERS=2"
-  - "PHET_RETRIES=5"
-  - "PHET_VERBOSE_ERRORS=true"
 before_script: "npm run setup"
-script: "npm run get -- --includeLanguage en && npm run transform && npm run export -- --includeLanguage en --mulOnly"
+script: "export PHET_VERBOSE_ERRORS=true run get -- --includeLanguage en && npm run transform && npm run export -- --includeLanguage en --mulOnly"
