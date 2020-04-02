@@ -1,5 +1,5 @@
-import * as v8 from "v8"
-import {log} from "./logger"
+import * as v8 from 'v8';
+import {log} from './logger';
 
 export default (stage) => {
     log.info(`Node ${process.version}`);
