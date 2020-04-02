@@ -142,15 +142,32 @@ select {
 }
 
 .swal2-modal .swal2-content {
+    height: 100%;
     text-align: left!important;
 }
 
+#swal2-content {
+    height: 100%;
+}
+
+#swal2-content > div {
+    height: calc(100% - 40px);
+}
+
 .swal2-content img {
-    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .swal2-container ul {
     white-space: pre-line;
+}
+
+.swal2-container > div {
+    overflow-y: hidden;
 }
 
 .swal2-buttonswrapper {
@@ -170,6 +187,8 @@ select {
 
 .description {
     margin: 10px;
+    display: block;
+    text-align: center;
 }
 
 @media only screen and (min-width: 320px) and (max-width: 1023px) and (orientation: landscape) {
