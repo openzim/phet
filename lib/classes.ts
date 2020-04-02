@@ -57,7 +57,8 @@ export class SimulationsList {
     try {
       await fs.promises.writeFile(file, JSON.stringify(this.getSortedItems()), 'utf8');
     } catch (e) {
-      console.error(`Failed to save the catalog ${file}`);
+      log.error(`Failed to save the catalog ${file}`);
+      log.error(e);
     }
   }
 
@@ -117,20 +118,20 @@ export class Catalog {
 
   private async fetchSimsByLanguage(): Promise<void> {
     for (const langCode of this.target.languages) {
-      const cat = await this.getCatalog(langCode);
-      op.set(this.simsByLanguage, langCode, cat);
-      cat.forEach((item) => op.set(this.titlesById, [langCode, item.id], item.title));
+      try {
+        const cat = await this.getCatalog(langCode);
+        op.set(this.simsByLanguage, langCode, cat);
+        cat.forEach((item) => op.set(this.titlesById, [langCode, item.id], item.title));
+      } catch (e) {
+        log.error(`Failed to get catalog for language ${langCode}`);
+        log.error(e);
+      }
     }
   }
 
   private async getCatalog(lang): Promise<Simulation[]> {
-    try {
-      const file = await fs.promises.readFile(path.join(this.catalogsDir, `${lang}.json`));
-      return JSON.parse(file.toString());
-    } catch (e) {
-      log.error(`Failed to get catalog for language ${lang}`);
-      log.error(e);
-    }
+    const file = await fs.promises.readFile(path.join(this.catalogsDir, `${lang}.json`));
+    return JSON.parse(file.toString());
   }
 }
 
@@ -179,7 +180,7 @@ export class Transformer {
         log.error(`Error while processing: ${item}`);
         log.error(e);
       } else {
-        log.warn(`Unable to processing ${item}. Skipping it.`);
+        log.warn(`Unable to process ${item}. Skipping it.`);
       }
     } finally {
       this.bar.increment(1, {prefix: '', postfix: path.basename(item)});
