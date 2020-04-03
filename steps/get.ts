@@ -66,15 +66,16 @@ const fetchLanguages = async (): Promise<void> => {
   rows.forEach((item) => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href');
     const slug = url.split('/').pop();
+    const languageCode = /^\w{2}/gm.exec(slug)?.shift();
     const name = $(item).find('td.list-highlight-background:first-child a span').text();
     // @ts-ignore
-    const localName = ISO6391.getNativeName(slug) ?? $(item).find('td.list-highlight-background').last().text();
+    const localName = ISO6391.getNativeName(languageCode) ?? $(item).find('td.list-highlight-background').last().text();
     const count = parseInt($(item).find('td.number').text(), 10);
 
     if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(slug)) return;
     if (argv.excludeLanguages && (argv.excludeLanguages as string[] || []).includes(slug)) return;
 
-    if (!Object.keys(languages).includes(/^\w{2}/gm.exec(slug)?.shift())) {
+    if (!Object.keys(languages).includes(languageCode)) {
       op.set(languages, slug, {slug, name, localName, url, count});
     }
   });
