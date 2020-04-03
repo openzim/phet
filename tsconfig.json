@@ -5,7 +5,7 @@
         "sourceMap": false,
         "noImplicitAny": false,
         "suppressImplicitAnyIndexErrors": true,
-        "allowJs": true,
+        "allowJs": false,
         "module": "commonjs",
         "target": "ES5",
         "skipLibCheck": true,
