@@ -59,11 +59,11 @@ Things this project does not yet do, but should:
 The functionality is split into 5 ```npm scripts```:
 * ```npm run setup``` - deletes state from previous runs
 * ```npm run get``` - downloads PhET simulations in specified languages
-* ```npm run transform``` - generates a JSON file which is used to generate the index
-* ```npm run export``` - generates index and ZIM file
+* ```npm run transform``` - prepare the content and media files
+* ```npm run export``` - generates ZIM file(s)
 * ```npm start``` - runs all of the above in sequence
 
 The steps get, transform and export have their own output directories:
 * ```get``` outputs HTML and PNG files to ```state/get```
-* ```transform``` outputs a JSON file to ```state/transform```
-* ```export``` outputs HTML and PNG files to ```state/export``` AND a ZIM file to ```dist/```
+* ```transform``` outputs intermediate files to ```state/transform```
+* ```export``` outputs HTML and PNG files to ```state/export``` AND a ZIM file(s) to ```dist/```
