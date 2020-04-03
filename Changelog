@@ -1,7 +1,4 @@
-1.0.0:
-* NEW: First version of the Phets scraper
-
-2.0.0
+2.0:
 * Lot of visual improvements
 * Migrated to node-libzim
 * Internal logic reworked
@@ -12,3 +9,7 @@
 * Added code linting
 * Moved to Typescript partially
 * Fixed bugs
+
+1.0:
+* First version of the Phets scraper
+

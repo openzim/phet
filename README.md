@@ -19,15 +19,15 @@ The above will eventually output a ZIM file to ```dist/```
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 
 ## Command line arguments
-Available on GET and EXPORT steps only: 
+Available on GET and EXPORT steps only:
 ~~~
-    --includeLanguages lang_1 [lang_2] [lang_3] ... 
+    --includeLanguages lang_1 [lang_2] [lang_3] ...
     --excludeLanguages lang_1 [lang_2] [lang_3] ...
 ~~~
 Available on EXPORT step only:
 ~~~
-    # skip ZIM files for individual languages 
-    --mulOnly 
+    # skip ZIM files for individual languages
+    --mulOnly
 ~~~
 Example: `npm run get -- --includeLanguages en ru fr`
 
@@ -37,11 +37,11 @@ Another way to configure behaviour is through environment variables. Sample `.en
 ~~~
 # request per second, affects GET step only
 PHET_RPS=8
-# async workers on TRANSFORM step (keep it equal to number of CPU cores) 
+# async workers on TRANSFORM step (keep it equal to number of CPU cores)
 PHET_WORKERS=10
 # number of retries on GET step (delay grow with exponential backoff)
 PHET_RETRIES=5
-# display verbose errors 
+# display verbose errors
 PHET_VERBOSE_ERRORS=false
 ~~~
 
