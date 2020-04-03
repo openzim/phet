@@ -1,2 +1,14 @@
 1.0.0:
 * NEW: First version of the Phets scraper
+
+2.0.0
+* Lot of visual improvements
+* Migrated to node-libzim
+* Internal logic reworked
+* Removed languages hardcoding
+* Improved image compression algorythms
+* Better async flow, speeding up the scraping process
+* Better logging and error handling
+* Added code linting
+* Moved to Typescript partially
+* Fixed bugs
