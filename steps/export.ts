@@ -156,7 +156,7 @@ const exportTarget = async (target: Target) => {
     Creator: 'University of Colorado',
     Publisher: 'Kiwix',
     Language: languageCode,
-    Date: (new Date()).toISOString(),
+    Date: `${target.date.getUTCFullYear()}-${target.date.getUTCMonth().toString().padStart(2, '0')}-${target.date.getUTCDay().toString().padStart(2, '0')}`,
     Tags: '_category:phet;_pictures:yes;_videos:no',
     // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
     // todo: remove this further
@@ -188,10 +188,11 @@ const exportTarget = async (target: Target) => {
 
 const exportData = async () => {
   const now = new Date();
+  const datePostfix = `${now.getUTCFullYear()}-${now.getUTCMonth().toString().padStart(2, '0')}`;
 
-  // todo refactor this
   const targets: Target[] = [{
-    output: `phet_mul_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+    output: `phet_mul_${datePostfix}`,
+    date: now,
     languages: Object.keys(languages)
       .filter(lang => {
         const langCode = /^(\w{2})_/gm.exec(lang)?.pop();
@@ -201,7 +202,8 @@ const exportData = async () => {
   if (!argv.mulOnly) {
     for (const lang of Object.keys(languages)) {
       targets.push({
-        output: `phet_${lang.toLowerCase().replace('_', '-')}_${now.getUTCFullYear()}-${('0' + (now.getMonth() + 1)).slice(-2)}`,
+        output: `phet_${lang.toLowerCase().replace('_', '-')}_${datePostfix}`,
+        date: now,
         languages: [lang]
       });
     }
