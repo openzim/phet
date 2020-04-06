@@ -28,5 +28,6 @@ export type LanguageItemPair<T> = {
 
 export type Target = {
   output: string,
+  date: Date,
   languages: string[]
 };
