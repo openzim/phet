@@ -42,7 +42,6 @@
     "object-path": "^0.11.4",
     "rimraf": "^2.6.3",
     "slugify": "^1.4.0",
-    "snyk": "^1.316.1",
     "sweetalert2": "^8.11.1",
     "tiny-async-pool": "^1.1.0",
     "ts-node": "^8.1.0",
@@ -60,11 +59,8 @@
     "export": "npm run export-prebuild && node --no-warnings --max-old-space-size=8192 node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect",
     "build": "tsc"
   },
-  "author": "",
-  "license": "ISC",
-  "snyk": true
+  "author": "openZIM team",
+  "license": "Apache"
 }
