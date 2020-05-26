@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:12
 
 # Install necessary packages, npm and nodejs
 RUN apt-get update && \
