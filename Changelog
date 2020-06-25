@@ -1,3 +1,6 @@
+2.1.1:
+* Use latest nodejs-libzim 2.2.4
+
 2.1.0:
 * Use latest nodejs-libzim
 * Few small bug fixes

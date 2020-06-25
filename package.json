@@ -1,11 +1,11 @@
 {
   "name": "phetscraper",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Scraper and exporter of PHET simulations",
   "main": "index.js",
   "dependencies": {
     "@babel/core": "^7.4.4",
-    "@openzim/libzim": "^2.2.3",
+    "@openzim/libzim": "^2.2.4",
     "@types/cheerio": "^0.22.11",
     "@types/cli-progress": "^3.4.2",
     "@types/es6-shim": "^0.31.39",
