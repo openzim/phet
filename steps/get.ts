@@ -118,19 +118,23 @@ const fetchCategoriesTree = async (): Promise<void> => {
 };
 
 const fetchSimsList = async (): Promise<void> => {
+  const data = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json`, {...options})).body);
+  const sims = Object.values(data.projects)
+    .filter((item: any) => item.type === 2);
+  const cats = data.categories;
+
   await Promise.all(Object.entries(categoriesList).map(
     async ([lang, subcats]) => await Promise.all(Array.from(new Set(Object.entries(subcats))).map(async ([subCatTitle, subCatSlug]) => {
       try {
         await delay();
-        const $ = cheerio.load((await got(`/${lang}/simulations/category/${subCatSlug}/index`, {...options})).body);
 
-        // extract the sims
-        const sims = $('.simulation-index a').toArray();
-        if (sims.length === 0) log.error(`Failed to get sims for sub-category ${subCatTitle}`);
-        log.debug(` - [${lang}] ${subCatSlug}: ${sims.length}`);
+        const simsInCat = Object.values(data.projects)
+          .filter((item: any) => item.type === 2);
 
-        sims.map((item) => {
-          const slug = $(item).attr('href').split('/').pop();
+        log.debug(` - [${lang}] ${subCatSlug}: ${simsInCat.length}`);
+
+        simsInCat.map((item: any) => {
+          const slug = item?.simulations?.shift()?.name;
           op.push(simsTree, `${lang}.${slug}`, subCatTitle);
         });
       } catch (e) {
