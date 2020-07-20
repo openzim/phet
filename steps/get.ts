@@ -128,8 +128,18 @@ const fetchSimsList = async (): Promise<void> => {
       try {
         await delay();
 
+        let catId;
+        for (const cat of Object.values(cats) as any[]) {
+          if (cat.name === subCatSlug) {
+            catId = cat.id;
+            break;
+          }
+        }
+
+        const simIdsInCat = cats[catId].simulationIds;
+
         const simsInCat = Object.values(data.projects)
-          .filter((item: any) => item.type === 2);
+          .filter((item: any) => item.type === 2 && simIdsInCat.includes(item.id));
 
         log.debug(` - [${lang}] ${subCatSlug}: ${simsInCat.length}`);
 
