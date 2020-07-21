@@ -11,7 +11,7 @@ import {RateLimit} from 'async-sema';
 import {Presets, SingleBar} from 'cli-progress';
 
 import {log} from '../lib/logger';
-import {cats} from '../lib/const';
+import {cats, rootCategories} from '../lib/const';
 import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
 import {barOptions, getIdAndLanguage} from '../lib/common';
@@ -26,13 +26,6 @@ const {argv} = yargs
 
 const outDir = 'state/get/';
 const imageResolution = 600;
-const rootCategories = [
-  'Physics',
-  'Biology',
-  'Chemistry',
-  'Earth Science',
-  'Math'
-];
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
@@ -54,12 +47,13 @@ const popValueUpIfExists = (items: string[], value: string) => {
 const delay = RateLimit(rps);
 const languages: LanguageItemPair<LanguageDescriptor> = {};
 
-let meta: Meta = {};
+let meta: Meta;
 const simsTree = {};
 const categoriesList = {};
 
 const fetchMeta = async (): Promise<void> => {
   meta = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
+  meta.count = Object.values(meta.projects).reduce((acc, {simulations}) => acc + simulations.length, 0);
 };
 
 const fetchLanguages = async (): Promise<void> => {
@@ -110,10 +104,11 @@ const fetchCategoriesTree = async (): Promise<void> => {
         log.debug(`+ [${lang}] ${categorySlug}`);
 
         // gather sub-categories
-        return $('.side-nav ul.parents ul.children a').toArray()
+        const x = $('.subjects ul.checkboxes li [role=checkbox]').toArray();
+        return x
           .map((item) => {
-            const title = $(item).text();
-            const slug = $(item).attr('href').split('/').pop();
+            const slug = $(item).attr('id').replace('-checkbox', '');
+            const title = $(item).children().text();
             op.set(categoriesList, `${lang}.${translatedCat} / ${title}`, `${categorySlug}/${slug}`);
           });
       } catch (e) {
@@ -131,7 +126,7 @@ const fetchSimsList = async (): Promise<void> => {
       try {
         await delay();
 
-        const catId = parseInt(Object.keys(cats)[Object.values(cats).indexOf(subCatSlug)], 10);
+        const catId = parseInt(Object.keys(cats)[Object.values(cats).indexOf(subCatSlug.split('/').pop())], 10);
 
         const simsInCat = Object.values(meta.projects)
           .filter((item) => item.type === 2 && item.simulations[0]?.subjects?.includes(catId));
@@ -166,58 +161,29 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 
 
 const fetchSims = async (): Promise<void> => {
-  log.info(`Gathering "translated" index pages...`);
-  const bar = new SingleBar(barOptions, Presets.shades_classic);
-  bar.start(Object.keys(languages).length, 0);
-
-  const simIds = await Promise.all(Object.keys(languages)
-    .map(async (lang) => {
-      try {
-        await delay();
-        const $ = cheerio.load((await got(`/en/simulations/translated/${lang}`, {...options})).body);
-        const data = $('.translated-sims tr > td > img[alt="HTML"]').parent().siblings('.translated-name').children('a').toArray();
-        if (!data) throw new Error('Got empty data');
-        const list = data.map(item => {
-          const link = $(item).attr('href');
-          if (!link) throw new Error('Got empty link');
-          return [...getIdAndLanguage(link), $(item).find('span').text()];
-        })
-          .filter(([id, language, title]) => language === lang)
-          .map(([id, language, title]) => ({id, title: title.replace(' (HTML5)', '')}));
-        return {
-          lang,
-          data: Array.from(new Set(list))
-        };
-      } catch (e) {
-        if (verbose) {
-          log.error(`Failed to get simulation list for ${lang}`);
-          log.error(e);
-        } else {
-          log.warn(`Unable to get the simulations list for language ${lang}. Skipping it.`);
-        }
-        return;
-      } finally {
-        bar.increment(1, {prefix: '', postfix: lang});
-      }
-    }
-  ));
-  bar.stop();
-
+  // console.log(simsTree);
   log.info(`Gathering sim links...`);
-  const simCount = simIds.reduce((acc, {data}) => acc + data.length, 0);
-  bar.start(simCount, 0);
+  const bar = new SingleBar(barOptions, Presets.shades_classic);
+  bar.start(meta.count, 0);
 
+  const catalogs: LanguageItemPair<SimulationsList> = {};
   let urlsToGet = [];
 
-   await Promise.all(
-    simIds.map(async ({lang, data}) => {
-      const catalog = new SimulationsList(lang);
-      await Promise.all(data.map(async ({id, title}) => {
+  await Promise.all((Object.values(meta.projects).map(async (project) => {
+    if (project.type !== 2) return;
+    for (const sim of Object.values(project.simulations)) {
+      for (const [lang, {title}] of Object.entries(sim.localizedSimulations)) {
+
+        if (!Object.keys(simsTree).includes(lang)) continue;
+
         await delay();
+
+        if (!catalogs[lang]) catalogs[lang] = new SimulationsList(lang);
+
         let response;
         let status: number;
         let fallback = false;
-        let url = `/${lang}/simulation/${id}`;
+        let url = `/${lang}/simulation/${(sim.name)}`;
         try {
           try {
             response = await got(url, {...options});
@@ -226,7 +192,7 @@ const fetchSims = async (): Promise<void> => {
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
-              url = `/en/simulation/${id}`;
+              url = `/en/simulation/${(sim.name)}`;
               response = await got(url, {...options});
               status = response.statusCode;
             }
@@ -237,7 +203,8 @@ const fetchSims = async (): Promise<void> => {
           const $ = cheerio.load(body);
           const link = $('.sim-download').attr('href');
           const [realId] = getIdAndLanguage(link);
-          catalog.add({
+
+          catalogs[lang].add({
             categories: getItemCategories(lang, realId),
             id: realId,
             language: lang,
@@ -253,16 +220,19 @@ const fetchSims = async (): Promise<void> => {
             log.error(`Failed to parse: ${options.prefixUrl}${url}`);
             log.error(e);
           } else {
-            log.warn(`Unable to get the simulation ${id} for language ${lang}. Skipping it.`);
+            log.warn(`Unable to get the simulation ${(sim.name)} for language ${lang}. Skipping it.`);
           }
         } finally {
-          bar.increment(1, {prefix: '', postfix: `${lang} / ${id}`});
-          if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${id}`);
+          bar.increment(1, {prefix: '', postfix: `${lang} / ${(sim.name)}`});
+          if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${(sim.name)}`);
         }
-      }));
-      return await catalog.persist(path.join(outDir, 'catalogs'));
-    })
-  );
+      }
+    }
+  })));
+
+  for (const catalog of Object.values(catalogs)) {
+    await catalog.persist(path.join(outDir, 'catalogs'));
+  }
 
   bar.stop();
   urlsToGet = Array.from(new Set(urlsToGet));

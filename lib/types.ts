@@ -32,6 +32,11 @@ export type Target = {
   languages: string[]
 };
 
+export type LocalizedSimulation = {
+  title: string;
+  isCheerpj: boolean;
+};
+
 export type MetaSimulation = {
   a11yFeatures: any[];
   highGradeLevel: number;
@@ -41,7 +46,7 @@ export type MetaSimulation = {
   isNew: 0 | 1;
   relatedSimulations: number[];
   lowGradeLevel: number;
-  localizedSimulations: number[];
+  localizedSimulations: LanguageItemPair<LocalizedSimulation>;
 };
 
 export type MetaProject = {
@@ -51,6 +56,7 @@ export type MetaProject = {
 };
 
 export type Meta = {
-  projects?: MetaProject[],
-  common?: any
+  projects: MetaProject[],
+  common: any,
+  count: number;
 };
