@@ -11,10 +11,12 @@ import {RateLimit} from 'async-sema';
 import {Presets, SingleBar} from 'cli-progress';
 
 import {log} from '../lib/logger';
+import {cats} from '../lib/const';
 import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
 import {barOptions, getIdAndLanguage} from '../lib/common';
-import {Category, LanguageDescriptor, LanguageItemPair, Simulation} from '../lib/types';
+import type {Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation} from '../lib/types';
+
 
 dotenv.config();
 
@@ -51,8 +53,14 @@ const popValueUpIfExists = (items: string[], value: string) => {
 // common data
 const delay = RateLimit(rps);
 const languages: LanguageItemPair<LanguageDescriptor> = {};
+
+let meta: Meta = {};
 const simsTree = {};
 const categoriesList = {};
+
+const fetchMeta = async (): Promise<void> => {
+  meta = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
+};
 
 const fetchLanguages = async (): Promise<void> => {
   const $ = cheerio.load((await got('/en/simulations/translated', {...options})).body);
@@ -118,33 +126,20 @@ const fetchCategoriesTree = async (): Promise<void> => {
 };
 
 const fetchSimsList = async (): Promise<void> => {
-  const data = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json`, {...options})).body);
-  const sims = Object.values(data.projects)
-    .filter((item: any) => item.type === 2);
-  const cats = data.categories;
-
   await Promise.all(Object.entries(categoriesList).map(
     async ([lang, subcats]) => await Promise.all(Array.from(new Set(Object.entries(subcats))).map(async ([subCatTitle, subCatSlug]) => {
       try {
         await delay();
 
-        let catId;
-        for (const cat of Object.values(cats) as any[]) {
-          if (cat.name === subCatSlug) {
-            catId = cat.id;
-            break;
-          }
-        }
+        const catId = parseInt(Object.keys(cats)[Object.values(cats).indexOf(subCatSlug)], 10);
 
-        const simIdsInCat = cats[catId].simulationIds;
-
-        const simsInCat = Object.values(data.projects)
-          .filter((item: any) => item.type === 2 && simIdsInCat.includes(item.id));
+        const simsInCat = Object.values(meta.projects)
+          .filter((item) => item.type === 2 && item.simulations[0]?.subjects?.includes(catId));
 
         log.debug(` - [${lang}] ${subCatSlug}: ${simsInCat.length}`);
 
-        simsInCat.map((item: any) => {
-          const slug = item?.simulations?.shift()?.name;
+        simsInCat.map((item) => {
+          const slug = item.simulations[0]?.name;
           op.push(simsTree, `${lang}.${slug}`, subCatTitle);
         });
       } catch (e) {
@@ -214,7 +209,7 @@ const fetchSims = async (): Promise<void> => {
 
   let urlsToGet = [];
 
-  await Promise.all(
+   await Promise.all(
     simIds.map(async ({lang, data}) => {
       const catalog = new SimulationsList(lang);
       await Promise.all(data.map(async ({id, title}) => {
@@ -322,6 +317,7 @@ const fetchSims = async (): Promise<void> => {
 // leave IIFE here until global refactoring
 (async () => {
   welcome('get');
+  await fetchMeta();
   await fetchLanguages();
   await fetchCategoriesTree();
   await fetchSimsList();
