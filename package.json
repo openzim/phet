@@ -4,14 +4,13 @@
   "description": "Scraper and exporter of PHET simulations",
   "main": "index.js",
   "dependencies": {
-    "@babel/core": "^7.4.4",
+    "@babel/core": "^7.10.5",
     "@openzim/libzim": "^2.4.0",
-    "@types/cheerio": "^0.22.11",
+    "@types/cheerio": "^0.22.21",
     "@types/cli-progress": "^3.4.2",
     "@types/es6-shim": "^0.31.39",
     "@types/jest": "^26.0.5",
-    "@types/lodash": "^4.14.130",
-    "@types/node": "^12.0.2",
+    "@types/node": "^14.0.24",
     "@types/ractive": "^0.7.27",
     "@types/yargs": "^15.0.4",
     "array-from": "^2.1.1",
@@ -20,7 +19,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-register": "^6.26.0",
     "babelify": "^10.0.0",
-    "browserify": "16.2.3",
+    "browserify": "^16.5.1",
     "cheerio": "^0.22.0",
     "cli-progress": "^3.6.0",
     "dotenv": "^8.2.0",
@@ -43,13 +42,13 @@
     "ncp": "^2.0.0",
     "object-path": "^0.11.4",
     "rimraf": "^2.6.3",
-    "slugify": "^1.4.0",
+    "slugify": "^1.4.4",
     "sweetalert2": "^8.11.1",
     "tiny-async-pool": "^1.1.0",
     "ts-jest": "^26.1.3",
-    "ts-node": "^8.1.0",
-    "typescript": "^3.8.3",
-    "winston": "^3.2.1"
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "tslint": "^6.1.0"
@@ -85,7 +84,8 @@
     "export": "npm run export-prebuild && node --no-warnings --max-old-space-size=8192 node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "jest --config=package.json --runInBand --forceExit",
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "./node_modules/.bin/tslint -p tsconfig.json -c tslint.json"
   },
   "author": "openZIM team",
   "license": "Apache"
