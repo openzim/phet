@@ -5,10 +5,11 @@
   "main": "index.js",
   "dependencies": {
     "@babel/core": "^7.4.4",
-    "@openzim/libzim": "^2.2.4",
+    "@openzim/libzim": "^2.4.0",
     "@types/cheerio": "^0.22.11",
     "@types/cli-progress": "^3.4.2",
     "@types/es6-shim": "^0.31.39",
+    "@types/jest": "^26.0.5",
     "@types/lodash": "^4.14.130",
     "@types/node": "^12.0.2",
     "@types/ractive": "^0.7.27",
@@ -36,6 +37,7 @@
     "imagemin-svgo": "^7.0.0",
     "iso-639-1": "^2.1.1",
     "iso-639-3": "1.2.0",
+    "jest": "^26.1.0",
     "js-yaml": "^3.13.1",
     "md5": "^2.2.1",
     "ncp": "^2.0.0",
@@ -44,12 +46,36 @@
     "slugify": "^1.4.0",
     "sweetalert2": "^8.11.1",
     "tiny-async-pool": "^1.1.0",
+    "ts-jest": "^26.1.3",
     "ts-node": "^8.1.0",
     "typescript": "^3.8.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
     "tslint": "^6.1.0"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testMatch": [
+      "**/test/*.test.ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "collectCoverage": false,
+    "preset": "ts-jest/presets/js-with-ts",
+    "testEnvironment": "node",
+    "globals": {
+      "ts-jest": {
+        "tsConfig": {
+          "sourceMap": true,
+          "inlineSourceMap": true
+        }
+      }
+    }
   },
   "scripts": {
     "setup": "node steps/setup.js",
@@ -58,7 +84,7 @@
     "export-prebuild": "npm run build && node_modules/browserify/bin/cmd.js res/js/index.js -t babelify --presets [es2015] -o res/js/dist.js",
     "export": "npm run export-prebuild && node --no-warnings --max-old-space-size=8192 node_modules/ts-node/dist/bin.js steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --config=package.json --runInBand --forceExit",
     "build": "tsc"
   },
   "author": "openZIM team",
