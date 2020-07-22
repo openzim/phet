@@ -13,8 +13,8 @@ const targetDir = './dist/';
 const now = new Date();
 const datePostfix = `${now.getUTCFullYear()}-${now.getUTCMonth().toString().padStart(2, '0')}`;
 const files = [
-  `${targetDir}/phet_mul_${datePostfix}.zim`,
-  `${targetDir}/phet_${language}_${datePostfix}.zim`,
+  `${targetDir}phet_mul_${datePostfix}.zim`,
+  `${targetDir}phet_${language}_${datePostfix}.zim`,
 ];
 
 const options = {
