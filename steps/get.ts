@@ -222,10 +222,9 @@ const fetchSims = async (): Promise<void> => {
           } else {
             log.warn(`Unable to get the simulation ${(sim.name)} for language ${lang}. Skipping it.`);
           }
-        } finally {
-          bar.increment(1, {prefix: '', postfix: `${lang} / ${(sim.name)}`});
-          if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${(sim.name)}`);
         }
+        bar.increment(1, {prefix: '', postfix: `${lang} / ${(sim.name)}`});
+        if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${(sim.name)}`);
       }
     }
   })));

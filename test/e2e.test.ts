@@ -5,7 +5,7 @@ import {fork} from 'child_process';
 import {ZimReader} from '@openzim/libzim';
 
 
-jest.setTimeout(10 * 60 * 1000);
+jest.setTimeout(20 * 60 * 1000);
 
 const language = 'fr';
 const targetDir = './dist/';
