@@ -43,13 +43,21 @@ const popValueUpIfExists = (items: string[], value: string) => {
   return items;
 };
 
+const unshiftValueUpIfNotExists = (items: string[], value: string): string[] => {
+  if (!items.includes(value)) items.unshift('en');
+  return items;
+};
+
+// english is a must
+argv.includeLanguages = unshiftValueUpIfNotExists(argv.includeLanguages as string[], 'en');
+
 // common data
 const delay = RateLimit(rps);
 const languages: LanguageItemPair<LanguageDescriptor> = {};
 
 let meta: Meta;
 const simsTree = {};
-const categoriesList = {};
+const categoriesList: LanguageItemPair<any> = {};
 
 const fetchMeta = async (): Promise<void> => {
   meta = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
@@ -104,7 +112,10 @@ const fetchCategoriesTree = async (): Promise<void> => {
       try {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
-        const $ = cheerio.load((await got(`/${lang}/simulations/category/${categorySlug}/index`, {...options})).body);
+        const $ = cheerio.load((await got(
+          `/${lang}/simulations/filter?locale=en&subjects=${categorySlug}&sort=alpha&view=list`,
+          {...options})
+        ).body);
 
         const translatedCat = $('.regular-page-title').text().split('  ')?.shift() || categoryTitle;
         op.set(categoriesList, `${lang}.${translatedCat}`, `${categorySlug}`);
@@ -124,7 +135,12 @@ const fetchCategoriesTree = async (): Promise<void> => {
       }
     }))
   ));
-  if (fallbackLanguages.size > 0) log.warn(`The following (${fallbackLanguages.size}) language(s) will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
+  if (fallbackLanguages.size > 0) {
+    log.warn(`The following (${fallbackLanguages.size}) language(s) will use english metadata: ${Array.from(fallbackLanguages).join(', ')}`);
+    for (const lang of Array.from(fallbackLanguages)) {
+      op.set(categoriesList, lang, categoriesList.en);
+    }
+  }
 };
 
 const fetchSimsList = async (): Promise<void> => {
@@ -133,7 +149,7 @@ const fetchSimsList = async (): Promise<void> => {
       try {
         await delay();
 
-        const catId = parseInt(Object.keys(cats)[Object.values(cats).indexOf(subCatSlug.split('/').pop())], 10);
+        const catId = parseInt(Object.keys(cats)[Object.values(cats).indexOf((subCatSlug as string).split('/').pop())], 10);
 
         const simsInCat = Object.values(meta.projects)
           .filter((item) => item.type === 2 && item.simulations[0]?.subjects?.includes(catId));
