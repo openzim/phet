@@ -44,7 +44,8 @@ const popValueUpIfExists = (items: string[], value: string) => {
 };
 
 const unshiftValueUpIfNotExists = (items: string[], value: string): string[] => {
-  if (!items?.includes(value)) items.unshift('en');
+  if (!items) return;
+  if (!items.includes(value)) items.unshift('en');
   return items;
 };
 
