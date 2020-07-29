@@ -54,6 +54,7 @@ const categoriesList = {};
 const fetchMeta = async (): Promise<void> => {
   meta = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
   meta.count = Object.values(meta.projects)
+    .filter(({type}) => type === 2)
     .reduce((acc, {simulations}) =>
       acc + simulations
         .reduce((c, sim) => c + Object.keys(sim.localizedSimulations)
