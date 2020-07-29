@@ -44,7 +44,7 @@ const popValueUpIfExists = (items: string[], value: string) => {
 };
 
 const unshiftValueUpIfNotExists = (items: string[], value: string): string[] => {
-  if (!items.includes(value)) items.unshift('en');
+  if (!items?.includes(value)) items.unshift('en');
   return items;
 };
 
@@ -66,7 +66,7 @@ const fetchMeta = async (): Promise<void> => {
     .reduce((acc, {simulations}) =>
       acc + simulations
         .reduce((c, sim) => c + Object.keys(sim.localizedSimulations)
-          .filter((lang) => Object.keys(languages).includes(lang))
+          .filter((lang) => Object.keys(languages)?.includes(lang))
           .length, 0), 0
     );
 };
@@ -91,7 +91,7 @@ const fetchLanguages = async (): Promise<void> => {
     if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(slug)) return;
     if (argv.excludeLanguages && (argv.excludeLanguages as string[] || []).includes(slug)) return;
 
-    if (!Object.keys(languages).includes(slug)) {
+    if (!Object.keys(languages)?.includes(slug)) {
       op.set(languages, slug, {slug, name, localName, url, count});
     }
   });
@@ -197,7 +197,7 @@ const fetchSims = async (): Promise<void> => {
     for (const sim of Object.values(project.simulations)) {
       for (const [lang, {title}] of Object.entries(sim.localizedSimulations)) {
 
-        if (!Object.keys(simsTree).includes(lang)) continue;
+        if (!Object.keys(simsTree)?.includes(lang)) continue;
 
         await delay();
 
