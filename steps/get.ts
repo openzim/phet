@@ -53,7 +53,13 @@ const categoriesList = {};
 
 const fetchMeta = async (): Promise<void> => {
   meta = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
-  meta.count = Object.values(meta.projects).reduce((acc, {simulations}) => acc + simulations.length, 0);
+  meta.count = Object.values(meta.projects)
+    .reduce((acc, {simulations}) =>
+      acc + simulations
+        .reduce((c, sim) => c + Object.keys(sim.localizedSimulations)
+          .filter((lang) => Object.keys(languages).includes(lang))
+          .length, 0), 0
+    );
 };
 
 const fetchLanguages = async (): Promise<void> => {
@@ -286,8 +292,8 @@ const fetchSims = async (): Promise<void> => {
 // leave IIFE here until global refactoring
 (async () => {
   welcome('get');
-  await fetchMeta();
   await fetchLanguages();
+  await fetchMeta();
   await fetchCategoriesTree();
   await fetchSimsList();
   await fetchSims();
