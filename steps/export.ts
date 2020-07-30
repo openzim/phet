@@ -188,7 +188,7 @@ const exportTarget = async (target: Target) => {
 
 const exportData = async () => {
   const now = new Date();
-  const datePostfix = `${now.getUTCFullYear()}-${now.getUTCMonth().toString().padStart(2, '0')}`;
+  const datePostfix = `${now.getUTCFullYear()}-${(now.getUTCMonth() + 1).toString().padStart(2, '0')}`;
 
   const targets: Target[] = [{
     output: `phet_mul_${datePostfix}`,

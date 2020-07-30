@@ -31,3 +31,32 @@ export type Target = {
   date: Date,
   languages: string[]
 };
+
+export type LocalizedSimulation = {
+  title: string;
+  isCheerpj: boolean;
+};
+
+export type MetaSimulation = {
+  a11yFeatures: any[];
+  highGradeLevel: number;
+  subjects: number[];
+  name: string;
+  id: number;
+  isNew: 0 | 1;
+  relatedSimulations: number[];
+  lowGradeLevel: number;
+  localizedSimulations: LanguageItemPair<LocalizedSimulation>;
+};
+
+export type MetaProject = {
+  name: string;
+  type: 0 | 1 | 2;
+  simulations: MetaSimulation[];
+};
+
+export type Meta = {
+  projects: MetaProject[],
+  common: any,
+  count: number;
+};

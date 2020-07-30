@@ -2,16 +2,14 @@ language: node_js
 dist: xenial
 
 node_js:
-  - "12"
-  - "13"
   - "14"
 
+install:
+  - npm ci
+
 before_script:
-  - npm run setup
+  - npm run lint
+  - npm run build
 
 script:
-  - npm run get -- --includeLanguages en
-  - npm run transform
-
-after_script:
-  - npm run export -- --mulOnly
+  - npm test
