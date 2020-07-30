@@ -1,3 +1,9 @@
+2.2.0:
+* Use latest nodejs-libzim 2.4.0
+* Update many dependences
+* Adapt to new upstream layout
+* Fix wrong month number in filenames
+
 2.1.1:
 * Use latest nodejs-libzim 2.2.4
 
