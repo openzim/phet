@@ -156,7 +156,7 @@ const exportTarget = async (target: Target) => {
     Creator: 'University of Colorado',
     Publisher: 'Kiwix',
     Language: languageCode,
-    Date: `${target.date.getUTCFullYear()}-${target.date.getUTCMonth().toString().padStart(2, '0')}-${target.date.getUTCDay().toString().padStart(2, '0')}`,
+    Date: `${target.date.getUTCFullYear()}-${(target.date.getUTCMonth() + 1).toString().padStart(2, '0')}-${target.date.getUTCDate().toString().padStart(2, '0')}`,
     Tags: '_category:phet;_pictures:yes;_videos:no',
     // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
     // todo: remove this further
