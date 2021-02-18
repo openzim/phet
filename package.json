@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@babel/core": "^7.10.5",
-    "@openzim/libzim": "^2.4.0",
+    "@openzim/libzim": "^2.4.3",
     "@types/cheerio": "^0.22.21",
     "@types/cli-progress": "^3.4.2",
     "@types/es6-shim": "^0.31.39",
