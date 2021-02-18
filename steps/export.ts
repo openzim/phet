@@ -148,7 +148,8 @@ const exportTarget = async (target: Target) => {
   const creator = new ZimCreator({
     fileName: `./dist/${target.output}.zim`,
     welcome: 'index.html',
-    fullTextIndexLanguage: languageCode
+    fullTextIndexLanguage: languageCode,
+    compression: 'zstd'
   }, {
     Name: `phets_${languageCode}`,
     Title: 'PhET Interactive Simulations',
