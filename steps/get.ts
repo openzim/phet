@@ -30,7 +30,7 @@ const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
 const options = {
-  prefixUrl: 'https://phet.colorado.edu',
+  prefixUrl: 'https://phet.colorado.edu/',
   retry: {
     limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
     timeout: 3000
@@ -61,7 +61,8 @@ const simsTree = {};
 const categoriesList: LanguageItemPair<any> = {};
 
 const fetchMeta = async (): Promise<void> => {
-  meta = JSON.parse((await got(`/services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
+  meta = JSON.parse((await got(`services/metadata/1.3/simulations?format=json&summary`, {...options})).body);
+  // console.log(meta);
   meta.count = Object.values(meta.projects)
     .filter(({type}) => type === 2)
     .reduce((acc, {simulations}) =>
@@ -73,7 +74,7 @@ const fetchMeta = async (): Promise<void> => {
 };
 
 const fetchLanguages = async (): Promise<void> => {
-  const $ = cheerio.load((await got('/en/simulations/translated', {...options})).body);
+  const $ = cheerio.load((await got('en/simulations/translated', {...options})).body);
   const rows = $('.translated-sims tr').toArray();
   rows.shift();
   if (rows.length === 0) {
@@ -114,7 +115,7 @@ const fetchCategoriesTree = async (): Promise<void> => {
         await delay();
         const categorySlug = slugify(categoryTitle, {lower: true});
         const $ = cheerio.load((await got(
-          `/${lang}/simulations/filter?locale=en&subjects=${categorySlug}&sort=alpha&view=list`,
+          `${lang}/simulations/filter?locale=en&subjects=${categorySlug}&sort=alpha&view=list`,
           {...options})
         ).body);
 
@@ -207,7 +208,7 @@ const fetchSims = async (): Promise<void> => {
         let response;
         let status: number;
         let fallback = false;
-        let url = `/${lang}/simulation/${(sim.name)}`;
+        let url = `${lang}/simulation/${(sim.name)}`;
         try {
           try {
             response = await got(url, {...options});
@@ -216,7 +217,7 @@ const fetchSims = async (): Promise<void> => {
             if (status === 404) {
               // todo reuse catalog
               fallback = true;
-              url = `/en/simulation/${(sim.name)}`;
+              url = `en/simulation/${(sim.name)}`;
               response = await got(url, {...options});
               status = response.statusCode;
             }
@@ -316,4 +317,11 @@ const fetchSims = async (): Promise<void> => {
   await fetchSimsList();
   await fetchSims();
   log.info('Done.');
-})();
+})().catch((err: Error) => {
+  if (err && err.message) {
+    console.error(err.message);
+  }
+  else {
+    console.error(`An unidentified error occured ${err}`);
+  }
+});
