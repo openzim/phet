@@ -33,7 +33,8 @@ const convertImages = async (): Promise<void> => {
     source: `${inDir}/*.{jpg,jpeg,png,svg}`,
     bar: new SingleBar(barOptions, Presets.shades_classic),
     workers,
-    handler: async (file) => await imagemin([file], outDir, {
+    handler: async (file) => await imagemin([file], {
+      destination: outDir,
       glob: false,
       plugins: [imageminJpegoptim(), imageminPngcrush(), imageminSvgo(), imageminGifsicle()]
     })
@@ -118,4 +119,11 @@ const extractBase64 = async (fileName, html): Promise<string> => {
   await convertImages();
   await convertDocuments();
   log.info('Done.');
-})();
+})().catch((err: Error) => {
+  if (err && err.message) {
+    console.error(err.message);
+  }
+  else {
+    console.error(`An unidentified error occured ${err}`);
+  }
+});

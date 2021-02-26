@@ -219,4 +219,11 @@ const exportData = async () => {
   welcome('export');
   await exportData();
   log.info('Done.');
-})();
+})().catch((err: Error) => {
+  if (err && err.message) {
+    console.error(err.message);
+  }
+  else {
+    console.error(`An unidentified error occured ${err}`);
+  }
+});
