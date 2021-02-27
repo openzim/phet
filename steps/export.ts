@@ -18,6 +18,7 @@ import {Catalog} from '../lib/classes';
 import {Presets, SingleBar} from 'cli-progress';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
+import { exit } from 'yargs';
 
 dotenv.config();
 
@@ -148,7 +149,8 @@ const exportTarget = async (target: Target) => {
   const creator = new ZimCreator({
     fileName: `./dist/${target.output}.zim`,
     welcome: 'index.html',
-    fullTextIndexLanguage: languageCode
+    fullTextIndexLanguage: languageCode,
+    compression: 'zstd'
   }, {
     Name: `phets_${languageCode}`,
     Title: 'PhET Interactive Simulations',
@@ -218,4 +220,12 @@ const exportData = async () => {
   welcome('export');
   await exportData();
   log.info('Done.');
-})();
+})().catch((err: Error) => {
+  if (err && err.message) {
+    log.error(err.message);
+  }
+  else {
+    log.error(`An unidentified error occured ${err}`);
+  }
+  exit(1, err);
+});
