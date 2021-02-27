@@ -18,6 +18,7 @@ import {log} from '../lib/logger';
 import welcome from '../lib/welcome';
 import {barOptions} from '../lib/common';
 import {Base64Entity, Transformer} from '../lib/classes';
+import { exit } from 'yargs';
 
 
 dotenv.config();
@@ -121,9 +122,10 @@ const extractBase64 = async (fileName, html): Promise<string> => {
   log.info('Done.');
 })().catch((err: Error) => {
   if (err && err.message) {
-    console.error(err.message);
+    log.error(err.message);
   }
   else {
-    console.error(`An unidentified error occured ${err}`);
+    log.error(`An unidentified error occured ${err}`);
   }
+  exit(1, err);
 });

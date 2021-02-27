@@ -16,6 +16,7 @@ import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
 import {barOptions, getIdAndLanguage} from '../lib/common';
 import type {Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation} from '../lib/types';
+import { exit } from 'yargs';
 
 
 dotenv.config();
@@ -319,9 +320,10 @@ const fetchSims = async (): Promise<void> => {
   log.info('Done.');
 })().catch((err: Error) => {
   if (err && err.message) {
-    console.error(err.message);
+    log.error(err.message);
   }
   else {
-    console.error(`An unidentified error occured ${err}`);
+    log.error(`An unidentified error occured ${err}`);
   }
+  exit(1, err);
 });

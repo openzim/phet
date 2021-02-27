@@ -18,6 +18,7 @@ import {Catalog} from '../lib/classes';
 import {Presets, SingleBar} from 'cli-progress';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
+import { exit } from 'yargs';
 
 dotenv.config();
 
@@ -221,9 +222,10 @@ const exportData = async () => {
   log.info('Done.');
 })().catch((err: Error) => {
   if (err && err.message) {
-    console.error(err.message);
+    log.error(err.message);
   }
   else {
-    console.error(`An unidentified error occured ${err}`);
+    log.error(`An unidentified error occured ${err}`);
   }
+  exit(1, err);
 });
