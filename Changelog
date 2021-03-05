@@ -1,3 +1,11 @@
+2.2.1:
+* Fix bad ZIM Metadata date
+* Use latest nodejs-libzim 2.4.3
+* Update all dependences to latest version
+* Compress using zstd in ZIM (instead of xz)
+* Remove support to Node.js v10
+* Slightly improve error handling
+
 2.2.0:
 * Use latest nodejs-libzim 2.4.0
 * Update many dependences

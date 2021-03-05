@@ -4,7 +4,13 @@
 
 # PhET Simulations scraper
 
-This scraper creates offline versions in [ZIM format](https://openzim.org) of [PhET science simulations](https://phet.colorado.edu) in the ZIM format.
+This scraper creates offline versions in [ZIM
+format](https://openzim.org) of [PhET science
+simulations](https://phet.colorado.edu) in the ZIM format.
+
+## Requirements
+
+It requires Node.js v10 or higher.
 
 ## Quick Start
 
