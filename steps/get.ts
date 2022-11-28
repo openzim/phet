@@ -1,4 +1,5 @@
 import got from 'got';
+import puppeteer from 'puppeteer';
 import * as fs from 'fs';
 import * as path from 'path';
 import slugify from 'slugify';
@@ -27,6 +28,7 @@ const {argv} = yargs
 
 const outDir = 'state/get/';
 const imageResolution = 600;
+const concurrentlyPagesLaunchingCount = process.env.PHET_DOWNLOAD_CONCURRENTLY ? parseInt(process.env.PHET_DOWNLOAD_CONCURRENTLY, 10) : 5;
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
@@ -187,6 +189,7 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 
 
 const fetchSims = async (): Promise<void> => {
+  const browser = await puppeteer.launch();
   // console.log(simsTree);
   log.info(`Gathering sim links...`);
   const bar = new SingleBar(barOptions, Presets.shades_classic);
@@ -194,66 +197,70 @@ const fetchSims = async (): Promise<void> => {
 
   const catalogs: LanguageItemPair<SimulationsList> = {};
   let urlsToGet = [];
+  const projects = Object.values(meta.projects);
+  while (projects.length) {
+    await Promise.all((projects.splice(0, concurrentlyPagesLaunchingCount).map(async (project) => {
+      if (project.type !== 2) return;
+      for (const sim of Object.values(project.simulations)) {
+        for (const [lang, {title}] of Object.entries(sim.localizedSimulations)) {
+          if (!Object.keys(simsTree)?.includes(lang)) continue;
 
-  await Promise.all((Object.values(meta.projects).map(async (project) => {
-    if (project.type !== 2) return;
-    for (const sim of Object.values(project.simulations)) {
-      for (const [lang, {title}] of Object.entries(sim.localizedSimulations)) {
+          if (!catalogs[lang]) catalogs[lang] = new SimulationsList(lang);
 
-        if (!Object.keys(simsTree)?.includes(lang)) continue;
-
-        await delay();
-
-        if (!catalogs[lang]) catalogs[lang] = new SimulationsList(lang);
-
-        let response;
-        let status: number;
-        let fallback = false;
-        let url = `${lang}/simulation/${(sim.name)}`;
-        try {
+          let status: number;
+          let fallback = false;
+          let url = `${lang}/simulation/${(sim.name)}`;
           try {
-            response = await got(url, {...options});
+            const page = await browser.newPage();
+            const response = await page.goto(`${options.prefixUrl}${url}`);
+
+            status = response.status()
+            if( status === 404 ){
+              const response = await page.goto(`${options.prefixUrl}en/simulation/${(sim.name)}`)
+              status = response.status()
+              if( status === 404 ){
+                throw new Error('Page not found')
+              }
+            }
+
+            const downloadLinkElm = 'a.banner-link-icon[title="Download"]'
+            await page.waitForSelector(downloadLinkElm);
+
+            const element = await page.$(downloadLinkElm)
+            const link = await page.evaluate(el => el.href, element)
+            const pageTitle = await page.title()
+
+            page.close()
+
+            if (!link) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
+
+            const [realId] = getIdAndLanguage(link);
+
+            catalogs[lang].add({
+              categories: getItemCategories(lang, realId),
+              id: realId,
+              language: lang,
+              title: title || pageTitle,
+            } as Simulation);
+
+            urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
+            urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
           } catch (e) {
-            status = op.get(e, 'response.statusCode');
-            if (status === 404) {
-              // todo reuse catalog
-              fallback = true;
-              url = `en/simulation/${(sim.name)}`;
-              response = await got(url, {...options});
-              status = response.statusCode;
+
+            if (verbose) {
+              log.error(`Failed to parse: ${options.prefixUrl}${url}`);
+              log.error(e);
+            } else {
+              log.warn(`Unable to get the simulation ${(sim.name)} for language ${lang}. Skipping it.`);
             }
           }
-          if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
-          const {body} = response;
-          if (!body) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
-          const $ = cheerio.load(body);
-          const link = $('.sim-download').attr('href');
-          const [realId] = getIdAndLanguage(link);
-
-          catalogs[lang].add({
-            categories: getItemCategories(lang, realId),
-            id: realId,
-            language: lang,
-            title: title || $('.simulation-main-title').text().trim(),
-            topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
-            description: $('.simulation-panel-indent[itemprop]').text()
-          } as Simulation);
-
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
-        } catch (e) {
-          if (verbose) {
-            log.error(`Failed to parse: ${options.prefixUrl}${url}`);
-            log.error(e);
-          } else {
-            log.warn(`Unable to get the simulation ${(sim.name)} for language ${lang}. Skipping it.`);
-          }
+          bar.increment(1, {prefix: '', postfix: `${lang} / ${(sim.name)}`});
+          if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${(sim.name)}`);
         }
-        bar.increment(1, {prefix: '', postfix: `${lang} / ${(sim.name)}`});
-        if (!process.stdout.isTTY) log.info(`+ [${lang}${fallback ? ' > en' : ''}] ${(sim.name)}`);
       }
-    }
-  })));
+    })));
+  }
+  await browser.close();
 
   for (const catalog of Object.values(catalogs)) {
     await catalog.persist(path.join(outDir, 'catalogs'));
