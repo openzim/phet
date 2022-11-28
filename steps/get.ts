@@ -14,7 +14,7 @@ import {log} from '../lib/logger';
 import {cats, rootCategories} from '../lib/const';
 import welcome from '../lib/welcome';
 import {SimulationsList} from '../lib/classes';
-import {barOptions, getIdAndLanguage} from '../lib/common';
+import {barOptions} from '../lib/common';
 import type {Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation} from '../lib/types';
 import { exit } from 'yargs';
 
@@ -187,7 +187,6 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
 
 
 const fetchSims = async (): Promise<void> => {
-  // console.log(simsTree);
   log.info(`Gathering sim links...`);
   const bar = new SingleBar(barOptions, Presets.shades_classic);
   bar.start(meta.count, 0);
@@ -220,23 +219,21 @@ const fetchSims = async (): Promise<void> => {
               fallback = true;
               url = `en/simulation/${(sim.name)}`;
               response = await got(url, {...options});
-              status = response.statusCode;
             }
           }
           if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
           const {body} = response;
           if (!body) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
           const $ = cheerio.load(body);
-          const link = $('.sim-download').attr('href');
-          const [realId] = getIdAndLanguage(link);
+          const realId = sim.name;
 
           catalogs[lang].add({
             categories: getItemCategories(lang, realId),
             id: realId,
             language: lang,
-            title: title || $('.simulation-main-title').text().trim(),
-            topics: $('.sim-page-content ul').first().text().split('\n').map(t => t.trim()).filter(a => a),
-            description: $('.simulation-panel-indent[itemprop]').text()
+            title: title || $('meta[name="og:title"]').attr('content'),
+            topics: [], // See https://github.com/openzim/phet/issues/155 for more details
+            description: $('meta[name="description"]').attr('content')
           } as Simulation);
 
           urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
