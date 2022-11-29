@@ -209,7 +209,7 @@ const fetchSims = async (): Promise<void> => {
 
           let status: number;
           let fallback = false;
-          let url = `${lang}/simulation/${(sim.name)}`;
+          const url = `${lang}/simulation/${(sim.name)}`;
           try {
             const page = await browser.newPage();
             const response = await page.goto(`${options.prefixUrl}${url}`);
@@ -218,6 +218,7 @@ const fetchSims = async (): Promise<void> => {
             if( status === 404 ){
               const response = await page.goto(`${options.prefixUrl}en/simulation/${(sim.name)}`);
               status = response.status();
+              fallback = true;
               if( status === 404 ){
                 throw new Error('Page not found');
               }
@@ -228,9 +229,9 @@ const fetchSims = async (): Promise<void> => {
 
             const linkElement = await page.$(downloadLinkElm);
             const link = await page.evaluate(el => el.href, linkElement);
-            
+
             const topics = await page.$$eval('div.topics ul > li', el => {
-              return el.map(e => e.innerHTML)
+              return el.map(e => e.innerHTML);
             });
 
             const pageTitle = await page.title();
