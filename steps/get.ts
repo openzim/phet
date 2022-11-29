@@ -28,7 +28,7 @@ const {argv} = yargs
 
 const outDir = 'state/get/';
 const imageResolution = 600;
-const concurrentlyPagesLaunchingCount = process.env.PHET_DOWNLOAD_CONCURRENTLY ? parseInt(process.env.PHET_DOWNLOAD_CONCURRENTLY, 10) : 5;
+const concurrentlyPagesLaunchingCount = process.env.PHET_DOWNLOAD_CONCURRENCY ? parseInt(process.env.PHET_DOWNLOAD_CONCURRENCY, 10) : 5;
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
@@ -226,8 +226,13 @@ const fetchSims = async (): Promise<void> => {
             const downloadLinkElm = 'a.banner-link-icon[title="Download"]';
             await page.waitForSelector(downloadLinkElm);
 
-            const element = await page.$(downloadLinkElm);
-            const link = await page.evaluate(el => el.href, element);
+            const linkElement = await page.$(downloadLinkElm);
+            const link = await page.evaluate(el => el.href, linkElement);
+            
+            const topics = await page.$$eval('div.topics ul > li', el => {
+              return el.map(e => e.innerHTML)
+            });
+
             const pageTitle = await page.title();
 
             page.close();
@@ -241,6 +246,8 @@ const fetchSims = async (): Promise<void> => {
               id: realId,
               language: lang,
               title: title || pageTitle,
+              topics,
+              description: title,
             } as Simulation);
 
             urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
