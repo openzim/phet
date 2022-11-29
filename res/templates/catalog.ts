@@ -5,5 +5,5 @@ export const catalogJs = (catalog: {}, lsPrefix: string): string => {
 
 window.lsPrefix = 'kiwix';
 
-lsPrefix = '${lsPrefix}';`
-}
+lsPrefix = '${lsPrefix}';`;
+};

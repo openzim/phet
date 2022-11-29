@@ -19,7 +19,7 @@ import {Presets, SingleBar} from 'cli-progress';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
 import { exit } from 'yargs';
-import { catalogJs } from '../res/templates/catalog'
+import { catalogJs } from '../res/templates/catalog';
 
 dotenv.config();
 
@@ -132,8 +132,8 @@ const exportTarget = async (target: Target) => {
   }
 
   // Generate index file
-  await fs.promises.copyFile(resDir + 'template.html', targetDir + 'index.html')
-       
+  await fs.promises.copyFile(resDir + 'template.html', targetDir + 'index.html');
+
   // Generate catalog JS
   await fs.promises.writeFile(targetDir + 'catalog.js', catalogJs(catalog, target.output), 'utf8');
 
