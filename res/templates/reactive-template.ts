@@ -29,4 +29,4 @@ export const template: string = `
 		</div>
 	{{/each}}
 </div>
-`
+`;

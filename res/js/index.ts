@@ -1,7 +1,7 @@
 import swal from 'sweetalert2';
 import * as ArrayFrom from 'array-from';
 import {Category, Simulation} from '../../lib/types';
-import { template as reactiveTemplate } from '../templates/reactive-template'
+import { template as reactiveTemplate } from '../templates/reactive-template';
 
 if (!(Array as any).from) (Array as any).from = ArrayFrom;
 
