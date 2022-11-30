@@ -63,26 +63,34 @@ const convertDocuments = async (): Promise<void> => {
 
 const extractLanguageElements = async (fileName, html): Promise<string> => {
   const $ = cheerio.load(html);
+  $('meta[property^="og:"]').remove();
   await Promise.all($('script')
-    .toArray()
-    .map(script => op.get(script, 'children.0.data', ''))
-    .filter(x => x)
-    .map(async (script, index) => {
-      const newFileName = md5(script);
-      try {
-        await fs.promises.writeFile(`${outDir}${newFileName}.js`, script.trim(), 'utf8');
-        html = html.replace(script, `</script><script src='${newFileName}.js'>`);
-      } catch (e) {
-        if (verbose) {
-          log.error(`Failed to extract script from ${fileName}`);
-          log.error(e);
-        } else {
-          log.warn(`Unable to extract script from ${fileName}. Skipping it.`);
+    .each(async (indx, elem: cheerio.Element) => {
+      const script = $(elem).html().trim();
+      const scriptId = $(elem).attr('id');
+      if ((scriptId && scriptId.search('google-analytics') > -1 ) || script.search('google-analytics.com') > -1) {
+        $(elem).remove();
+        return;
+      }
+      if (script) {
+        const newFileName = `${md5(script)}.js`;
+        $(elem).attr('src', newFileName);
+        $(elem).html('');
+        try {
+          return fs.promises.writeFile(`${outDir}${newFileName}`, script, 'utf8');
+        } catch (e) {
+          if (verbose) {
+            log.error(`Failed to extract script from ${fileName}`);
+            log.error(e);
+          } else {
+            log.warn(`Unable to extract script from ${fileName}. Skipping it.`);
+          }
         }
       }
     })
+    .toArray()
   );
-  return html;
+  return $.html();
 };
 
 const removeStrings = (html): string => {
