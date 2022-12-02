@@ -111,7 +111,10 @@ describe('Validate ZIM', () => {
 const removeZim = () => {
   try {
     for (const file of files) {
-      fs.promises.unlink(file);
+      fs.promises.unlink(path.join(__dirname, file))
+      .catch((e) => {
+        // noop
+      });
     }
   } catch (e) {
     // noop
