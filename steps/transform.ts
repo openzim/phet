@@ -1,25 +1,25 @@
 import * as fs from 'fs';
-import * as md5 from 'md5';
+import md5 from 'md5';
 import * as glob from 'glob';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import * as op from 'object-path';
+import op from 'object-path';
 import * as cheerio from 'cheerio';
-import * as imagemin from 'imagemin';
+import imagemin from 'imagemin';
 
 import * as minifier from 'html-minifier';
-import * as imageminSvgo from 'imagemin-svgo';
+import imageminSvgo from 'imagemin-svgo';
 import {Presets, SingleBar} from 'cli-progress';
-import * as imageminGifsicle from 'imagemin-gifsicle';
-import * as imageminPngcrush from 'imagemin-pngcrush';
-import * as imageminJpegoptim from 'imagemin-jpegoptim';
+import imageminGifsicle from 'imagemin-gifsicle';
+import imageminPngcrush from 'imagemin-pngcrush';
+import imageminJpegoptim from 'imagemin-jpegoptim';
 
-import {log} from '../lib/logger';
-import welcome from '../lib/welcome';
-import {barOptions} from '../lib/common';
-import {Base64Entity, Transformer} from '../lib/classes';
-import { exit } from 'yargs';
-
+import {log} from '../lib/logger.js';
+import welcome from '../lib/welcome.js';
+import {barOptions} from '../lib/common.js';
+import {Base64Entity, Transformer} from '../lib/classes.js';
+import yargs from 'yargs';
+import {hideBin} from 'yargs/helpers';
 
 dotenv.config();
 
@@ -65,7 +65,7 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
   const $ = cheerio.load(html);
   $('meta[property^="og:"]').remove();
   await Promise.all($('script')
-    .each(async (indx, elem: cheerio.Element) => {
+    .each((indx, elem: cheerio.Element) => {
       const script = $(elem).html().trim();
       const scriptId = $(elem).attr('id');
       if ((scriptId && scriptId.search('google-analytics') > -1 ) || script.search('google-analytics.com') > -1) {
@@ -77,7 +77,7 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
         $(elem).attr('src', newFileName);
         $(elem).html('');
         try {
-          return fs.promises.writeFile(`${outDir}${newFileName}`, script, 'utf8');
+          fs.promises.writeFile(`${outDir}${newFileName}`, script, 'utf8');
         } catch (e) {
           if (verbose) {
             log.error(`Failed to extract script from ${fileName}`);
@@ -135,5 +135,5 @@ const extractBase64 = async (fileName, html): Promise<string> => {
   else {
     log.error(`An unidentified error occured ${err}`);
   }
-  exit(1, err);
+  yargs(hideBin(process.argv)).exit(1, err);
 });

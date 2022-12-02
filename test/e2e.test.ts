@@ -3,7 +3,12 @@ import * as fs from 'fs';
 import {join} from 'path';
 import {fork} from 'child_process';
 import {ZimReader} from '@openzim/libzim';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import {jest} from '@jest/globals'
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 jest.setTimeout(20 * 60 * 1000);
 
@@ -20,30 +25,33 @@ const files = [
 const options = {
   cwd: join(__dirname, '..'),
   silent: false,
-  execArgv: ['-r', 'ts-node/register']
+  execPath: 'ts-node-esm',
+  execArgv: []
 };
-
 
 describe('Create ZIM', () => {
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     await removeZim();
-    const proc = fork('./steps/setup', [], options);
+  });
+
+  beforeAll((done) => {
+    const proc = fork('./steps/setup.ts', [], options);
     proc.on('close', done);
   });
 
   test(`Get [${language}]`, (done) => {
-    const proc = fork('./steps/get', ['--includeLanguages', language], options);
+    const proc = fork('./steps/get.ts', ['--includeLanguages', language], options);
     proc.on('close', done);
   });
 
   test(`Transform`, (done) => {
-    const proc = fork('./steps/transform', [], options);
+    const proc = fork('./steps/transform.ts', [], options);
     proc.on('close', done);
   });
 
   test(`Export`, (done) => {
-    const proc = fork('./steps/export', [], options);
+    const proc = fork('./steps/export.ts', [], options);
     proc.on('close', done);
   });
 });
@@ -57,22 +65,20 @@ describe('Validate ZIM', () => {
     zim = new ZimReader(files[0]);
   });
 
-  test(`Two zim files`, async (done) => {
+  test(`Two zim files`, async () => {
     const zim1 = await fs.promises.stat(files[0]);
     expect(zim1).toBeDefined();
     const zim2 = await fs.promises.stat(files[1]);
     expect(zim2).toBeDefined();
     // expect(zim1.size).toEqual(zim2.size);
-    done();
   });
 
-  test(`Count`, async (done) => {
+  test(`Count`, async () => {
     const articlesCount = await zim.getCountArticles();
     expect(articlesCount).toBeGreaterThan(500);
-    done();
   });
 
-  test(`Meta records`, async (done) => {
+  test(`Meta records`, async () => {
     const article = await zim.getArticleByUrl(`M/Counter`);
     expect(article).toBeDefined();
     const meta: any = {};
@@ -86,15 +92,13 @@ describe('Validate ZIM', () => {
     expect(parseInt(meta['image/png'], 10)).toBeGreaterThan(80);
     expect(parseInt(meta['font/ttf'], 10)).toBeGreaterThan(10);
     expect(parseInt(meta['application/javascript'], 10)).toBeGreaterThan(300);
-    done();
   });
 
-  test(`Main page`, async (done) => {
+  test(`Main page`, async () => {
     const article = await zim.getArticleByUrl(`A/index.html`);
     expect(article).toBeDefined();
     expect(article.mimeType).toEqual('text/html');
     expect(article.data.length).toBeGreaterThan(1900);
-    done();
   });
 
   afterAll(async () => {
@@ -107,7 +111,10 @@ describe('Validate ZIM', () => {
 const removeZim = () => {
   try {
     for (const file of files) {
-      fs.promises.unlink(file);
+      fs.promises.unlink(path.join(__dirname, file))
+      .catch((e) => {
+        // noop
+      });
     }
   } catch (e) {
     // noop

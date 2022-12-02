@@ -2,26 +2,26 @@ import got from 'got';
 import * as fs from 'fs';
 import * as path from 'path';
 import slugify from 'slugify';
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 import * as dotenv from 'dotenv';
-import * as op from 'object-path';
+import op from 'object-path';
 import * as cheerio from 'cheerio';
-import * as ISO6391 from 'iso-639-1';
+import ISO6391 from 'iso-639-1';
 import {RateLimit} from 'async-sema';
 import {Presets, SingleBar} from 'cli-progress';
 
-import {log} from '../lib/logger';
-import {cats, rootCategories} from '../lib/const';
-import welcome from '../lib/welcome';
-import {SimulationsList} from '../lib/classes';
-import {barOptions} from '../lib/common';
-import type {Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation} from '../lib/types';
-import { exit } from 'yargs';
+import {log} from '../lib/logger.js';
+import {cats, rootCategories} from '../lib/const.js';
+import welcome from '../lib/welcome.js';
+import {SimulationsList} from '../lib/classes.js';
+import {barOptions} from '../lib/common.js';
+import type {Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation} from '../lib/types.js';
+import {hideBin} from 'yargs/helpers';
 
 
 dotenv.config();
 
-const {argv} = yargs
+const {argv} = yargs(hideBin(process.argv))
   .array('includeLanguages')
   .array('excludeLanguages');
 
@@ -34,7 +34,6 @@ const options = {
   prefixUrl: 'https://phet.colorado.edu/',
   retry: {
     limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-    timeout: 3000
   }
 };
 
@@ -322,5 +321,5 @@ const fetchSims = async (): Promise<void> => {
   else {
     log.error(`An unidentified error occured ${err}`);
   }
-  exit(1, err);
+  yargs(hideBin(process.argv)).exit(1, err);
 });

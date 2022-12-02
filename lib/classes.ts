@@ -1,13 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as glob from 'glob';
-import * as op from 'object-path';
+import glob from 'glob';
+import op from 'object-path';
 import {SingleBar} from 'cli-progress';
 import asyncPool from 'tiny-async-pool';
 
-import {log} from './logger';
-import {Simulation} from './types';
-import {getIdAndLanguage} from './common';
+import {log} from './logger.js';
+import {Simulation} from './types.js';
+import {getIdAndLanguage} from './common.js';
 
 
 export class Base64Entity {
