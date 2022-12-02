@@ -38,50 +38,9 @@
 	<div id="container">
 		<div id='ractive-target'></div>
 	</div>
-
-	<script id='ractive-template' type='text/html'>
-		<div class="language-container">
-			{{#if languages.length > 1}}
-				<label>
-					<select value="{{selectedLanguage}}">
-						{{#each languages}}
-							<option value='{{this[0]}}'>{{this[1]}}</option>
-						{{/each}}
-					</select>
-				</label>
-			{{/if}}
-			<label>
-				<select value='{{selectedCategory}}'>
-					<option value='all'>All categories</option>
-					{{#each categories}}
-						<option value='{{makeCategoryId(.)}}'>{{makeCategoryName(.)}}</option>
-					{{/each}}
-				</select>
-			</label>
-		</div>
-		<div class="card-cont">
-		    {{#each simulations}}
-				<div class="sim-card" on-click='showConfirm'>
-					<img src="../I/{{id}}.png" alt="Screenshot of the {{display}}" />
-					<div class="overlay">
-						<i class="fa fa-info-circle" aria-hidden="true"></i>
-						<h2>{{title}}</h2>
-					</div>
-				</div>
-			{{/each}}
-		</div>
-	</script>
 </body>
 
-<script>
-	window.importedData = <!-- REPLACEMEINCODE -->;
-
-	window.lsPrefix = 'kiwix';
-
-	<!-- SETLSPREFIX -->
-
-</script>
-
+<script src='../-/catalog.js'></script>
 <script src='../-/dist.js'></script>
 
 </html>

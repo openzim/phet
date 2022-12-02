@@ -19,6 +19,7 @@ import {Presets, SingleBar} from 'cli-progress';
 // @ts-ignore
 import * as langs from '../state/get/languages.json';
 import { exit } from 'yargs';
+import { catalogJs } from '../res/templates/catalog';
 
 dotenv.config();
 
@@ -131,14 +132,12 @@ const exportTarget = async (target: Target) => {
   }
 
   // Generate index file
-  const templateHTML = await fs.promises.readFile(resDir + 'template.html', 'utf8');
-  // Pretty hacky - doing a replace on the HTML. Investigate other ways
-  await fs.promises.writeFile(targetDir + 'index.html',
-    templateHTML
-      .replace('<!-- REPLACEMEINCODE -->', JSON.stringify(catalog))
-      .replace('<!-- SETLSPREFIX -->', `lsPrefix = "${target.output}";`), 'utf8');
+  await fs.promises.copyFile(resDir + 'template.html', targetDir + 'index.html');
 
-  await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*.ts', 'template.html'], nodir: true})
+  // Generate catalog JS
+  await fs.promises.writeFile(targetDir + 'catalog.js', catalogJs(catalog, target.output), 'utf8');
+
+  await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*/templates/*', '*.ts', 'template.html'], nodir: true})
     .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`))
   );
 

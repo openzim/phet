@@ -1,6 +1,7 @@
 import swal from 'sweetalert2';
 import * as ArrayFrom from 'array-from';
 import {Category, Simulation} from '../../lib/types';
+import { template as reactiveTemplate } from '../templates/reactive-template';
 
 if (!(Array as any).from) (Array as any).from = ArrayFrom;
 
@@ -39,7 +40,7 @@ const currentCategory = (localStorage && localStorage[window.lsPrefix + 'current
 
 const ractive = new Ractive({
   el: '#ractive-target',
-  template: '#ractive-template',
+  template: reactiveTemplate,
   computed: {
     languages() {
       return Object.entries(this.get('languageMappings'));
