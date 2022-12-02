@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as rimraf from 'rimraf'
+import fs from 'fs'
+import rimraf from 'rimraf'
 
 rimraf('state', function (err) {
     if (err) console.error(err);

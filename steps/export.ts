@@ -1,32 +1,35 @@
 import * as fs from 'fs';
-
-import * as ncp from 'ncp';
-import * as glob from 'glob';
+import glob from 'glob';
 import * as path from 'path';
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 import {promisify} from 'util';
-import * as rimraf from 'rimraf';
+import rimraf from 'rimraf';
 import * as dotenv from 'dotenv';
 import * as cheerio from 'cheerio';
-import * as iso6393 from 'iso-639-3';
+import {iso6393} from 'iso-639-3';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
-import {log} from '../lib/logger';
-import {Target} from '../lib/types';
-import welcome from '../lib/welcome';
-import {Catalog} from '../lib/classes';
+import {log} from '../lib/logger.js';
+import {Target} from '../lib/types.js';
+import welcome from '../lib/welcome.js';
+import {Catalog} from '../lib/classes.js';
 import {Presets, SingleBar} from 'cli-progress';
-// @ts-ignore
-import * as langs from '../state/get/languages.json';
-import { exit } from 'yargs';
-import { catalogJs } from '../res/templates/catalog';
+import {hideBin} from 'yargs/helpers';
+import { fileURLToPath } from 'url';
+import { catalogJs } from '../res/templates/catalog.js';
 
 dotenv.config();
 
-const {argv} = yargs
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const {argv} = yargs(hideBin(process.argv))
   .array('includeLanguages')
   .array('excludeLanguages')
   .boolean('mulOnly');
+
+const langsFile = await fs.promises.readFile(path.join(__dirname, '../state/get/languages.json'));
+const langs = JSON.parse(langsFile.toString());
 
 const languages = Object.entries(langs)
   .reduce((acc, [key, value]) => {
@@ -42,7 +45,6 @@ const resDir = 'res/';
 
 const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false;
 
-(ncp as any).limit = 16;
 const rimrafPromised = promisify(rimraf);
 
 const namespaces = {
@@ -67,7 +69,6 @@ const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
   return resources
     .reduce((file, resName) => {
       const ext = path.extname(resName).slice(1);
-      ncp(`${inDir}${resName}`, `${targetDir}${resName}`);
       return file.replace(resName, `${getKiwixPrefix(ext)}${resName}`);
     }, file);
 };
@@ -226,5 +227,5 @@ const exportData = async () => {
   else {
     log.error(`An unidentified error occured ${err}`);
   }
-  exit(1, err);
+  yargs(hideBin(process.argv)).exit(1, err);
 });
