@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:18
 
 # Install phets scrapper
 RUN git clone --depth=1 https://github.com/openzim/phet.git
