@@ -1,3 +1,13 @@
+2.3.0:
+* NEW Fix Docker image build + upload to ghcr.io (@kelson42 #170)
+* NEW CD autopublish to npm.js (@kelson42 #172)
+* UPDATE Source code refactored to work as ES modules (@pavel-karatsiuba #168)
+* UPDATE Dependences when possible (@pavel-karatsiuba #154)
+* UPDATE Continuous integration workflow (@kelson42 #158)
+* UPDATE Docker image using Node.js 18 (@kelson42 #169)* FIX Remove many inline Javascript (@pavel-karatsiuba #152)
+* FIX Remove google-analytics & others external resources (@pavel-karatsiuba #153)
+* FIX Adapt scraper to new Phets Web site (@pavel-karatsiuba #150)
+
 2.2.2
 * NEW: Use libzim 2.4.4
 
