@@ -10,7 +10,7 @@ simulations](https://phet.colorado.edu) in the ZIM format.
 
 ## Requirements
 
-It requires Node.js v10 or higher.
+It requires Node.js v16 or higher.
 
 ## Quick Start
 
