@@ -136,7 +136,7 @@ const exportTarget = async (target: Target) => {
   // Generate catalog JS
   await fs.promises.writeFile(targetDir + 'catalog.js', catalogJs(catalog, target.output), 'utf8');
 
-  await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*/templates/*', '*.ts', 'template.html'], nodir: true})
+  await Promise.all(glob.sync(`${resDir}/**/*`, {ignore: ['*/templates/*', '*.ts', '*/template.html'], nodir: true})
     .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`))
   );
 
