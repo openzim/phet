@@ -86,8 +86,10 @@ const fetchLanguages = async (): Promise<void> => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href');
     const slug = /locale=(.*)$/.exec(url)?.pop();
     const name = $(item).find('td.list-highlight-background:first-child a span').text();
-    // @ts-ignore
-    const localName = ISO6391.getNativeName(slug) ?? $(item).find('td.list-highlight-background').last().text();
+
+    const nativeLangName = ISO6391.getNativeName(slug);
+    const localName = nativeLangName ? nativeLangName : $(item).find('td.list-highlight-background').last().text();
+
     const count = parseInt($(item).find('td.number').text(), 10);
 
     if (argv.includeLanguages && !(argv.includeLanguages as string[] || []).includes(slug)) return;
