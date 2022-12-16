@@ -20,6 +20,7 @@ import {barOptions} from '../lib/common.js';
 import {Base64Entity, Transformer} from '../lib/classes.js';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
+import {loadingImage} from '../res/templates/loading-image.js'
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ const convertDocuments = async (): Promise<void> => {
 const extractLanguageElements = async (fileName, html): Promise<string> => {
   const $ = cheerio.load(html);
   $('meta[property^="og:"]').remove();
+  $('img#splash').attr('src', loadingImage)
   await Promise.all($('script')
     .each((indx, elem: cheerio.Element) => {
       const script = $(elem).html().trim();
@@ -90,6 +92,9 @@ const extractLanguageElements = async (fileName, html): Promise<string> => {
     })
     .toArray()
   );
+  await fs.promises.copyFile('res/js/remove-old-logo.js', `${outDir}remove-old-logo.js`);
+
+  $('script').last().after('<script type="text/javascript" src="remove-old-logo.js"></script>')
   return $.html();
 };
 
