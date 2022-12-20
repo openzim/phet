@@ -10,8 +10,10 @@
     if($(image).attr('xlink:href').includes('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAREAAABsCAYAAABNX4YlAAA') ||
       $(image).attr('xlink:href').includes('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIkAAAA2CAYAAADzuLppAAA') ||
       $(image).attr('xlink:href').includes(emptyImage)) {
-
-      $( image ).parent().parent().remove();
+      $( image ).parent().parent().parent().remove();
+    }
+    if(window?.phet?.joist?.sim){
+      window.phet.joist.sim.showPopup = ()=> {};
     }
   }
 
