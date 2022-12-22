@@ -17,6 +17,7 @@ import {Presets, SingleBar} from 'cli-progress';
 import {hideBin} from 'yargs/helpers';
 import { fileURLToPath } from 'url';
 import { catalogJs } from '../res/templates/catalog.js';
+import Banana from 'banana-i18n';
 
 dotenv.config();
 
@@ -116,7 +117,19 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
   bar.stop();
 };
 
-const exportTarget = async (target: Target) => {
+const loadTranslations = async(locale: string) => {
+  try{
+    const translations = await fs.promises.readFile(path.join(__dirname, `../res/js/i18n/${locale}.json`));
+    return JSON.parse(translations.toString());
+  }catch(err){
+    if(err?.name.includes('SyntaxError')) {
+      throw new Error(`Can't parse translations file: ${locale}.json. `);
+    }
+    return {};
+  }
+};
+
+const exportTarget = async (target: Target, bananaI18n: Banana) => {
   const targetDir = `${outDir}${target.output}/`;
 
   await rimrafPromised(targetDir);
@@ -142,6 +155,14 @@ const exportTarget = async (target: Target) => {
 
   const languageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul';
 
+  const locale = languageCode === 'mul' ? 'en' : target.languages[0];
+
+  if(locale !== 'en') {
+    const translations = await loadTranslations(locale);
+    bananaI18n.load(translations, locale);
+  }
+  bananaI18n.setLocale(locale);
+
   log.info(`Creating ${target.output}.zim ...`);
 
   const creator = new ZimCreator({
@@ -151,8 +172,8 @@ const exportTarget = async (target: Target) => {
     compression: 'zstd'
   }, {
     Name: `phets_${languageCode}`,
-    Title: 'PhET Interactive Simulations',
-    Description: 'Interactive simulations for Science and Math',
+    Title: bananaI18n.getMessage('zim-title'),
+    Description: bananaI18n.getMessage('zim-description'),
     Creator: 'University of Colorado',
     Publisher: 'Kiwix',
     Language: languageCode,
@@ -210,8 +231,10 @@ const exportData = async () => {
     }
   }
 
+  const defaultTranslations = await loadTranslations('en');
+  const banana = new Banana('en', { messages: defaultTranslations });
   for (const target of targets) {
-    await exportTarget(target);
+    await exportTarget(target, banana);
   }
 };
 
