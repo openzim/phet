@@ -2,6 +2,7 @@ import swal from 'sweetalert2';
 import * as ArrayFrom from 'array-from';
 import {Category, Simulation} from '../../lib/types.js';
 import { template as reactiveTemplate } from '../templates/reactive-template';
+import Banana from 'banana-i18n';
 
 if (!(Array as any).from) (Array as any).from = ArrayFrom;
 
@@ -21,6 +22,32 @@ declare global {
   }
 }
 
+const banana = new Banana('en');
+
+const loadTranslations = (locale) => {
+  return fetch(`../-/${locale}.json`)
+    .then((response) => response.json())
+    .then((messages) => {
+      banana.load(messages, locale);
+      banana.setLocale(locale);
+    });
+};
+
+const translatePage = (locale) => {
+  return loadTranslations(locale).then(() =>{
+      document.title = banana.getMessage('document-title');
+
+      if (document.getElementById('translateSlogan')) {
+        document.getElementById('translateSlogan').innerHTML = banana.getMessage('helping-students-engage-in-science-and-mathematics') + 123;
+      }
+      if (document.getElementById('logoContainerText')) {
+        document.getElementById('logoContainerText').innerHTML = banana.getMessage('logo-text');
+      }
+      if (document.getElementById('translateAllCategories')) {
+        document.getElementById('translateAllCategories').innerHTML = banana.getMessage('category-all-categories');
+      }
+    });
+};
 
 let navigatorLanguage = (window.navigator &&
   ((window.navigator.languages && window.navigator.languages[0]) ||
@@ -39,13 +66,13 @@ const currentCategory = (localStorage && localStorage[window.lsPrefix + 'current
   localStorage[window.lsPrefix + 'currentCategory'] : 'all';
 
 const ractive = new Ractive({
-  el: '#ractive-target',
+  el: '#content',
   template: reactiveTemplate,
   computed: {
     languages() {
       return Object.entries(this.get('languageMappings'));
     },
-    categories() {
+    updateCategories() {
       const lang = this.get('selectedLanguage');
       const sims = this.get(`simulationsByLanguage.${lang}`);
       const makeCategoryId = this.get('makeCategoryId');
@@ -68,6 +95,8 @@ const ractive = new Ractive({
     }
   },
   data: {
+    categories: [],
+    slogan: banana.getMessage('helping-students-engage-in-science-and-mathematics'),
     simulationsByLanguage: window.importedData.simsByLanguage,
     selectedLanguage: currentLanguage,
     selectedCategory: currentCategory,
@@ -77,7 +106,7 @@ const ractive = new Ractive({
       return category.slug;
     },
     makeCategoryName(category: Category) {
-      return category.title;
+      return banana.getMessage(`category-${category.slug}`);
     },
     getSlug: (item) => {
       return JSON.stringify(item);
@@ -85,6 +114,11 @@ const ractive = new Ractive({
   },
   oninit() {
     this.observe('selectedLanguage', function (selectedLanguage) {
+      translatePage(selectedLanguage).then(() => {
+        const categories = ractive.get('updateCategories');
+        ractive.set('categories', categories);
+      });
+
       if (localStorage) localStorage[window.lsPrefix + 'currentLanguage'] = selectedLanguage;
     });
     this.observe('selectedCategory', function (selectedCategory) {
@@ -115,7 +149,8 @@ const ractive = new Ractive({
           <div class='description'>${simulation.description}</div>`,
         showCloseButton: true,
         showCancelButton: true,
-        confirmButtonText: 'Load'
+        confirmButtonText: banana.getMessage('load-button'),
+        cancelButtonText: banana.getMessage('cancel-button')
       }).then(({dismiss}) => {
         const reasonsToCancel = [
           swal.DismissReason.cancel,

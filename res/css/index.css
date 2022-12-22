@@ -47,10 +47,23 @@ label {
     text-align: center;
 }
 
-#header img {
+#header #logoContainer {
     width: calc(100% - 32px);
-    float: none;
+    float: inherit;
     display: block;
+}
+
+#header #logoContainer img{
+    padding-right: 10px;
+    padding-bottom: 10px;
+    width: 30%;
+    float: left;
+}
+
+#header #logoContainerText {
+    padding-top: 4vw;
+    font-size: 7vw;
+    text-align: left;
 }
 
 #ractive-target label {
