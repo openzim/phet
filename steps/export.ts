@@ -177,7 +177,8 @@ const exportTarget = async (target: Target) => {
         url: path.basename(file),
         title: catalog.getTitle(path.basename(file)),
         data: await fs.promises.readFile(file),
-        ns: getNamespaceByExt(path.extname(file).slice(1))
+        ns: getNamespaceByExt(path.extname(file).slice(1)),
+        shouldIndex: file.split('.').pop() === 'html' ? true : false
       })
     );
     bar.increment();
