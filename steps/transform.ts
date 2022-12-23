@@ -1,9 +1,7 @@
 import * as fs from 'fs';
 import md5 from 'md5';
-import * as glob from 'glob';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import op from 'object-path';
 import * as cheerio from 'cheerio';
 import imagemin from 'imagemin';
 
@@ -110,7 +108,7 @@ const removeStrings = (html): string => {
 };
 
 const extractBase64 = async (fileName, html): Promise<string> => {
-  const b64files = html.match(/( src=)?'data:([A-Za-z-+\/]+);base64,[^']*/g);
+  const b64files = html.match(/( src=)?'data:([A-Za-z-+/]+);base64,[^']*/g);
 
   await Promise.all((b64files || [])
     .map(async b64entry => {
