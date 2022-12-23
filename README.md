@@ -20,7 +20,7 @@ npm i && npm start
 
 The above will eventually output a ZIM file to ```dist/```
 
-[![Build Status](https://github.com/openzim/phet/workflows/CI/badge.svg?query=branch%3Amaster)](https://github.com/openzim/phet/actions?query=branch%3Amaster)
+[![CI](https://github.com/openzim/phet/actions/workflows/ci.yml/badge.svg)](https://github.com/openzim/phet/actions/workflows/ci.yml)
 [![Docker Image](https://img.shields.io/docker/v/openzim/phet?arch=amd64&label=docker&sort=semver)](https://hub.docker.com/r/openzim/phet)
 [![Latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
