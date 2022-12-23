@@ -27,21 +27,26 @@ The above will eventually output a ZIM file to ```dist/```
 
 ## Command line arguments
 Available on GET and EXPORT steps only:
-~~~
-    --includeLanguages lang_1 [lang_2] [lang_3] ...
-    --excludeLanguages lang_1 [lang_2] [lang_3] ...
-~~~
+```bash
+--includeLanguages lang_1 [lang_2] [lang_3] ...
+--excludeLanguages lang_1 [lang_2] [lang_3] ...
+```
+
 Available on EXPORT step only:
-~~~
-    # skip ZIM files for individual languages
-    --mulOnly
-~~~
-Example: `npm run get -- --includeLanguages en ru fr`
+```bash
+# Skip ZIM files for individual languages
+--mulOnly
+```
+
+Example:
+```bash
+npm run get -- --includeLanguages en ru fr`
+```
 
 ## Config
 
 Another way to configure behaviour is through environment variables. Sample `.env` file (with default values):
-~~~
+```bash
 # request per second, affects GET step only
 PHET_RPS=8
 # async workers on TRANSFORM step (keep it equal to number of CPU cores)
@@ -50,7 +55,7 @@ PHET_WORKERS=10
 PHET_RETRIES=5
 # display verbose errors
 PHET_VERBOSE_ERRORS=false
-~~~
+```
 
 ## About
 
