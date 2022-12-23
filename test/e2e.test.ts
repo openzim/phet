@@ -98,7 +98,7 @@ describe('Validate ZIM', () => {
     const article = await zim.getArticleByUrl(`A/index.html`);
     expect(article).toBeDefined();
     expect(article.mimeType).toEqual('text/html');
-    expect(article.data.length).toBeGreaterThan(1900);
+    expect(article.data.length).toBeGreaterThan(1800);
   });
 
   afterAll(async () => {
