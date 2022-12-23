@@ -62,9 +62,7 @@ const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-';
 
 const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`;
 
-const getLanguage = (fileName) => fileName.split('_').pop().split('.')[0];
-
-const addKiwixPrefixes = function addKiwixPrefixes(file, targetDir) {
+const addKiwixPrefixes = function addKiwixPrefixes(file) {
   const resources = file.match(/[0-9a-f]{32}\.(svg|jpg|jpeg|png|js)/g) || [];
   return resources
     .reduce((file, resName) => {
@@ -99,7 +97,7 @@ const extractResources = async (target, targetDir: string): Promise<void> => {
         html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`);
 
         let file = await fs.promises.readFile(`${inDir}${fileName}`, 'utf8');
-        file = addKiwixPrefixes(file, targetDir);
+        file = addKiwixPrefixes(file);
         return await fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8');
       }));
       await fs.promises.writeFile(`${targetDir}${path.basename(file)}`, html, 'utf8');
@@ -177,7 +175,8 @@ const exportTarget = async (target: Target) => {
         url: path.basename(file),
         title: catalog.getTitle(path.basename(file)),
         data: await fs.promises.readFile(file),
-        ns: getNamespaceByExt(path.extname(file).slice(1))
+        ns: getNamespaceByExt(path.extname(file).slice(1)),
+        shouldIndex: file.split('.').pop() === 'html' ? true : false
       })
     );
     bar.increment();
