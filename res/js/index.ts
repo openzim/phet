@@ -23,9 +23,9 @@ declare global {
 }
 (async () => {
   const fetchTranslations = (locale) => {
-    
+
     return fetch(`../-/${locale}.json`)
-      .then((response) => response.json())
+      .then((response) => response.json());
   };
 
   const defaultTranslations = await fetchTranslations('en');
@@ -33,13 +33,13 @@ declare global {
   const banana = new Banana('en', defaultTranslations);
 
   const loadTranslations = (locale) => {
-    
+
     return fetchTranslations(locale).then((messages) => {
         banana.load(messages, locale);
         banana.setLocale(locale);
       }).catch(() => {
-        banana.load(defaultTranslations)        
-      })
+        banana.load(defaultTranslations);
+      });
   };
 
   const translatePage = (locale) => {
