@@ -20,6 +20,11 @@ import {barOptions} from '../lib/common.js';
 import {Base64Entity, Transformer} from '../lib/classes.js';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
+import {loadingImage} from '../res/templates/loading-image.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -54,16 +59,21 @@ const convertDocuments = async (): Promise<void> => {
       const basename = path.basename(file);
       data = await extractBase64(basename, data);
       data = removeStrings(data);
-      data = await extractLanguageElements(basename, data);
+      data = await modifyHTML(basename, data);
       await fs.promises.writeFile(`${outDir}${basename}`, data, 'utf8');
     }
   });
   await transformer.transform();
 };
 
-const extractLanguageElements = async (fileName, html): Promise<string> => {
+const modifyHTML = async (fileName, html): Promise<string> => {
+  const simScript = await fs.promises.readFile(path.join(__dirname, '../res/js/sim.js'), 'utf8');
+  const simCss = await fs.promises.readFile(path.join(__dirname, '../res/css/sim.css'), 'utf8');
   const $ = cheerio.load(html);
   $('meta[property^="og:"]').remove();
+  $('img#splash').attr('src', loadingImage);
+  $('script').last().after(`<script>${simScript}</script>`);
+  $('head').append(`<style>${simCss}</style>`);
   await Promise.all($('script')
     .each((indx, elem: cheerio.Element) => {
       const script = $(elem).html().trim();
