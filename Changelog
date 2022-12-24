@@ -1,3 +1,11 @@
+2.4.0:
+* NEW Full localization of the ZIM files (@pavel-karatsiuba #178)
+* NEW Harmonisation of the logo (@pavel-karatsiuba #177)
+* FIX Broken favicon links (@pavel-karatsiuba #175)
+* FIX Limited support of favicons (@pavel-karatsiuba #175)
+* FIX Empty entries in language selecbox (@pavel-karatsiuba #176)
+* FIX Proper suggestion/fulltext indexes (@Kelson42 #181)
+
 2.3.0:
 * NEW Fix Docker image build + upload to ghcr.io (@kelson42 #170)
 * NEW CD autopublish to npm.js (@kelson42 #172)
