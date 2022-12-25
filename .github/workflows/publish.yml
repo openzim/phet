@@ -17,7 +17,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Check if tag is created on default branch
-        if: endsWith(github.event.base_ref, '/master') == false
+        if: endsWith(github.event.base_ref, '/main') == false
         run: echo "Please create the tag on default branch" && exit -1
 
       - run: npm ci
