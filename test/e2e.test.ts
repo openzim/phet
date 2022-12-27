@@ -5,7 +5,8 @@ import {fork} from 'child_process';
 import {ZimReader} from '@openzim/libzim';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {jest} from '@jest/globals'
+import {jest} from '@jest/globals';
+import { zimcheckAvailable, zimcheck } from './utils';;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,6 +72,15 @@ describe('Validate ZIM', () => {
     const zim2 = await fs.promises.stat(files[1]);
     expect(zim2).toBeDefined();
     // expect(zim1.size).toEqual(zim2.size);
+  });
+
+  test('zimcheck', async () => {
+    if (await zimcheckAvailable()) {
+      await expect(zimcheck(files[0])).resolves.not.toThrowError();
+      await expect(zimcheck(files[1])).resolves.not.toThrowError();
+    } else {
+        console.log(`Zimcheck not installed, skipping test`);
+    }
   });
 
   test(`Count`, async () => {
