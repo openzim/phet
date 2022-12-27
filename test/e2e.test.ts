@@ -6,7 +6,7 @@ import {ZimReader} from '@openzim/libzim';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {jest} from '@jest/globals';
-import { zimcheckAvailable, zimcheck } from './utils';;
+import { zimcheckAvailable, zimcheck } from './utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
