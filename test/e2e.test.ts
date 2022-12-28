@@ -5,14 +5,15 @@ import {fork} from 'child_process';
 import {ZimReader} from '@openzim/libzim';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {jest} from '@jest/globals'
+import {jest} from '@jest/globals';
+import { zimcheckAvailable, zimcheck } from './utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 jest.setTimeout(20 * 60 * 1000);
 
-const language = 'fr';
+const language = 'cy';
 const targetDir = './dist/';
 
 const now = new Date();
@@ -73,6 +74,15 @@ describe('Validate ZIM', () => {
     // expect(zim1.size).toEqual(zim2.size);
   });
 
+  test('zimcheck', async () => {
+    if (await zimcheckAvailable()) {
+      await expect(zimcheck(files[0])).resolves.not.toThrowError();
+      await expect(zimcheck(files[1])).resolves.not.toThrowError();
+    } else {
+      console.log(`Zimcheck not installed, skipping test`);
+    }
+  });
+
   test(`Count`, async () => {
     const articlesCount = await zim.getCountArticles();
     expect(articlesCount).toBeGreaterThan(500);
@@ -98,7 +108,7 @@ describe('Validate ZIM', () => {
     const article = await zim.getArticleByUrl(`A/index.html`);
     expect(article).toBeDefined();
     expect(article.mimeType).toEqual('text/html');
-    expect(article.data.length).toBeGreaterThan(1900);
+    expect(article.data.length).toBeGreaterThan(1500);
   });
 
   afterAll(async () => {

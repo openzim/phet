@@ -31,5 +31,8 @@ jobs:
     - name: building
       run: npm run build
 
+    - name: installing devtools
+      run: .github/scripts/install-zimtools.sh
+
     - name: testing
-      run: npm run test
+      run: ZIMCHECK_PATH=`find .. -name zimcheck` npm run test
