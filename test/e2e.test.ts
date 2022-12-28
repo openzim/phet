@@ -79,7 +79,7 @@ describe('Validate ZIM', () => {
       await expect(zimcheck(files[0])).resolves.not.toThrowError();
       await expect(zimcheck(files[1])).resolves.not.toThrowError();
     } else {
-        console.log(`Zimcheck not installed, skipping test`);
+      console.log(`Zimcheck not installed, skipping test`);
     }
   });
 
