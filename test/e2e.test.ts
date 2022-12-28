@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 jest.setTimeout(20 * 60 * 1000);
 
-const language = 'fr';
+const language = 'cy';
 const targetDir = './dist/';
 
 const now = new Date();
