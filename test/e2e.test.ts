@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {jest} from '@jest/globals';
 import { zimcheckAvailable, zimcheck } from './utils';
+import {execa} from 'execa';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,10 @@ describe('Create ZIM', () => {
 
   beforeAll(async () => {
     await removeZim();
+  });
+
+  beforeAll(async () => {
+    await execa('npm run export-prebuild', { shell: true });
   });
 
   beforeAll((done) => {
