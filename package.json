@@ -65,7 +65,7 @@
     "export-prebuild": "npm run build && node_modules/browserify/bin/cmd.js res/js/index.js -t babelify -o res/js/dist.js",
     "export": "npm run export-prebuild && ts-node-esm -- steps/export.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --runInBand --forceExit",
+    "test": "npm run export-prebuild && node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --runInBand --forceExit",
     "build": "tsc",
     "lint": "./node_modules/.bin/tslint -p tsconfig.json -c tslint.json"
   },
