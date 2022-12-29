@@ -41,16 +41,33 @@ label {
 #header {
     width: 100%;
     color: #f2f2f2;
-    padding: 5%;
+    padding: 1% 5%;
     background: #244b59;
     float: left;
     text-align: center;
 }
 
-#header img {
-    width: calc(100% - 32px);
-    float: none;
-    display: block;
+#header #logoContainer {
+    width: 100%;
+    float: inherit;
+    display: flex;
+    align-items: center;
+}
+
+#header #logoContainer img{
+    padding-right: 10px;
+    padding-bottom: 10px;
+    width: 18vw;
+    float: left;
+}
+
+#header #logoContainerText {
+    font-size: 7vw;
+    text-align: left;
+}
+
+#header #translateSlogan {
+    font-size: 2.5rem;
 }
 
 #ractive-target label {
@@ -136,8 +153,8 @@ select {
 }
 
 .swal2-container>div[role=dialog] {
-    width: 100%!important;
-    height: 100%;
+    min-width: 700px!important;
+    width: 700px!important;
     position: relative;
 }
 
@@ -174,6 +191,25 @@ select {
     margin-top: 30px;
 }
 
+.swal2-actions .swal2-styled.swal2-confirm,
+.swal2-actions .swal2-styled.swal2-cancel {
+    font-size: 17px;
+}
+
+.swal2-popup .swal2-close {
+    line-height: 40px;
+    font-size: 36px;
+    width: 38px;
+    top: 5px;
+    right: 8px;
+    position: absolute;
+}
+
+.swal2-popup #swal2-title {
+    font-size: 30px;
+    padding-top: 10px;    
+}
+
 .flex-cont {
     justify-content: space-around;
     display: none;
@@ -186,9 +222,12 @@ select {
 }
 
 .description {
-    margin: 10px;
-    display: block;
     text-align: center;
+    display: table;
+    font-size: 2rem;
+    min-width: 660px;
+    padding: 10px 10% 0;
+    margin: auto;
 }
 
 @media only screen and (min-width: 320px) and (max-width: 1023px) and (orientation: landscape) {
