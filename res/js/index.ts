@@ -12,6 +12,9 @@ declare global {
   }
 
   interface Window {
+    phetTranslations: {
+      [translationKey: string]: [translationValue: string]
+    };
     importedData: {
       languageMappings: { [langCode: string]: string },
       simsByLanguage: {
@@ -23,9 +26,36 @@ declare global {
 }
 (async () => {
   const fetchTranslations = (locale) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const tag = document.createElement('script');
+        const container = document.head || document.body;
 
-    return fetch(`../-/${locale}.json`)
-      .then((response) => response.json());
+        tag.type = 'text/javascript';
+        tag.async = true;
+        tag.src = `../-/${locale}.json.js`;
+        tag.id = 'translations-script';
+
+        tag.addEventListener('load', () => {
+          resolve({loaded: true, error: false});
+        });
+
+        tag.addEventListener('error', () => {
+          reject({
+            loaded: false,
+            error: true,
+            message: `Failed to load translations by locale: ${locale}`,
+          });
+        });
+
+        container.appendChild(tag);
+      } catch (error) {
+        reject(error);
+      }
+    })
+    .then(() => {
+      return window.phetTranslations;
+    });
   };
 
   const defaultTranslations = await fetchTranslations('en');
@@ -35,8 +65,10 @@ declare global {
   const loadTranslations = (locale) => {
 
     return fetchTranslations(locale).then((messages) => {
-        banana.load(messages, locale);
-        banana.setLocale(locale);
+        const modifiedLocale = locale.replace('_', '-').toLowerCase();
+
+        banana.load(messages, modifiedLocale);
+        banana.setLocale(modifiedLocale);
       }).catch(() => {
         banana.load(defaultTranslations);
       });
