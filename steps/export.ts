@@ -211,14 +211,14 @@ const convertTranslations = async () => {
   log.info('Converting translations to JS');
 
   const bar = new SingleBar({}, Presets.shades_classic);
-  const translationsFolder = path.join(__dirname, '../res/js/i18n/')  
+  const translationsFolder = path.join(__dirname, '../res/js/i18n/');
   const files = glob.sync(`${translationsFolder}**/*.json`, {});
   bar.start(files.length, 0);
 
   for (const file of files) {
     try {
       const translations = await fs.promises.readFile(file, 'utf8');
-      const jsTranslations = `window.phetTranslations = ${translations};`
+      const jsTranslations = `window.phetTranslations = ${translations};`;
       await fs.promises.writeFile(`${file}.js`, jsTranslations, 'utf8');
     } catch (e) {
       if (verbose) {
@@ -234,7 +234,7 @@ const convertTranslations = async () => {
   }
   bar.stop();
   log.info('Converted.');
-}
+};
 
 const exportData = async () => {
   const now = new Date();
