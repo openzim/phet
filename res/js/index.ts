@@ -65,8 +65,10 @@ declare global {
   const loadTranslations = (locale) => {
 
     return fetchTranslations(locale).then((messages) => {
-        banana.load(messages, locale);
-        banana.setLocale(locale);
+        const modifiedLocale = locale.replace('_', '-').toLowerCase();
+
+        banana.load(messages, modifiedLocale);
+        banana.setLocale(modifiedLocale);
       }).catch(() => {
         banana.load(defaultTranslations);
       });

@@ -155,10 +155,11 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
 
   const languageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul';
 
-  const locale = languageCode === 'mul' ? 'en' : target.languages[0];
-
+  let locale = languageCode === 'mul' ? 'en' : target.languages[0];
   if(locale !== 'en') {
     const translations = await loadTranslations(locale);
+
+    locale = locale.replace('_', '-').toLowerCase();
     bananaI18n.load(translations, locale);
   }
   bananaI18n.setLocale(locale);
