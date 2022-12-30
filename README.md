@@ -20,6 +20,9 @@ npm i && npm start
 
 The above will eventually output a ZIM file to ```dist/```
 
+[![NPM](https://nodei.co/npm/phetscraper.png)](https://www.npmjs.com/package/phetscraper)
+
+[![npm](https://img.shields.io/npm/v/phetscraper.svg)](https://www.npmjs.com/package/phetscraper)
 [![CI](https://github.com/openzim/phet/actions/workflows/ci.yml/badge.svg)](https://github.com/openzim/phet/actions/workflows/ci.yml)
 [![Docker Image](https://img.shields.io/docker/v/openzim/phet?arch=amd64&label=docker&sort=semver)](https://hub.docker.com/r/openzim/phet)
 [![Latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
