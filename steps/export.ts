@@ -207,6 +207,34 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info('Created.');
 };
 
+const convertTranslations = async () => {
+  log.info('Converting translations to JS');
+
+  const bar = new SingleBar({}, Presets.shades_classic);
+  const translationsFolder = path.join(__dirname, '../res/js/i18n/')  
+  const files = glob.sync(`${translationsFolder}**/*.json`, {});
+  bar.start(files.length, 0);
+
+  for (const file of files) {
+    try {
+      const translations = await fs.promises.readFile(file, 'utf8');
+      const jsTranslations = `window.phetTranslations = ${translations};`
+      await fs.promises.writeFile(`${file}.js`, jsTranslations, 'utf8');
+    } catch (e) {
+      if (verbose) {
+        log.error(`Failed to extract translations from: ${file}`);
+        log.error(e);
+      } else {
+        log.warn(`Unable to extract translations from: ${file}. Skipping it.`);
+      }
+    } finally {
+      bar.increment();
+      if (!process.stdout.isTTY) log.info(` + ${path.basename(file)}`);
+    }
+  }
+  bar.stop();
+  log.info('Converted.');
+}
 
 const exportData = async () => {
   const now = new Date();
@@ -230,6 +258,8 @@ const exportData = async () => {
       });
     }
   }
+
+  await convertTranslations();
 
   const defaultTranslations = await loadTranslations('en');
   const banana = new Banana('en', { messages: defaultTranslations });
