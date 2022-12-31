@@ -1,16 +1,25 @@
-<a href="https://play.google.com/store/apps/details?id=org.kiwix.kiwixcustomphet" target="_blank" align="left">
-  <img src="https://play.google.com/intl/en/badges/images/badge_new.png" alt="Get it on Google Play" height="30" />
-</a>
-
 # PhET Simulations scraper
 
 This scraper creates offline versions in [ZIM
 format](https://openzim.org) of [PhET science
-simulations](https://phet.colorado.edu) in the ZIM format.
+simulations for Science and Math](https://phet.colorado.edu).
+
+<a href="https://play.google.com/store/apps/details?id=org.kiwix.kiwixcustomphet" target="_blank" align="left">
+  <img src="https://play.google.com/intl/en/badges/images/badge_new.png" alt="Get it on Google Play" height="30" />
+</a>
+
+[![npm](https://nodei.co/npm/phetscraper.png)](https://www.npmjs.com/package/phetscraper)
+
+[![npm](https://img.shields.io/npm/v/phetscraper.svg)](https://www.npmjs.com/package/phetscraper)
+[![Docker Image](https://img.shields.io/docker/v/openzim/phet?arch=amd64&label=docker&sort=semver)](https://hub.docker.com/r/openzim/phet)
+[![CI](https://github.com/openzim/phet/actions/workflows/ci.yml/badge.svg)](https://github.com/openzim/phet/actions/workflows/ci.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
+[![Latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
+[![License](https://img.shields.io/npm/l/phetscraper.svg)](LICENSE)
 
 ## Requirements
 
-It requires Node.js v16 or higher.
+It requires Node.js version 16 or higher.
 
 ## Quick Start
 
@@ -19,14 +28,6 @@ npm i && npm start
 ```
 
 The above will eventually output a ZIM file to ```dist/```
-
-[![NPM](https://nodei.co/npm/phetscraper.png)](https://www.npmjs.com/package/phetscraper)
-
-[![npm](https://img.shields.io/npm/v/phetscraper.svg)](https://www.npmjs.com/package/phetscraper)
-[![CI](https://github.com/openzim/phet/actions/workflows/ci.yml/badge.svg)](https://github.com/openzim/phet/actions/workflows/ci.yml)
-[![Docker Image](https://img.shields.io/docker/v/openzim/phet?arch=amd64&label=docker&sort=semver)](https://hub.docker.com/r/openzim/phet)
-[![Latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
-[![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 
 ## Command line arguments
 Available on GET and EXPORT steps only:
@@ -43,7 +44,7 @@ Available on EXPORT step only:
 
 Example:
 ```bash
-npm run get -- --includeLanguages en ru fr`
+npm run get -- --includeLanguages en ru fr
 ```
 
 ## Config
@@ -65,7 +66,7 @@ PHET_VERBOSE_ERRORS=false
 This project achieves multiple things:
 * Download PhET content
 * Generate an Index for said content
-* Generate a ZIM file containing content and index
+* Generate ZIM file(s) containing content and index
 
 Things this project does not yet do, but should:
 * Generate Android APK
@@ -83,3 +84,9 @@ The steps get, transform and export have their own output directories:
 * ```get``` outputs HTML and PNG files to ```state/get```
 * ```transform``` outputs intermediate files to ```state/transform```
 * ```export``` outputs HTML and PNG files to ```state/export``` AND a ZIM file(s) to ```dist/```
+
+License
+-------
+
+[Apache](https://www.apache.org/licenses/LICENSE-2.0) or later, see
+[LICENSE](LICENSE) for more details.
