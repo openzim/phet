@@ -1,5 +1,5 @@
 2.4.0:
-* NEW Full localization of the ZIM files (@pavel-karatsiuba #178)
+* NEW Full localization system (still no translations) (@pavel-karatsiuba #178)
 * NEW Harmonisation of the logo (@pavel-karatsiuba #177)
 * FIX Many CSS odities (@pavel-karatsiuba #178)
 * FIX Broken favicon links (@pavel-karatsiuba #175)
