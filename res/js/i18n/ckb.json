@@ -1,0 +1,27 @@
+{
+	"@metadata": {
+		"authors": [
+			"Aram"
+		]
+	},
+	"load-button": "باربکە",
+	"cancel-button": "ھەڵوەشاندنەوە",
+	"category-all-categories": "ھەموو پۆلەکان",
+	"category-biology": "ژینناسی",
+	"category-biology-biology": "ژینناسی / ژینناسی",
+	"category-biology-motion": "ژینناسی / جووڵە",
+	"category-biology-work-energy-and-power": "ژینناسی / ئیش، وزە و توانا",
+	"category-chemistry": "کیمیا",
+	"category-chemistry-biology": "کیمیا / ژینناسی",
+	"category-chemistry-earth-science": "کیمیا / زانستی زەوی",
+	"category-chemistry-motion": "کیمیا / جووڵە",
+	"category-chemistry-sound-and-waves": "کیمیا / دەنگ و شەپۆلەکان",
+	"category-earth-science": "زانستی زەوی",
+	"category-earth-science-general-chemistry": "زانستی زەوی / کیمیای گشتی",
+	"category-earth-science-motion": "زانستی زەوی / جووڵە",
+	"category-earth-science-sound-and-waves": "زانستی زەوی / دەنگ و شەپۆلەکان",
+	"category-physics": "فیزیک",
+	"category-physics-motion": "فیزیک / جووڵە",
+	"category-physics-sound-and-waves": "فیزیک / دەنگ و شەپۆلەکان",
+	"category-physics-work-energy-and-power": "فیزیک / ئیش، وزە و توانا"
+}
