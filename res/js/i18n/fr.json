@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Verdy p"
+			"Verdy p",
+			"Wladek92"
 		]
 	},
 	"zim-title": "Simulations interactives PhET",
@@ -19,7 +20,7 @@
 	"category-biology-general-chemistry": "Biologie / Chimie générale",
 	"category-biology-heat-and-thermo": "Biologie / Chaleur et thermodynamique",
 	"category-biology-light-and-radiation": "Biologie / Lumière et rayonnement",
-	"category-biology-math-applications": "Biologie / Applications en mathématiques",
+	"category-biology-math-applications": "Biologie / Mathématiques appliquées",
 	"category-biology-math-concepts": "Biologie / Concepts mathématiques",
 	"category-biology-motion": "Biologie / Mouvement",
 	"category-biology-quantum-chemistry": "Biologie / Chimie quantique",
@@ -33,7 +34,7 @@
 	"category-chemistry-general-chemistry": "Chimie / Chimie générale",
 	"category-chemistry-heat-and-thermo": "Chimie / Chaleur et thermodynamique",
 	"category-chemistry-light-and-radiation": "Chimie / Lumière et rayonnement",
-	"category-chemistry-math-applications": "Chimie / Applications en mathématiques",
+	"category-chemistry-math-applications": "Chimie / Mathématiques appliquées",
 	"category-chemistry-math-concepts": "Chimie / Concepts mathématiques",
 	"category-chemistry-motion": "Chimie / Mouvement",
 	"category-chemistry-quantum-chemistry": "Chimie / Chimie quantique",
@@ -47,7 +48,7 @@
 	"category-earth-science-general-chemistry": "Sciences de la Terre / Chimie générale",
 	"category-earth-science-heat-and-thermo": "Sciences de la Terre / Chaleur et thermodynamique",
 	"category-earth-science-light-and-radiation": "Sciences de la Terre / Lumière et rayonnement",
-	"category-earth-science-math-applications": "Sciences de la Terre / Applications en mathématiques",
+	"category-earth-science-math-applications": "Sciences de la Terre / Mathématiques appliquées",
 	"category-earth-science-math-concepts": "Sciences de la Terre / Concepts mathématiques",
 	"category-earth-science-motion": "Sciences de la Terre / Mouvement",
 	"category-earth-science-quantum-chemistry": "Sciences de la Terre / Chimie quantique",
@@ -61,7 +62,7 @@
 	"category-math-general-chemistry": "Mathématiques / Chimie générale",
 	"category-math-heat-and-thermo": "Mathématiques / Chaleur et thermodynamique",
 	"category-math-light-and-radiation": "Mathématiques / Lumière et rayonnement",
-	"category-math-math-applications": "Mathématiques / Applications en mathématiques",
+	"category-math-math-applications": "Mathématiques / Mathématiques appliquées",
 	"category-math-math-concepts": "Mathématiques / Concepts mathématiques",
 	"category-math-motion": "Mathématiques / Mouvement",
 	"category-math-quantum-chemistry": "Mathématiques / Chimie quantique",
@@ -75,7 +76,7 @@
 	"category-physics-general-chemistry": "Physique / Chimie générale",
 	"category-physics-heat-and-thermo": "Physique / Chaleur et thermodynamique",
 	"category-physics-light-and-radiation": "Physique / Lumière et rayonnement",
-	"category-physics-math-applications": "Physique / Applications en mathématiques",
+	"category-physics-math-applications": "Physique / Mathématiques appliquées",
 	"category-physics-math-concepts": "Physique / Concepts mathématiques",
 	"category-physics-motion": "Physique / Mouvement",
 	"category-physics-quantum-chemistry": "Physique / Chimie quantique",
