@@ -268,7 +268,7 @@ const fetchSims = async (): Promise<void> => {
     return new Promise(async (resolve, reject) => {
       let data;
       try {
-        data = await got.stream(url);
+        data = await got.stream(url, { throwHttpErrors: false });
       } catch (e) {
         if (verbose) {
           const status = op.get(e, 'response.status');
