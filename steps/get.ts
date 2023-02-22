@@ -303,7 +303,7 @@ const fetchSims = async (): Promise<void> => {
         fs.unlink(outDir + fileName, function (err) {
           if (err) log.error(`Failed to delete item: ${err}`);
         });
-        reject();
+        resolve(); // print error and continue downloading next file
       }).pipe(writeStream);
     });
   }));
