@@ -197,7 +197,7 @@ const fetchSims = async (): Promise<void> => {
   bar.start(meta.count, 0);
 
   const catalogs: LanguageItemPair<SimulationsList> = {};
-  let urlsToGet = [];
+  const urlsToGet = [];
 
   await Promise.all((Object.values(meta.projects).map(async (project) => {
     if (project.type !== 2) return;
@@ -240,9 +240,14 @@ const fetchSims = async (): Promise<void> => {
             topics: [], // See https://github.com/openzim/phet/issues/155 for more details
             description: $('meta[name="description"]').attr('content')
           } as Simulation);
-
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
+          const htmlUrl = `https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`;
+          if(!urlsToGet.some(e => e.url === htmlUrl)) {
+            urlsToGet.push({ id: realId, lang, url: htmlUrl });
+          }
+          const pngUrl = `https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`;
+          if(!urlsToGet.some(e => e.url === pngUrl)) {
+            urlsToGet.push({ id: realId, lang, url: pngUrl });
+          }
         } catch (e) {
           if (verbose) {
             log.error(`Failed to parse: ${options.prefixUrl}${url}`);
@@ -257,23 +262,20 @@ const fetchSims = async (): Promise<void> => {
     }
   })));
 
-  for (const catalog of Object.values(catalogs)) {
-    await catalog.persist(path.join(outDir, 'catalogs'));
-  }
-
   bar.stop();
-  urlsToGet = Array.from(new Set(urlsToGet));
 
   log.info(`Getting documents and images...`);
   bar.start(urlsToGet.length, 0);
 
-  await Promise.all(urlsToGet.map(async (url) => {
+  const simsToDelete: {lang:string, id:string}[] = [];
+  await Promise.all(urlsToGet.map(async ({url, id, lang}) => {
     await delay();
     return new Promise(async (resolve, reject) => {
       let data;
       try {
         data = await got.stream(url, { throwHttpErrors: false });
       } catch (e) {
+        simsToDelete.push({id, lang});
         if (verbose) {
           const status = op.get(e, 'response.status');
           log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
@@ -299,15 +301,30 @@ const fetchSims = async (): Promise<void> => {
       data.on('response', function (response) {
         if (response.statusCode === 200) return;
         log.error(`${fileName} gave a ${response.statusCode}`);
+        simsToDelete.push({id, lang});
 
         fs.unlink(outDir + fileName, function (err) {
           if (err) log.error(`Failed to delete item: ${err}`);
         });
+        if (verbose) {
+          const status = op.get(response, 'statusCode');
+          log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
+        } else {
+          log.warn(`Unable to get simulation data from ${url}. Skipping it.`);
+        }
         resolve(); // print error and continue downloading next file
       }).pipe(writeStream);
     });
   }));
   bar.stop();
+
+  simsToDelete.map(function( { lang, id } ) {
+    catalogs[lang].remove(id);
+  });
+
+  for (const catalog of Object.values(catalogs)) {
+    await catalog.persist(path.join(outDir, 'catalogs'));
+  }
 };
 
 
