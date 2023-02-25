@@ -59,6 +59,13 @@ const namespaces = {
   html: 'A'
 };
 
+const languageCodesMapping = {
+  fu: 'fur',
+  iw: 'heb',
+  in: 'ind',
+  mo: 'ron'
+};
+
 const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-';
 
 const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`;
@@ -75,7 +82,7 @@ const addKiwixPrefixes = function addKiwixPrefixes(file) {
 const getISO6393 = (lang = 'en') => {
   lang = lang.split('_')[0];
   const langEntity = iso6393.find(l => l.iso6391 === lang);
-  if (langEntity) return langEntity.iso6393;
+  return langEntity ? langEntity.iso6393 : languageCodesMapping[lang];
 };
 
 
@@ -155,6 +162,8 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
 
   const languageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul';
 
+  const iso6393LanguageCodes = target.languages.map(getISO6393);
+
   let locale = languageCode === 'mul' ? 'en' : target.languages[0];
   if(locale !== 'en') {
     const translations = await loadTranslations(locale);
@@ -177,7 +186,7 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
     Description: bananaI18n.getMessage('zim-description'),
     Creator: 'University of Colorado',
     Publisher: 'Kiwix',
-    Language: languageCode,
+    Language: iso6393LanguageCodes.join(','),
     Date: `${target.date.getUTCFullYear()}-${(target.date.getUTCMonth() + 1).toString().padStart(2, '0')}-${target.date.getUTCDate().toString().padStart(2, '0')}`,
     Tags: '_category:phet;_pictures:yes;_videos:no',
     // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
