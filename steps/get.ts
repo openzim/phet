@@ -14,7 +14,7 @@ import {log} from '../lib/logger.js';
 import {cats, rootCategories} from '../lib/const.js';
 import welcome from '../lib/welcome.js';
 import {SimulationsList} from '../lib/classes.js';
-import {barOptions} from '../lib/common.js';
+import {barOptions, getISO6393} from '../lib/common.js';
 import type {Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation} from '../lib/types.js';
 import {hideBin} from 'yargs/helpers';
 
@@ -97,6 +97,10 @@ const fetchLanguages = async (): Promise<void> => {
 
     if (!Object.keys(languages)?.includes(slug)) {
       op.set(languages, slug, {slug, name, localName, url, count});
+    }
+
+    if(!getISO6393(slug)){
+      throw(new Error(`Failed to map language "${slug}" into ISO639-3.`));
     }
   });
   try {

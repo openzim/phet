@@ -6,13 +6,13 @@ import {promisify} from 'util';
 import rimraf from 'rimraf';
 import * as dotenv from 'dotenv';
 import * as cheerio from 'cheerio';
-import {iso6393} from 'iso-639-3';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
 import {log} from '../lib/logger.js';
 import {Target} from '../lib/types.js';
 import welcome from '../lib/welcome.js';
 import {Catalog} from '../lib/classes.js';
+import {getISO6393} from '../lib/common.js';
 import {Presets, SingleBar} from 'cli-progress';
 import {hideBin} from 'yargs/helpers';
 import { fileURLToPath } from 'url';
@@ -71,13 +71,6 @@ const addKiwixPrefixes = function addKiwixPrefixes(file) {
       return file.replace(resName, `${getKiwixPrefix(ext)}${resName}`);
     }, file);
 };
-
-const getISO6393 = (lang = 'en') => {
-  lang = lang.split('_')[0];
-  const langEntity = iso6393.find(l => l.iso6391 === lang);
-  if (langEntity) return langEntity.iso6393;
-};
-
 
 const extractResources = async (target, targetDir: string): Promise<void> => {
   const bar = new SingleBar({}, Presets.shades_classic);
@@ -155,6 +148,8 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
 
   const languageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul';
 
+  const iso6393LanguageCodes = target.languages.map(getISO6393);
+
   let locale = languageCode === 'mul' ? 'en' : target.languages[0];
   if(locale !== 'en') {
     const translations = await loadTranslations(locale);
@@ -177,7 +172,7 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
     Description: bananaI18n.getMessage('zim-description'),
     Creator: 'University of Colorado',
     Publisher: 'Kiwix',
-    Language: languageCode,
+    Language: iso6393LanguageCodes.join(','),
     Date: `${target.date.getUTCFullYear()}-${(target.date.getUTCMonth() + 1).toString().padStart(2, '0')}-${target.date.getUTCDate().toString().padStart(2, '0')}`,
     Tags: '_category:phet;_pictures:yes;_videos:no',
     // the following two metadata keys don't supported by ZimCreator yet, so that we have to ts-ignore them
