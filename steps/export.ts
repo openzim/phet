@@ -6,13 +6,13 @@ import {promisify} from 'util';
 import rimraf from 'rimraf';
 import * as dotenv from 'dotenv';
 import * as cheerio from 'cheerio';
-import {iso6393} from 'iso-639-3';
 import {ZimArticle, ZimCreator} from '@openzim/libzim';
 
 import {log} from '../lib/logger.js';
 import {Target} from '../lib/types.js';
 import welcome from '../lib/welcome.js';
 import {Catalog} from '../lib/classes.js';
+import {getISO6393} from '../lib/common.js';
 import {Presets, SingleBar} from 'cli-progress';
 import {hideBin} from 'yargs/helpers';
 import { fileURLToPath } from 'url';
@@ -59,13 +59,6 @@ const namespaces = {
   html: 'A'
 };
 
-const languageCodesMapping = {
-  fu: 'fur',
-  iw: 'heb',
-  in: 'ind',
-  mo: 'ron'
-};
-
 const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-';
 
 const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`;
@@ -78,13 +71,6 @@ const addKiwixPrefixes = function addKiwixPrefixes(file) {
       return file.replace(resName, `${getKiwixPrefix(ext)}${resName}`);
     }, file);
 };
-
-const getISO6393 = (lang = 'en') => {
-  lang = lang.split('_')[0];
-  const langEntity = iso6393.find(l => l.iso6391 === lang);
-  return langEntity ? langEntity.iso6393 : languageCodesMapping[lang];
-};
-
 
 const extractResources = async (target, targetDir: string): Promise<void> => {
   const bar = new SingleBar({}, Presets.shades_classic);
