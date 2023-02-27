@@ -25,6 +25,7 @@ const {argv} = yargs(hideBin(process.argv))
   .array('includeLanguages')
   .array('excludeLanguages');
 
+const failedDownloadsCountBeforeStop = 10;
 const outDir = 'state/get/';
 const imageResolution = 600;
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
@@ -190,12 +191,7 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
   })) : [];
 };
 
-
-const fetchSims = async (): Promise<void> => {
-  log.info(`Gathering sim links...`);
-  const bar = new SingleBar(barOptions, Presets.shades_classic);
-  bar.start(meta.count, 0);
-
+const fetchCatalogsWithUrls = async (bar) => {
   const catalogs: LanguageItemPair<SimulationsList> = {};
   const urlsToGet = [];
 
@@ -261,6 +257,15 @@ const fetchSims = async (): Promise<void> => {
       }
     }
   })));
+  return {catalogs, urlsToGet};
+};
+
+const fetchSims = async (): Promise<void> => {
+  log.info(`Gathering sim links...`);
+  const bar = new SingleBar(barOptions, Presets.shades_classic);
+  bar.start(meta.count, 0);
+
+  const {catalogs, urlsToGet} = await fetchCatalogsWithUrls(bar);
 
   bar.stop();
 
@@ -299,6 +304,9 @@ const fetchSims = async (): Promise<void> => {
         });
 
       data.on('response', function (response) {
+        if(simsToDelete.length > failedDownloadsCountBeforeStop) {
+          reject(new Error(`Stopped because the count of failed simulation downloads is higher than ${failedDownloadsCountBeforeStop}.`));
+        }
         if (response.statusCode === 200) return;
         log.error(`${fileName} gave a ${response.statusCode}`);
         simsToDelete.push({id, lang});
@@ -308,11 +316,11 @@ const fetchSims = async (): Promise<void> => {
         });
         if (verbose) {
           const status = op.get(response, 'statusCode');
-          log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
+          log.warn(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
         } else {
           log.warn(`Unable to get simulation data from ${url}. Skipping it.`);
         }
-        resolve(); // print error and continue downloading next file
+        response.statusCode === 403 ? resolve() : reject();
       }).pipe(writeStream);
     });
   }));
