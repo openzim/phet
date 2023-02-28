@@ -14,13 +14,7 @@ export const cats = {
   30: 'mathconcepts',
   31: 'mathapplications',
   14: 'earth-science',
-  12: 'biology'
-};
+  12: 'biology',
+}
 
-export const rootCategories = [
-  'Physics',
-  'Biology',
-  'Chemistry',
-  'Earth Science',
-  'Math'
-];
+export const rootCategories = ['Physics', 'Biology', 'Chemistry', 'Earth Science', 'Math']

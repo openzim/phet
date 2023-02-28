@@ -25,8 +25,11 @@ jobs:
     - name: installing dependencies
       run: npm ci
 
-    - name: running lint
-      run: npm run lint
+    - name: Installing ESLint
+      run: npm i -g eslint
+
+    - name: Run ESLint
+      run: eslint . --ext .ts
 
     - name: building
       run: npm run build
