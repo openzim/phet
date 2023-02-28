@@ -191,6 +191,26 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
   })) : [];
 };
 
+const downloadCatalogData = async (url, simName) => {
+  let response;
+  let fallback = false;
+  let status: number;
+  try {
+    response = await got(url, {...options});
+  } catch (e) {
+    status = op.get(e, 'response.statusCode');
+    if (status === 404) {
+      // todo reuse catalog
+      fallback = true;
+      url = `en/simulation/${simName}`;
+      response = await got(url, {...options});
+    }
+  }
+  if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
+  const {body} = response;
+  return {body, fallback, status};
+};
+
 const fetchCatalogsWithUrls = async (bar) => {
   const catalogs: LanguageItemPair<SimulationsList> = {};
   const urlsToGet = [];
@@ -206,26 +226,14 @@ const fetchCatalogsWithUrls = async (bar) => {
 
         if (!catalogs[lang]) catalogs[lang] = new SimulationsList(lang);
 
-        let response;
-        let status: number;
         let fallback = false;
-        let url = `${lang}/simulation/${(sim.name)}`;
+        const url = `${lang}/simulation/${(sim.name)}`;
         try {
-          try {
-            response = await got(url, {...options});
-          } catch (e) {
-            status = op.get(e, 'response.statusCode');
-            if (status === 404) {
-              // todo reuse catalog
-              fallback = true;
-              url = `en/simulation/${(sim.name)}`;
-              response = await got(url, {...options});
-            }
-          }
-          if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
-          const {body} = response;
-          if (!body) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
-          const $ = cheerio.load(body);
+          const response = await downloadCatalogData(url, sim.name);
+          fallback = response.fallback;
+
+          if (!response.body) throw new Error(`Got no data (status = ${response.status}) from ${options.prefixUrl}${url}`);
+          const $ = cheerio.load(response.body);
           const realId = sim.name;
 
           catalogs[lang].add({
