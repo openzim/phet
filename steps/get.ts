@@ -25,6 +25,7 @@ const {argv} = yargs(hideBin(process.argv))
   .array('includeLanguages')
   .array('excludeLanguages');
 
+const failedDownloadsCountBeforeStop = 10;
 const outDir = 'state/get/';
 const imageResolution = 600;
 const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8;
@@ -190,14 +191,29 @@ const getItemCategories = (lang: string, slug: string): Category[] => {
   })) : [];
 };
 
+const downloadCatalogData = async (url, simName) => {
+  let response;
+  let fallback = false;
+  let status: number;
+  try {
+    response = await got(url, {...options});
+  } catch (e) {
+    status = op.get(e, 'response.statusCode');
+    if (status === 404) {
+      // todo reuse catalog
+      fallback = true;
+      url = `en/simulation/${simName}`;
+      response = await got(url, {...options});
+    }
+  }
+  if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
+  const {body} = response;
+  return {body, fallback, status};
+};
 
-const fetchSims = async (): Promise<void> => {
-  log.info(`Gathering sim links...`);
-  const bar = new SingleBar(barOptions, Presets.shades_classic);
-  bar.start(meta.count, 0);
-
+const fetchCatalogsWithUrls = async (bar) => {
   const catalogs: LanguageItemPair<SimulationsList> = {};
-  let urlsToGet = [];
+  const urlsToGet = [];
 
   await Promise.all((Object.values(meta.projects).map(async (project) => {
     if (project.type !== 2) return;
@@ -210,26 +226,14 @@ const fetchSims = async (): Promise<void> => {
 
         if (!catalogs[lang]) catalogs[lang] = new SimulationsList(lang);
 
-        let response;
-        let status: number;
         let fallback = false;
-        let url = `${lang}/simulation/${(sim.name)}`;
+        const url = `${lang}/simulation/${(sim.name)}`;
         try {
-          try {
-            response = await got(url, {...options});
-          } catch (e) {
-            status = op.get(e, 'response.statusCode');
-            if (status === 404) {
-              // todo reuse catalog
-              fallback = true;
-              url = `en/simulation/${(sim.name)}`;
-              response = await got(url, {...options});
-            }
-          }
-          if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`);
-          const {body} = response;
-          if (!body) throw new Error(`Got no data (status = ${status}) from ${options.prefixUrl}${url}`);
-          const $ = cheerio.load(body);
+          const response = await downloadCatalogData(url, sim.name);
+          fallback = response.fallback;
+
+          if (!response.body) throw new Error(`Got no data (status = ${response.status}) from ${options.prefixUrl}${url}`);
+          const $ = cheerio.load(response.body);
           const realId = sim.name;
 
           catalogs[lang].add({
@@ -240,9 +244,14 @@ const fetchSims = async (): Promise<void> => {
             topics: [], // See https://github.com/openzim/phet/issues/155 for more details
             description: $('meta[name="description"]').attr('content')
           } as Simulation);
-
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`);
-          urlsToGet.push(`https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`);
+          const htmlUrl = `https://phet.colorado.edu/sims/html/${realId}/latest/${realId}_${lang}.html`;
+          if(!urlsToGet.some(e => e.url === htmlUrl)) {
+            urlsToGet.push({ id: realId, lang, url: htmlUrl });
+          }
+          const pngUrl = `https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`;
+          if(!urlsToGet.some(e => e.url === pngUrl)) {
+            urlsToGet.push({ id: realId, lang, url: pngUrl });
+          }
         } catch (e) {
           if (verbose) {
             log.error(`Failed to parse: ${options.prefixUrl}${url}`);
@@ -256,24 +265,30 @@ const fetchSims = async (): Promise<void> => {
       }
     }
   })));
+  return {catalogs, urlsToGet};
+};
 
-  for (const catalog of Object.values(catalogs)) {
-    await catalog.persist(path.join(outDir, 'catalogs'));
-  }
+const fetchSims = async (): Promise<void> => {
+  log.info(`Gathering sim links...`);
+  const bar = new SingleBar(barOptions, Presets.shades_classic);
+  bar.start(meta.count, 0);
+
+  const {catalogs, urlsToGet} = await fetchCatalogsWithUrls(bar);
 
   bar.stop();
-  urlsToGet = Array.from(new Set(urlsToGet));
 
   log.info(`Getting documents and images...`);
   bar.start(urlsToGet.length, 0);
 
-  await Promise.all(urlsToGet.map(async (url) => {
+  const simsToDelete: {lang:string, id:string}[] = [];
+  await Promise.all(urlsToGet.map(async ({url, id, lang}) => {
     await delay();
     return new Promise(async (resolve, reject) => {
       let data;
       try {
         data = await got.stream(url, { throwHttpErrors: false });
       } catch (e) {
+        simsToDelete.push({id, lang});
         if (verbose) {
           const status = op.get(e, 'response.status');
           log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
@@ -297,17 +312,35 @@ const fetchSims = async (): Promise<void> => {
         });
 
       data.on('response', function (response) {
+        if(simsToDelete.length > failedDownloadsCountBeforeStop) {
+          reject(new Error(`Stopped because the count of failed simulation downloads is higher than ${failedDownloadsCountBeforeStop}.`));
+        }
         if (response.statusCode === 200) return;
         log.error(`${fileName} gave a ${response.statusCode}`);
+        simsToDelete.push({id, lang});
 
         fs.unlink(outDir + fileName, function (err) {
           if (err) log.error(`Failed to delete item: ${err}`);
         });
-        reject();
+        if (verbose) {
+          const status = op.get(response, 'statusCode');
+          log.warn(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`);
+        } else {
+          log.warn(`Unable to get simulation data from ${url}. Skipping it.`);
+        }
+        response.statusCode === 403 ? resolve() : reject();
       }).pipe(writeStream);
     });
   }));
   bar.stop();
+
+  simsToDelete.map(function( { lang, id } ) {
+    catalogs[lang].remove(id);
+  });
+
+  for (const catalog of Object.values(catalogs)) {
+    await catalog.persist(path.join(outDir, 'catalogs'));
+  }
 };
 
 

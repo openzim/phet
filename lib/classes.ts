@@ -38,6 +38,12 @@ export class SimulationsList {
     this.items.push(item);
   }
 
+  remove(idToRemove: string): void {
+    this.items = this.items.filter(function( { id } ) {
+      return id !== idToRemove;
+    });
+  }
+
   constructor(lang: string) {
     this.language = lang;
   }
