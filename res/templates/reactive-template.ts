@@ -1,4 +1,4 @@
-export const template: string = `
+export const template = `
 <div id="header" class="shadow-lr">
 	<div id="logoContainer">
 		<div>
@@ -44,4 +44,4 @@ export const template: string = `
 		</div>
 	</div>
 </div>
-`;
+`
