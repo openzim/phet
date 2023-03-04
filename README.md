@@ -30,6 +30,13 @@ npm i && npm start
 The above will eventually output a ZIM file to ```dist/```
 
 ## Command line arguments
+`--withoutLanguageVariants` uses to exclude languages with County variant. For example `en_ca` will not be present in zim with this argument.
+
+Available only on GET step:
+```bash
+--withoutLanguageVariants ...
+```
+
 Available on GET and EXPORT steps only:
 ```bash
 --includeLanguages lang_1 [lang_2] [lang_3] ...
