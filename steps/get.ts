@@ -82,6 +82,7 @@ const fetchLanguages = async (): Promise<void> => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href')
     const slug = /locale=(.*)$/.exec(url)?.pop()
     if (argv.withoutLanguageVariants && slug.includes('_')) {
+      log.info(`Skipping ${slug} language`)
       return
     }
     const name = $(item).find('td.list-highlight-background:first-child a span').text()
