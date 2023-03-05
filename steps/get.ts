@@ -20,7 +20,7 @@ import { hideBin } from 'yargs/helpers'
 
 dotenv.config()
 
-const { argv } = yargs(hideBin(process.argv)).array('includeLanguages').array('excludeLanguages')
+const { argv } = yargs(hideBin(process.argv)).boolean('withoutLanguageVariants').array('includeLanguages').array('excludeLanguages')
 
 const failedDownloadsCountBeforeStop = 10
 const outDir = 'state/get/'
@@ -81,6 +81,10 @@ const fetchLanguages = async (): Promise<void> => {
   rows.forEach((item) => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href')
     const slug = /locale=(.*)$/.exec(url)?.pop()
+    if (argv.withoutLanguageVariants && slug.includes('_')) {
+      log.info(`Skipping ${slug} language`)
+      return
+    }
     const name = $(item).find('td.list-highlight-background:first-child a span').text()
 
     const nativeLangName = ISO6391.getNativeName(slug)
