@@ -18,6 +18,7 @@ import { hideBin } from 'yargs/helpers'
 import { fileURLToPath } from 'url'
 import { catalogJs } from '../res/templates/catalog.js'
 import Banana from 'banana-i18n'
+import { iso6393To1 } from 'iso-639-3'
 
 dotenv.config()
 
@@ -150,11 +151,12 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
       .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)),
   )
 
-  const languageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
+  const iso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
+  const iso6391LanguageCode = target.languages.length > 1 ? 'mul' : iso6393To1[iso6393LanguageCode]
 
   const iso6393LanguageCodes = target.languages.map(getISO6393)
 
-  let locale = languageCode === 'mul' ? 'en' : target.languages[0]
+  let locale = iso6393LanguageCode === 'mul' ? 'en' : target.languages[0]
   if (locale !== 'en') {
     const translations = await loadTranslations(locale)
 
@@ -169,11 +171,11 @@ const exportTarget = async (target: Target, bananaI18n: Banana) => {
     {
       fileName: `./dist/${target.output}.zim`,
       welcome: 'index.html',
-      fullTextIndexLanguage: languageCode,
+      fullTextIndexLanguage: iso6393LanguageCode,
       compression: 'zstd',
     },
     {
-      Name: `phets_${languageCode}`,
+      Name: `phets_${iso6391LanguageCode}_all`,
       Title: bananaI18n.getMessage('zim-title'),
       Description: bananaI18n.getMessage('zim-description'),
       Creator: 'University of Colorado',
