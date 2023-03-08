@@ -38,17 +38,17 @@ describe('Create ZIM', () => {
   })
 
   test(`Get [${language}]`, (done) => {
-    const proc = fork('./steps/get.ts', ['--includeLanguages', language], options)
+    const proc = fork('./steps/get/index.ts', ['--includeLanguages', language], options)
     proc.on('close', done)
   })
 
   test('Transform', (done) => {
-    const proc = fork('./steps/transform.ts', [], options)
+    const proc = fork('./steps/transform/index.ts', [], options)
     proc.on('close', done)
   })
 
   test('Export', (done) => {
-    const proc = fork('./steps/export.ts', [], options)
+    const proc = fork('./steps/export/index.ts', [], options)
     proc.on('close', done)
   })
 })
