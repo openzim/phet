@@ -16,6 +16,7 @@ export type Simulation = {
 
 export type LanguageDescriptor = {
   slug: string
+  langCode: string
   name: string
   localName: string
   url: string
