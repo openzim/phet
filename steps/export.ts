@@ -248,7 +248,7 @@ const exportData = async () => {
 
   const targets: Target[] = [
     {
-      output: `phet_mul_${datePostfix}`,
+      output: `phet_mul_all_${datePostfix}`,
       date: now,
       languages: Object.keys(languages).filter((lang) => {
         const langCode = /^(\w{2})_/gm.exec(lang)?.pop()
@@ -259,7 +259,7 @@ const exportData = async () => {
   if (!argv.mulOnly) {
     for (const lang of Object.keys(languages)) {
       targets.push({
-        output: `phet_${lang.toLowerCase().replace('_', '-')}_${datePostfix}`,
+        output: `phet_${lang.toLowerCase().replace('_', '-')}_all_${datePostfix}`,
         date: now,
         languages: [lang],
       })
