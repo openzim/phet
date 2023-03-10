@@ -18,7 +18,7 @@ const targetDir = './dist/'
 
 const now = new Date()
 const datePostfix = `${now.getUTCFullYear()}-${(now.getUTCMonth() + 1).toString().padStart(2, '0')}`
-const files = [`${targetDir}phet_mul_${datePostfix}.zim`, `${targetDir}phet_${language}_${datePostfix}.zim`]
+const files = [`${targetDir}phet_mul_all_${datePostfix}.zim`, `${targetDir}phet_${language}_all_${datePostfix}.zim`]
 
 const options = {
   cwd: join(__dirname, '..'),
