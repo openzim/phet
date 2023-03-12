@@ -2,65 +2,25 @@ import got from 'got'
 import * as fs from 'fs'
 import * as path from 'path'
 import slugify from 'slugify'
-import yargs from 'yargs'
-import * as dotenv from 'dotenv'
 import op from 'object-path'
 import * as cheerio from 'cheerio'
 import ISO6391 from 'iso-639-1'
-import { RateLimit } from 'async-sema'
 import { Presets, SingleBar } from 'cli-progress'
+import { log } from '../../lib/logger.js'
+import { cats, rootCategories } from '../../lib/const.js'
+import { SimulationsList } from '../../lib/classes.js'
+import { barOptions, getISO6393 } from '../../lib/common.js'
+import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
+import options from './options.js'
+import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
 
-import { log } from '../lib/logger.js'
-import { cats, rootCategories } from '../lib/const.js'
-import welcome from '../lib/welcome.js'
-import { SimulationsList } from '../lib/classes.js'
-import { barOptions, getISO6393 } from '../lib/common.js'
-import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../lib/types.js'
-import { hideBin } from 'yargs/helpers'
-
-dotenv.config()
-
-const { argv } = yargs(hideBin(process.argv)).boolean('withoutLanguageVariants').array('includeLanguages').array('excludeLanguages')
-
-const failedDownloadsCountBeforeStop = 10
-const outDir = 'state/get/'
-const imageResolution = 600
-const rps = process.env.PHET_RPS ? parseInt(process.env.PHET_RPS, 10) : 8
-const verbose = process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false
-
-const options = {
-  prefixUrl: 'https://phet.colorado.edu/',
-  retry: {
-    limit: process.env.PHET_RETRIES ? parseInt(process.env.PHET_RETRIES, 10) : 5,
-  },
-}
-
-const popValueUpIfExists = (items: string[], value: string) => {
-  const index = items.indexOf(value)
-  if (index !== -1 && items.splice(items.indexOf(value), 1)) items.unshift('en')
-  return items
-}
-
-const unshiftValueUpIfNotExists = (items: string[], value: string): string[] => {
-  if (!items) return
-  if (!items.includes(value)) items.unshift('en')
-  return items
-}
-
-// english is a must
-argv.includeLanguages = unshiftValueUpIfNotExists(argv.includeLanguages as string[], 'en')
-
-// common data
-const delay = RateLimit(rps)
 const languages: LanguageItemPair<LanguageDescriptor> = {}
-
 let meta: Meta
 const simsTree = {}
 const categoriesList: LanguageItemPair<any> = {}
 
-const fetchMeta = async (): Promise<void> => {
-  meta = JSON.parse((await got('services/metadata/1.3/simulations?format=json&summary', { ...options })).body)
-  // console.log(meta);
+export const fetchMeta = async (): Promise<void> => {
+  meta = JSON.parse((await got('services/metadata/1.3/simulations?format=json&summary', { ...options.gotOptions })).body)
   meta.count = Object.values(meta.projects)
     .filter(({ type }) => type === 2)
     .reduce(
@@ -69,8 +29,8 @@ const fetchMeta = async (): Promise<void> => {
     )
 }
 
-const fetchLanguages = async (): Promise<void> => {
-  const $ = cheerio.load((await got('en/simulations/translated', { ...options })).body)
+export const fetchLanguages = async (): Promise<void> => {
+  const $ = cheerio.load((await got('en/simulations/translated', { ...options.gotOptions })).body)
   const rows = $('.translated-sims tr').toArray()
   rows.shift()
   if (rows.length === 0) {
@@ -81,7 +41,7 @@ const fetchLanguages = async (): Promise<void> => {
   rows.forEach((item) => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href')
     const slug = /locale=(.*)$/.exec(url)?.pop()
-    if (argv.withoutLanguageVariants && slug.includes('_')) {
+    if (options.withoutLanguageVariants && slug.includes('_')) {
       log.info(`Skipping ${slug} language`)
       return
     }
@@ -92,8 +52,8 @@ const fetchLanguages = async (): Promise<void> => {
 
     const count = parseInt($(item).find('td.number').text(), 10)
 
-    if (argv.includeLanguages && !((argv.includeLanguages as string[]) || []).includes(slug)) return
-    if (argv.excludeLanguages && ((argv.excludeLanguages as string[]) || []).includes(slug)) return
+    if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
+    if (options.excludeLanguages && ((options.excludeLanguages as string[]) || []).includes(slug)) return
 
     if (!Object.keys(languages)?.includes(slug)) {
       op.set(languages, slug, { slug, name, localName, url, count })
@@ -104,7 +64,7 @@ const fetchLanguages = async (): Promise<void> => {
     }
   })
   try {
-    await fs.promises.writeFile(`${outDir}languages.json`, JSON.stringify(languages), 'utf8')
+    await fs.promises.writeFile(`${options.outDir}languages.json`, JSON.stringify(languages), 'utf8')
     log.info(`Got ${Object.keys(languages).length} languages`)
   } catch (e) {
     log.error('Failed to save languages')
@@ -112,7 +72,7 @@ const fetchLanguages = async (): Promise<void> => {
   }
 }
 
-const fetchCategoriesTree = async (): Promise<void> => {
+export const fetchCategoriesTree = async (): Promise<void> => {
   log.info('Getting category trees...')
   const fallbackLanguages = new Set()
   await Promise.all(
@@ -122,7 +82,7 @@ const fetchCategoriesTree = async (): Promise<void> => {
           try {
             await delay()
             const categorySlug = slugify(categoryTitle, { lower: true })
-            const $ = cheerio.load((await got(`${lang}/simulations/filter?locale=en&subjects=${categorySlug}&sort=alpha&view=list`, { ...options })).body)
+            const $ = cheerio.load((await got(`${lang}/simulations/filter?locale=en&subjects=${categorySlug}&sort=alpha&view=list`, { ...options.gotOptions })).body)
 
             const translatedCat = $('.regular-page-title').text().split('  ')?.shift() || categoryTitle
             op.set(categoriesList, `${lang}.${translatedCat}`, `${categorySlug}`)
@@ -151,7 +111,7 @@ const fetchCategoriesTree = async (): Promise<void> => {
   }
 }
 
-const fetchSimsList = async (): Promise<void> => {
+export const fetchSimsList = async (): Promise<void> => {
   await Promise.all(
     Object.entries(categoriesList).map(async ([lang, subcats]) =>
       Promise.all(
@@ -170,7 +130,7 @@ const fetchSimsList = async (): Promise<void> => {
               op.push(simsTree, `${lang}.${slug}`, subCatTitle)
             })
           } catch (e) {
-            if (verbose) {
+            if (options.verbose) {
               log.error(`Failed to get subcategories for ${lang}`)
               log.error(e)
             } else {
@@ -183,38 +143,17 @@ const fetchSimsList = async (): Promise<void> => {
   )
 }
 
-const getItemCategories = (lang: string, slug: string): Category[] => {
-  // fallback to english
-  const categoryTitles = op.get(simsTree, `${lang}.${slug}`, op.get(simsTree, `en.${slug}`))
-  return categoryTitles
-    ? categoryTitles.map((title) => ({
-        title,
-        slug: categoriesList[title] ?? slugify(title, { lower: true }),
-      }))
-    : []
-}
-
-const downloadCatalogData = async (url, simName) => {
-  let response
-  let fallback = false
-  let status: number
-  try {
-    response = await got(url, { ...options })
-  } catch (e) {
-    status = op.get(e, 'response.statusCode')
-    if (status === 404) {
-      // todo reuse catalog
-      fallback = true
-      url = `en/simulation/${simName}`
-      response = await got(url, { ...options })
-    }
+export const fetchCatalogsWithUrls = async (bar) => {
+  const getItemCategories = (lang: string, slug: string): Category[] => {
+    // fallback to english
+    const categoryTitles = op.get(simsTree, `${lang}.${slug}`, op.get(simsTree, `en.${slug}`))
+    return categoryTitles
+      ? categoryTitles.map((title) => ({
+          title,
+          slug: categoriesList[title] ?? slugify(title, { lower: true }),
+        }))
+      : []
   }
-  if (!response) throw new Error(`Got no response from ${options.prefixUrl}${url}`)
-  const { body } = response
-  return { body, fallback, status }
-}
-
-const fetchCatalogsWithUrls = async (bar) => {
   const catalogs: LanguageItemPair<SimulationsList> = {}
   const urlsToGet = []
 
@@ -235,7 +174,7 @@ const fetchCatalogsWithUrls = async (bar) => {
             const response = await downloadCatalogData(url, sim.name)
             fallback = response.fallback
 
-            if (!response.body) throw new Error(`Got no data (status = ${response.status}) from ${options.prefixUrl}${url}`)
+            if (!response.body) throw new Error(`Got no data (status = ${response.status}) from ${options.gotOptions.prefixUrl}${url}`)
             const $ = cheerio.load(response.body)
             const realId = sim.name
 
@@ -251,13 +190,13 @@ const fetchCatalogsWithUrls = async (bar) => {
             if (!urlsToGet.some((e) => e.url === htmlUrl)) {
               urlsToGet.push({ id: realId, lang, url: htmlUrl })
             }
-            const pngUrl = `https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${imageResolution}.png`
+            const pngUrl = `https://phet.colorado.edu/sims/html/${realId}/latest/${realId}-${options.imageResolution}.png`
             if (!urlsToGet.some((e) => e.url === pngUrl)) {
               urlsToGet.push({ id: realId, lang, url: pngUrl })
             }
           } catch (e) {
-            if (verbose) {
-              log.error(`Failed to parse: ${options.prefixUrl}${url}`)
+            if (options.verbose) {
+              log.error(`Failed to parse: ${options.gotOptions.prefixUrl}${url}`)
               log.error(e)
             } else {
               log.warn(`Unable to get the simulation ${sim.name} for language ${lang}. Skipping it.`)
@@ -272,7 +211,7 @@ const fetchCatalogsWithUrls = async (bar) => {
   return { catalogs, urlsToGet }
 }
 
-const fetchSims = async (): Promise<void> => {
+export const fetchSims = async (): Promise<void> => {
   log.info('Gathering sim links...')
   const bar = new SingleBar(barOptions, Presets.shades_classic)
   bar.start(meta.count, 0)
@@ -294,9 +233,9 @@ const fetchSims = async (): Promise<void> => {
           data = await got.stream(url, { throwHttpErrors: false })
         } catch (e) {
           simsToDelete.push({ id, lang })
-          if (verbose) {
+          if (options.verbose) {
             const status = op.get(e, 'response.status')
-            log.error(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`)
+            log.error(`Failed to get url ${options.gotOptions.prefixUrl}${url}: status = ${status}`)
             log.error(e)
             return
           } else {
@@ -309,7 +248,7 @@ const fetchSims = async (): Promise<void> => {
           const fileParts = fileName.split('-')
           fileName = fileParts.slice(0, -1).join('-') + '.png'
         }
-        const writeStream = fs.createWriteStream(outDir + fileName).on('close', () => {
+        const writeStream = fs.createWriteStream(options.outDir + fileName).on('close', () => {
           bar.increment(1, { prefix: '', postfix: fileName })
           if (!process.stdout.isTTY) log.info(` + ${path.basename(fileName)}`)
           resolve()
@@ -317,19 +256,19 @@ const fetchSims = async (): Promise<void> => {
 
         data
           .on('response', function (response) {
-            if (simsToDelete.length > failedDownloadsCountBeforeStop) {
-              reject(new Error(`Stopped because the count of failed simulation downloads is higher than ${failedDownloadsCountBeforeStop}.`))
+            if (simsToDelete.length > options.failedDownloadsCountBeforeStop) {
+              reject(new Error(`Stopped because the count of failed simulation downloads is higher than ${options.failedDownloadsCountBeforeStop}.`))
             }
             if (response.statusCode === 200) return
             log.error(`${fileName} gave a ${response.statusCode}`)
             simsToDelete.push({ id, lang })
 
-            fs.unlink(outDir + fileName, function (err) {
+            fs.unlink(options.outDir + fileName, function (err) {
               if (err) log.error(`Failed to delete item: ${err}`)
             })
-            if (verbose) {
+            if (options.verbose) {
               const status = op.get(response, 'statusCode')
-              log.warn(`Failed to get url ${options.prefixUrl}${url}: status = ${status}`)
+              log.warn(`Failed to get url ${options.gotOptions.prefixUrl}${url}: status = ${status}`)
             } else {
               log.warn(`Unable to get simulation data from ${url}. Skipping it.`)
             }
@@ -349,24 +288,6 @@ const fetchSims = async (): Promise<void> => {
   })
 
   for (const catalog of Object.values(catalogs)) {
-    await catalog.persist(path.join(outDir, 'catalogs'))
+    await catalog.persist(path.join(options.outDir, 'catalogs'))
   }
 }
-
-// leave IIFE here until global refactoring
-;(async () => {
-  welcome('get')
-  await fetchLanguages()
-  await fetchMeta()
-  await fetchCategoriesTree()
-  await fetchSimsList()
-  await fetchSims()
-  log.info('Done.')
-})().catch((err: Error) => {
-  if (err && err.message) {
-    log.error(err.message)
-  } else {
-    log.error(`An unidentified error occured ${err}`)
-  }
-  yargs(hideBin(process.argv)).exit(1, err)
-})

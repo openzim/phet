@@ -9,25 +9,6 @@ import { log } from './logger.js'
 import { Simulation } from './types.js'
 import { getIdAndLanguage } from './common.js'
 
-export class Base64Entity {
-  public data: string
-  public mimeType: string
-
-  constructor(encoded) {
-    const decoded = encoded.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
-    this.mimeType = decoded && decoded[1]
-    this.data = decoded && decoded[2]
-  }
-
-  isEmpty(): boolean {
-    return !this.data || this.data.length === 0 || !this.mimeType
-  }
-
-  isImage(): boolean {
-    return this.mimeType.split('/')[0] === 'image'
-  }
-}
-
 export class SimulationsList {
   public items: Simulation[] = []
   private readonly language: string
