@@ -165,11 +165,11 @@ export const prepareTargets = () => {
     },
   ]
   if (!options.mulOnly) {
-    for (const lang of Object.keys(languages)) {
+    for (const { langCode, slug } of Object.values(languages)) {
       targets.push({
-        output: `phet_${lang.toLowerCase().replace('_', '-')}_all_${datePostfix}`,
+        output: `phet_${langCode.toLowerCase().replace('_', '-')}_all_${datePostfix}`,
         date: now,
-        languages: [lang],
+        languages: [slug],
       })
     }
   }

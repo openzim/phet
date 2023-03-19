@@ -41,10 +41,11 @@ export const fetchLanguages = async (): Promise<void> => {
   rows.forEach((item) => {
     const url = $(item).find('td.list-highlight-background:first-child a').attr('href')
     const slug = /locale=(.*)$/.exec(url)?.pop()
-    if (options.withoutLanguageVariants && slug.includes('_')) {
-      log.info(`Skipping ${slug} language`)
-      return
+
+    if (!getISO6393(slug)) {
+      throw new Error(`Failed to map language "${slug}" into ISO639-3.`)
     }
+
     const name = $(item).find('td.list-highlight-background:first-child a span').text()
 
     const nativeLangName = ISO6391.getNativeName(slug)
@@ -55,12 +56,27 @@ export const fetchLanguages = async (): Promise<void> => {
     if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
     if (options.excludeLanguages && ((options.excludeLanguages as string[]) || []).includes(slug)) return
 
-    if (!Object.keys(languages)?.includes(slug)) {
-      op.set(languages, slug, { slug, name, localName, url, count })
+    if (options.withoutLanguageVariants && slug.includes('_')) {
+      const langCode = slug.split('_')[0]
+      if (slug === 'zh_CN') {
+        log.info(`Using ${slug} simulations for ${langCode} language`)
+        op.set(languages, slug, { slug, langCode, name, localName, url, count })
+        return
+      }
+
+      const existedLanguageKey = Object.keys(languages).find((language) => language.split('_')[0] === langCode)
+      if (existedLanguageKey && languages[existedLanguageKey].count < count) {
+        delete languages[existedLanguageKey]
+        log.info(`Using ${slug} simulations for ${langCode} language`)
+        op.set(languages, slug, { slug, langCode, name, localName, url, count })
+      } else {
+        log.info(`Skipping ${slug} language`)
+      }
+      return
     }
 
-    if (!getISO6393(slug)) {
-      throw new Error(`Failed to map language "${slug}" into ISO639-3.`)
+    if (!Object.keys(languages)?.includes(slug)) {
+      op.set(languages, slug, { slug, name, localName, url, count, langCode: slug })
     }
   })
   try {

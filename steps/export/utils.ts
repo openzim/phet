@@ -10,6 +10,7 @@ import { log } from '../../lib/logger.js'
 import { Presets, SingleBar } from 'cli-progress'
 import { hideBin } from 'yargs/helpers'
 import { fileURLToPath } from 'url'
+import { LanguageDescriptor, LanguageItemPair } from '../../lib/types.js'
 
 dotenv.config()
 
@@ -52,7 +53,7 @@ export const rimrafPromised = promisify(rimraf)
 
 export const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-'
 
-export const loadLanguages = async () => {
+export const loadLanguages = async (): Promise<LanguageItemPair<LanguageDescriptor>> => {
   const langsFile = await fs.promises.readFile(path.join(__dirname, '../../state/get/languages.json'))
   const langs = JSON.parse(langsFile.toString())
 
