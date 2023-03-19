@@ -74,7 +74,7 @@
     "export": "npm run export-prebuild && ts-node-esm -- steps/export/index.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "npm run export-prebuild && node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --runInBand --forceExit",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "lint": "eslint -c .eslintrc.cjs --ext .ts .",
     "format": "prettier --write './**/*.ts'"
   },
