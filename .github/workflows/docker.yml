@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build and push
-        uses: openzim/docker-publish-action@v1
+        uses: openzim/docker-publish-action@v9
         with:
           registries: ghcr.io
-          image-path: openzim/phet
+          image-name: openzim/phet
           on-master: dev
           tag-pattern: /^v?([0-9.]+)$/
           latest-on-tag: true
