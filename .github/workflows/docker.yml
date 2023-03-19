@@ -21,7 +21,5 @@ jobs:
           tag-pattern: /^v?([0-9.]+)$/
           latest-on-tag: true
           restrict-to: openzim/phet
-          hub-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          hub-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           ghcr-username: ${{ secrets.GHCR_USERNAME }}
           ghcr-token: ${{ secrets.GHCR_TOKEN }}
