@@ -23,5 +23,5 @@ jobs:
           latest-on-tag: true
           restrict-to: openzim/phet
           credentials: |
-            GHCRIO_USERNAME: ${{ secrets.GHCR_USERNAME }}
-            GHCRIO_TOKEN: ${{ secrets.GHCR_TOKEN }}
+            GHCRIO_USERNAME=${{ secrets.GHCR_USERNAME }}
+            GHCRIO_TOKEN=${{ secrets.GHCR_TOKEN }}
