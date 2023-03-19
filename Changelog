@@ -1,3 +1,10 @@
+2.5.0
+* FIX: Broken 2.4.0 version in Zimfarm (@pavel-karatsiuba #197 198)
+* FIX: Better handling of language variants(@pavel-karatsiuba #206 #211)
+* FIX: Non-conform ZIM metadata (@pavel-karatsiuba #201 #208 210)
+* FIX: Use ESLint instead of TSLint (@pavel-karatsiuba #202)
+* NEW: Update of UI in many languages
+
 2.4.0:
 * NEW Full localization system (still no translations) (@pavel-karatsiuba #178)
 * NEW Harmonisation of the logo (@pavel-karatsiuba #177)
