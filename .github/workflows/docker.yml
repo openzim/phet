@@ -16,6 +16,7 @@ jobs:
       - name: Build and push
         uses: openzim/docker-publish-action@v1
         with:
+          registries: ghcr.io
           image-path: openzim/phet
           on-master: dev
           tag-pattern: /^v?([0-9.]+)$/
