@@ -7,7 +7,7 @@
   "dependencies": {
     "@babel/core": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
-    "@openzim/libzim": "^2.4.4",
+    "@openzim/libzim": "^3.0.0",
     "@types/cli-progress": "^3.11.0",
     "@types/es6-shim": "^0.31.42",
     "@types/execa": "^2.0.0",
