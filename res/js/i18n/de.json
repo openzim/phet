@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Brettchenweber",
 			"IMayBeABitShy"
 		]
 	},
@@ -37,7 +38,7 @@
 	"category-chemistry-math-concepts": "Chemie / Mathematische Konzepte",
 	"category-chemistry-motion": "Chemie / Bewegung",
 	"category-chemistry-quantum-chemistry": "Chemie / Quantenchemie",
-	"category-chemistry-quantum-phenomena": "Chemie / Quantenphenomäne",
+	"category-chemistry-quantum-phenomena": "Chemie / Quantenphänomene",
 	"category-chemistry-sound-and-waves": "Chemie / Ton & Wellen",
 	"category-chemistry-work-energy-and-power": "Chemie / Arbeit, Energie & Leistung",
 	"category-earth-science": "Geowissenschaften",
