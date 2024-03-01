@@ -87,7 +87,7 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
       Title: bananaI18n.getMessage('zim-title'),
       Description: bananaI18n.getMessage('zim-description'),
       Creator: 'University of Colorado',
-      Publisher: 'Kiwix',
+      Publisher: 'openZIM',
       Language: iso6393LanguageCodes.join(','),
       Date: `${target.date.getUTCFullYear()}-${(target.date.getUTCMonth() + 1).toString().padStart(2, '0')}-${target.date.getUTCDate().toString().padStart(2, '0')}`,
       Tags: '_category:phet;_pictures:yes;_videos:no',
