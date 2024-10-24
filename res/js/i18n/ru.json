@@ -3,6 +3,7 @@
 		"authors": [
 			"Kareyac",
 			"Razno0",
+			"Rofiatmustapha12",
 			"Smavrina"
 		]
 	},
@@ -19,6 +20,7 @@
 	"category-biology-earth-science": "Биология / Науки о Земле",
 	"category-biology-electricity-magnets-and-circuits": "Биология / Электричество, магниты и схемы",
 	"category-biology-general-chemistry": "Биология / Общая химия",
+	"category-biology-heat-and-thermo": "Биология / Тепло и термо",
 	"category-biology-light-and-radiation": "Биология / Свет и излучение",
 	"category-biology-math-applications": "Биология / Математические приложения",
 	"category-biology-math-concepts": "Биология / Математические понятия",
@@ -32,6 +34,7 @@
 	"category-chemistry-earth-science": "Химия / Науки о Земле",
 	"category-chemistry-electricity-magnets-and-circuits": "Химия / Электричество, магниты и схемы",
 	"category-chemistry-general-chemistry": "Химия / Общая химия",
+	"category-chemistry-heat-and-thermo": "Химия / Тепло и термо",
 	"category-chemistry-light-and-radiation": "Химия / Свет и излучение",
 	"category-chemistry-math-applications": "Химия / Математические приложения",
 	"category-chemistry-math-concepts": "Химия / Математические понятия",
@@ -45,6 +48,7 @@
 	"category-earth-science-earth-science": "Науки о Земле / Науки о Земле",
 	"category-earth-science-electricity-magnets-and-circuits": "Науки о Земле / Электричество, магниты и схемы",
 	"category-earth-science-general-chemistry": "Науки о Земле / Общая химия",
+	"category-earth-science-heat-and-thermo": "Науки о Земле / Тепло и термо",
 	"category-earth-science-light-and-radiation": "Науки о Земле / Свет и радиация",
 	"category-earth-science-math-applications": "Науки о Земле / Математические приложения",
 	"category-earth-science-math-concepts": "Науки о Земле / Математические понятия",
@@ -58,6 +62,7 @@
 	"category-math-earth-science": "Математика / Науки о Земле",
 	"category-math-electricity-magnets-and-circuits": "Математика / Электричество, Магниты и схемы",
 	"category-math-general-chemistry": "Математика / Общая химия",
+	"category-math-heat-and-thermo": "Математика / Тепло и термо",
 	"category-math-light-and-radiation": "Математика / Свет и радиация",
 	"category-math-math-applications": "Математика / Математические приложения",
 	"category-math-math-concepts": "Математика / Математические понятия",
@@ -71,6 +76,7 @@
 	"category-physics-earth-science": "Физика / Науки о Земле",
 	"category-physics-electricity-magnets-and-circuits": "Физика / Электричество, магниты и схемы",
 	"category-physics-general-chemistry": "Физика / Общая химия",
+	"category-physics-heat-and-thermo": "Физика / Тепло и термо",
 	"category-physics-light-and-radiation": "Физика / Свет и радиация",
 	"category-physics-math-applications": "Физика / Математические приложения",
 	"category-physics-math-concepts": "Физика / Математические понятия",
