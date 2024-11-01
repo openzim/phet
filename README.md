@@ -11,7 +11,7 @@ simulations for Science and Math](https://phet.colorado.edu).
 [![npm](https://nodei.co/npm/phetscraper.png)](https://www.npmjs.com/package/phetscraper)
 
 [![npm](https://img.shields.io/npm/v/phetscraper.svg)](https://www.npmjs.com/package/phetscraper)
-[![Docker](https://ghcr-badge.deta.dev/openzim/phet/latest_tag?label=docker)](https://ghcr.io/openzim/phet)
+[![Docker](https://ghcr-badge.egpl.dev/openzim/phet/latest_tag?label=docker)](https://ghcr.io/openzim/phet)
 [![CI](https://github.com/openzim/phet/actions/workflows/ci.yml/badge.svg)](https://github.com/openzim/phet/actions/workflows/ci.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/phet/badge)](https://www.codefactor.io/repository/github/openzim/phet)
 [![Latest ZIM releases](https://img.shields.io/badge/latest-ZIM-%23ff4365)](https://download.kiwix.org/zim/phet/)
