@@ -1,4 +1,5 @@
 FROM node:18-bullseye
+LABEL org.opencontainers.image.source=https://github.com/openzim/phet
 
 WORKDIR /phet
 
