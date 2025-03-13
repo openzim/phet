@@ -1,5 +1,6 @@
 Unreleased:
 * FIX: Use tsx instead of ts-node
+* FIX: Add fallback for Efik and Sepedi unknown ISO639-1 codes
 
 2.5.0
 * FIX: Broken 2.4.0 version in Zimfarm (@pavel-karatsiuba #197 198)
