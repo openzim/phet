@@ -26,7 +26,7 @@ jobs:
       run: npm ci
 
     - name: Installing ESLint
-      run: npm i -g eslint
+      run: npm i -g eslint@^8.57.1
 
     - name: Run ESLint
       run: eslint . --ext .ts
