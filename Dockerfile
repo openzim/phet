@@ -17,5 +17,3 @@ COPY res /phet/res
 # Install phets scrapper
 RUN npm install
 
-# Boot commands
-CMD cat README.md ; /bin/bash
