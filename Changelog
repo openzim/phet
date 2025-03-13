@@ -1,3 +1,6 @@
+Unreleased:
+* FIX: Use tsx instead of ts-node
+
 2.5.0
 * FIX: Broken 2.4.0 version in Zimfarm (@pavel-karatsiuba #197 198)
 * FIX: Better handling of language variants(@pavel-karatsiuba #206 #211)
