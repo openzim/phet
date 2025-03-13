@@ -21,5 +21,3 @@ COPY .babelrc /phet
 # Install phets scrapper
 RUN npm run export-prebuild && npm install
 
-# Boot commands
-CMD cat README.md ; /bin/bash
