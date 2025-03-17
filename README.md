@@ -24,12 +24,15 @@ It requires Node.js version 16 or higher.
 ## Quick Start
 
 ```bash
-npm i && npm start
+npm i && phet2zim
 ```
 
 The above will eventually output a ZIM file to ```dist/```
 
 ## Command line arguments
+
+See `phet2zim --help` for details.
+
 `--withoutLanguageVariants` uses to exclude languages with Country variant. For example `en_CA` will not be present in zim with this argument.
 
 Available only on GET step:
@@ -51,7 +54,7 @@ Available on EXPORT step only:
 
 Example:
 ```bash
-npm run get -- --includeLanguages en ru fr
+phet2zim --includeLanguages en ru fr
 ```
 
 ## Config

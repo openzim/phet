@@ -41,3 +41,4 @@ state
 dist/*
 ts-node*
 .env
+res/js/i18n/*.js
