@@ -6,6 +6,8 @@ const languageCodesMapping = {
   iw: 'heb',
   in: 'ind',
   mo: 'ron',
+  sp: 'nso',
+  ef: 'efi',
 }
 
 export const barOptions = {

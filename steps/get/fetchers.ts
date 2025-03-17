@@ -19,39 +19,36 @@ let meta: Meta
 const simsTree = {}
 const categoriesList: LanguageItemPair<any> = {}
 
-export const fetchMeta = async (): Promise<void> => {
+export const fetchMetaAndLanguages = async (): Promise<void> => {
   meta = JSON.parse((await got('services/metadata/1.3/simulations?format=json&summary', { ...options.gotOptions })).body)
-  meta.count = Object.values(meta.projects)
-    .filter(({ type }) => type === 2)
-    .reduce(
-      (acc, { simulations }) => acc + simulations.reduce((c, sim) => c + Object.keys(sim.localizedSimulations).filter((lang) => Object.keys(languages)?.includes(lang)).length, 0),
-      0,
-    )
-}
+  // Filter projects we want to consider
+  const selectedProjects = meta.projects.filter(({ type }) => type === 2)
 
-export const fetchLanguages = async (): Promise<void> => {
-  const $ = cheerio.load((await got('en/simulations/translated', { ...options.gotOptions })).body)
-  const rows = $('.translated-sims tr').toArray()
-  rows.shift()
-  if (rows.length === 0) {
-    log.error('Failed to fetch languages')
-    return
-  }
+  const langSlugs = Array.from(
+    new Set(
+      selectedProjects
+        .map((project) => project.simulations)
+        .reduce((acc, sims) => acc.concat(sims), [])
+        .map((sim) => Object.keys(sim.localizedSimulations))
+        .reduce((acc, keys) => acc.concat(keys), []),
+    ),
+  )
 
-  rows.forEach((item) => {
-    const url = $(item).find('td.list-highlight-background:first-child a').attr('href')
-    const slug = /locale=(.*)$/.exec(url)?.pop()
-
+  langSlugs.forEach((slug) => {
     if (!getISO6393(slug)) {
       throw new Error(`Failed to map language "${slug}" into ISO639-3.`)
     }
 
-    const name = $(item).find('td.list-highlight-background:first-child a span').text()
+    const url = `https://phet.colorado.edu/en/simulations/filter?locale=${slug}&type=html`
 
-    const nativeLangName = ISO6391.getNativeName(slug)
-    const localName = nativeLangName ? nativeLangName : $(item).find('td.list-highlight-background').last().text()
+    const name = ISO6391.getName(slug)
+    const localName = ISO6391.getNativeName(slug)
 
-    const count = parseInt($(item).find('td.number').text(), 10)
+    const count = selectedProjects
+      .map((project) => project.simulations)
+      .reduce((acc, sims) => acc.concat(sims), [])
+      .map((sim) => (Object.keys(sim.localizedSimulations).includes(slug) ? 1 : 0))
+      .reduce((sum, value) => sum + value, 0)
 
     if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
     if (options.excludeLanguages && ((options.excludeLanguages as string[]) || []).includes(slug)) return
@@ -86,6 +83,11 @@ export const fetchLanguages = async (): Promise<void> => {
     log.error('Failed to save languages')
     log.error(e)
   }
+
+  meta.count = Object.values(selectedProjects).reduce(
+    (acc, { simulations }) => acc + simulations.reduce((c, sim) => c + Object.keys(sim.localizedSimulations).filter((lang) => Object.keys(languages)?.includes(lang)).length, 0),
+    0,
+  )
 }
 
 export const fetchCategoriesTree = async (): Promise<void> => {

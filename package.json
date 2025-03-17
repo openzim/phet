@@ -51,7 +51,7 @@
     "sweetalert2": "^11.6.15",
     "tiny-async-pool": "^1.3.0",
     "ts-jest": "^29.0.5",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.19.3",
     "typescript": "^4.9.3",
     "winston": "^3.8.2",
     "yargs": "^16.2.0"
@@ -67,16 +67,19 @@
     "eslint-plugin-prettier": "^4.2.1"
   },
   "scripts": {
-    "setup": "ts-node-esm -- steps/setup.ts",
-    "get": "ts-node-esm -- steps/get/index.ts",
-    "transform": "ts-node-esm -- steps/transform/index.ts",
+    "setup": "tsx steps/setup.ts",
+    "get": "tsx steps/get/index.ts",
+    "transform": "tsx steps/transform/index.ts",
     "export-prebuild": "npm run build && node_modules/browserify/bin/cmd.js res/js/index.js -t babelify -o res/js/dist.js",
-    "export": "npm run export-prebuild && ts-node-esm -- steps/export/index.ts",
+    "export": "npm run export-prebuild && tsx steps/export/index.ts",
     "start": "npm run setup && npm run get && npm run transform && npm run export",
     "test": "npm run export-prebuild && node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --runInBand --forceExit",
     "build": "tsc --project tsconfig.build.json",
     "lint": "eslint -c .eslintrc.cjs --ext .ts .",
     "format": "prettier --write './**/*.ts'"
+  },
+  "bin": {
+    "phet2zim": "./bin/phet2zim"
   },
   "author": "openZIM team",
   "license": "Apache"

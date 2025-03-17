@@ -2,11 +2,10 @@ import yargs from 'yargs'
 import { log } from '../../lib/logger.js'
 import welcome from '../../lib/welcome.js'
 import { hideBin } from 'yargs/helpers'
-import { fetchLanguages, fetchMeta, fetchCategoriesTree, fetchSimsList, fetchSims } from './fetchers.js'
+import { fetchMetaAndLanguages, fetchCategoriesTree, fetchSimsList, fetchSims } from './fetchers.js'
 ;(async () => {
   welcome('get')
-  await fetchLanguages()
-  await fetchMeta()
+  await fetchMetaAndLanguages()
   await fetchCategoriesTree()
   await fetchSimsList()
   await fetchSims()
