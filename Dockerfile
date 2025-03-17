@@ -10,10 +10,13 @@ COPY *.json *.md /phet/
 RUN npm install
 
 # Copy code
+COPY bin /phet/bin
 COPY lib /phet/lib
 COPY steps /phet/steps
 COPY res /phet/res
 
 # Install phets scrapper
-RUN npm install
+RUN npm install && npm link
+
+ENTRYPOINT ["phet2zim"]
 

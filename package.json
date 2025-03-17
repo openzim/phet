@@ -78,6 +78,9 @@
     "lint": "eslint -c .eslintrc.cjs --ext .ts .",
     "format": "prettier --write './**/*.ts'"
   },
+  "bin": {
+    "phet2zim": "./bin/phet2zim"
+  },
   "author": "openZIM team",
   "license": "Apache"
 }
