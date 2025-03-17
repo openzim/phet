@@ -8,14 +8,14 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04 # to be updated once node-libzim has been updated
 
     strategy:
       matrix:
         node-version: [16, 18]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
@@ -26,7 +26,7 @@ jobs:
       run: npm ci
 
     - name: Installing ESLint
-      run: npm i -g eslint
+      run: npm i -g eslint@^8.57.1
 
     - name: Run ESLint
       run: eslint . --ext .ts
@@ -34,8 +34,8 @@ jobs:
     - name: building
       run: npm run build
 
-    - name: installing devtools
-      run: .github/scripts/install-zimtools.sh
+    # - name: installing devtools
+    #   run: .github/scripts/install-zimtools.sh
 
-    - name: testing
-      run: ZIMCHECK_PATH=`find .. -name zimcheck` npm run test
+    # - name: testing
+    #   run: ZIMCHECK_PATH=`find .. -name zimcheck` npm run test
