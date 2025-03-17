@@ -7,7 +7,7 @@
   "dependencies": {
     "@babel/core": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
-    "@openzim/libzim": "^2.4.4",
+    "@openzim/libzim": "^3.2.3",
     "@types/cli-progress": "^3.11.0",
     "@types/es6-shim": "^0.31.42",
     "@types/execa": "^2.0.0",
@@ -43,6 +43,7 @@
     "jest": "^29.5.0",
     "js-yaml": "^4.1.0",
     "md5": "^2.3.0",
+    "mime-types": "^2.1.35",
     "ncp": "^2.0.0",
     "object-path": "^0.11.8",
     "rimraf": "^3.0.2",
