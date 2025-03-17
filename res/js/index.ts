@@ -33,7 +33,7 @@ declare global {
 
         tag.type = 'text/javascript'
         tag.async = true
-        tag.src = `../-/${locale}.json.js`
+        tag.src = `./${locale}.json.js`
         tag.id = 'translations-script'
 
         tag.addEventListener('load', () => {
@@ -171,7 +171,7 @@ declare global {
             title: `${simulation.title}`,
             html: `
             <div>
-              <img src='../I/${simulation.id}.png' />
+              <img src='./${simulation.id}.png' />
             </div>
             <div class='flex-cont'>
               <div>

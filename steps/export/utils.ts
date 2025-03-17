@@ -11,6 +11,7 @@ import { Presets, SingleBar } from 'cli-progress'
 import { hideBin } from 'yargs/helpers'
 import { fileURLToPath } from 'url'
 import { LanguageDescriptor, LanguageItemPair } from '../../lib/types.js'
+import { ContentProvider, Blob } from '@openzim/libzim/dist/index.js'
 
 dotenv.config()
 
@@ -18,27 +19,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const { argv } = yargs(hideBin(process.argv)).array('includeLanguages').array('excludeLanguages').boolean('mulOnly')
-
-const namespaces = {
-  // ico: '-',
-  js: '-',
-  css: '-',
-  svg: 'I',
-  png: 'I',
-  jpg: 'I',
-  jpeg: 'I',
-  html: 'A',
-}
-
-const getKiwixPrefix = (ext: string): string => `../${getNamespaceByExt(ext)}/`
-
-const addKiwixPrefixes = (file) => {
-  const resources = file.match(/[0-9a-f]{32}\.(svg|jpg|jpeg|png|js)/g) || []
-  return resources.reduce((file, resName) => {
-    const ext = path.extname(resName).slice(1)
-    return file.replace(resName, `${getKiwixPrefix(ext)}${resName}`)
-  }, file)
-}
 
 export const options = {
   catalogsDir: 'state/get/catalogs',
@@ -50,8 +30,6 @@ export const options = {
 }
 
 export const rimrafPromised = promisify(rimraf)
-
-export const getNamespaceByExt = (ext: string): string => namespaces[ext] || '-'
 
 export const loadLanguages = async (): Promise<LanguageItemPair<LanguageDescriptor>> => {
   const langsFile = await fs.promises.readFile(path.join(__dirname, '../../state/get/languages.json'))
@@ -71,7 +49,7 @@ export const extractResources = async (target, targetDir: string): Promise<void>
 
   for (const file of files) {
     try {
-      let html = await fs.promises.readFile(file, 'utf8')
+      const html = await fs.promises.readFile(file, 'utf8')
       const $ = cheerio.load(html)
 
       const filesToExtract = $('[src]')
@@ -82,12 +60,7 @@ export const extractResources = async (target, targetDir: string): Promise<void>
       await Promise.all(
         filesToExtract.map(async (fileName) => {
           if (fileName.length > 40 || fileName.search(/this\.image/) !== -1) return
-          const ext = path.extname(fileName).slice(1)
-          html = html.replace(fileName, `${getKiwixPrefix(ext)}${fileName}`)
-
-          let file = await fs.promises.readFile(`${options.inDir}${fileName}`, 'utf8')
-          file = addKiwixPrefixes(file)
-          return fs.promises.writeFile(`${targetDir}${path.basename(fileName)}`, file, 'utf8')
+          await fs.promises.copyFile(`${options.inDir}${fileName}`, `${targetDir}${path.basename(fileName)}`)
         }),
       )
       await fs.promises.writeFile(`${targetDir}${path.basename(file)}`, html, 'utf8')
@@ -104,4 +77,19 @@ export const extractResources = async (target, targetDir: string): Promise<void>
     }
   }
   bar.stop()
+}
+
+export const createFileContentProvider = (filename: string): ContentProvider => {
+  let dataSent = false
+  const data = fs.readFileSync(filename)
+  return {
+    size: data.length,
+    feed: () => {
+      if (!dataSent) {
+        dataSent = true
+        return new Blob(fs.readFileSync(filename))
+      }
+      return new Blob()
+    },
+  }
 }
