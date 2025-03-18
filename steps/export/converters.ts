@@ -98,7 +98,7 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
     creator.addMetadata(name, content)
   }
 
-  creator.addIllustration(48, createFileContentProvider(targetDir + 'favicon.ico'))
+  creator.addIllustration(48, createFileContentProvider(targetDir + 'favicon.png'))
 
   const bar = new SingleBar({}, Presets.shades_classic)
   const files = glob.sync(`${targetDir}/*`, {})
