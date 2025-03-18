@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import glob from 'glob'
+import { glob } from 'glob'
 import * as path from 'path'
 import { Compression, Creator, StringItem } from '@openzim/libzim'
 import { log } from '../../lib/logger.js'
@@ -10,7 +10,8 @@ import { Presets, SingleBar } from 'cli-progress'
 import { catalogJs } from '../../res/templates/catalog.js'
 import Banana from 'banana-i18n'
 import { iso6393To1 } from 'iso-639-3'
-import { options, rimrafPromised, extractResources, loadLanguages, createFileContentProvider } from './utils.js'
+import { options, extractResources, loadLanguages, createFileContentProvider } from './utils.js'
+import { rimraf } from 'rimraf'
 import { fileURLToPath } from 'url'
 import mime from 'mime-types'
 
@@ -34,7 +35,7 @@ export const loadTranslations = async (locale: string) => {
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   const targetDir = `${options.outDir}${target.output}/`
 
-  await rimrafPromised(targetDir)
+  await rimraf(targetDir)
   await fs.promises.mkdir(targetDir)
   await extractResources(target, targetDir)
 

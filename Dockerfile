@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:22
 LABEL org.opencontainers.image.source=https://github.com/openzim/phet
 
 WORKDIR /phet

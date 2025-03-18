@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import glob from 'glob'
+import { glob } from 'glob'
 import op from 'object-path'
 import { SingleBar } from 'cli-progress'
 import asyncPool from 'tiny-async-pool'
@@ -136,13 +136,15 @@ export class Transformer {
     const items: string[] = await Promise.all(glob.sync(this.source, {}))
     this.bar.start(items.length, 0)
 
-    let result = []
+    const result = []
     if (this.workers === 0) {
       for (const item of items) {
         result.push(await this.handle(item))
       }
     } else {
-      result = await asyncPool(this.workers, items, (item) => this.handle(item))
+      for await (const oneResult of asyncPool(this.workers, items, (item) => this.handle(item))) {
+        result.push(oneResult)
+      }
     }
     this.bar.stop()
     return result

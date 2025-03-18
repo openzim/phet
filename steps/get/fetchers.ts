@@ -113,7 +113,7 @@ export const fetchCategoriesTree = async (): Promise<void> => {
               const title = $(item).children().text()
               op.set(categoriesList, `${lang}.${translatedCat} / ${title}`, `${categorySlug}/${slug}`)
             })
-          } catch (e) {
+          } catch {
             fallbackLanguages.add(lang)
             return
           }

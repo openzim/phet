@@ -23,31 +23,6 @@ module.exports = {
   "rules": {
     "@typescript-eslint/adjacent-overload-signatures": "error",
     "@typescript-eslint/array-type": "off",
-    "@typescript-eslint/ban-types": [
-      "error",
-      {
-        "types": {
-          "Object": {
-            "message": "Avoid using the `Object` type. Did you mean `object`?"
-          },
-          "Function": {
-            "message": "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
-          },
-          "Boolean": {
-            "message": "Avoid using the `Boolean` type. Did you mean `boolean`?"
-          },
-          "Number": {
-            "message": "Avoid using the `Number` type. Did you mean `number`?"
-          },
-          "String": {
-            "message": "Avoid using the `String` type. Did you mean `string`?"
-          },
-          "Symbol": {
-            "message": "Avoid using the `Symbol` type. Did you mean `symbol`?"
-          }
-        }
-      }
-    ],
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/dot-notation": "error",
     "@typescript-eslint/explicit-function-return-type": "off",
@@ -83,13 +58,6 @@ module.exports = {
     "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-function-type": "error",
     "@typescript-eslint/prefer-namespace-keyword": "error",
-    "@typescript-eslint/quotes": [
-      "error",
-      "single",
-      {
-        avoidEscape: true
-      }
-    ],
     "@typescript-eslint/triple-slash-reference": [
       "error",
       {
@@ -115,7 +83,6 @@ module.exports = {
     "import/order": "off",
     "jsdoc/check-alignment": "error",
     "jsdoc/check-indentation": "error",
-    "jsdoc/newline-after-description": "error",
     "max-classes-per-file": "off",
     "max-len": "off",
     "new-parens": "error",

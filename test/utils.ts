@@ -6,7 +6,7 @@ export async function zimcheckAvailable() {
   try {
     await execa(`which ${zimcheckPath}`, { shell: true })
     return true
-  } catch (err) {
+  } catch {
     return false
   }
 }
