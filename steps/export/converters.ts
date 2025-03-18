@@ -157,16 +157,19 @@ export const prepareTargets = () => {
   const now = new Date()
   const datePostfix = `${now.getUTCFullYear()}-${(now.getUTCMonth() + 1).toString().padStart(2, '0')}`
 
-  const targets: Target[] = [
-    {
+  const targets: Target[] = []
+
+  if (options.mulOnly || options.createMul) {
+    targets.push({
       output: `phet_mul_all_${datePostfix}`,
       date: now,
       languages: Object.keys(languages).filter((lang) => {
         const langCode = /^(\w{2})_/gm.exec(lang)?.pop()
         return !langCode || !Object.keys(languages).includes(langCode)
       }),
-    },
-  ]
+    })
+  }
+
   if (!options.mulOnly) {
     for (const { langCode, slug } of Object.values(languages)) {
       targets.push({

@@ -50,6 +50,9 @@ Available on EXPORT step only:
 ```bash
 # Skip ZIM files for individual languages
 --mulOnly
+
+# Create a ZIM file with all languages
+--createMul
 ```
 
 Example:

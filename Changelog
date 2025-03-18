@@ -7,6 +7,7 @@ Unreleased:
 * FIX: Some simulations are failing to load with phet.chipper.localeData is undefined (#237)
 * UPDATE: Update to Node.JS 22 and upgrade dependencies (#243)
 * CHANGE: Stop removing third-party license information (#240)
+* CHANGED: By default, do not create mul ZIM (#242)
 
 2.5.0
 * FIX: Broken 2.4.0 version in Zimfarm (@pavel-karatsiuba #197 198)
