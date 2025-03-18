@@ -1,9 +1,7 @@
 import * as fs from 'fs'
-import glob from 'glob'
+import { glob } from 'glob'
 import * as path from 'path'
 import yargs from 'yargs'
-import { promisify } from 'util'
-import rimraf from 'rimraf'
 import * as dotenv from 'dotenv'
 import * as cheerio from 'cheerio'
 import { log } from '../../lib/logger.js'
@@ -18,7 +16,7 @@ dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const { argv } = yargs(hideBin(process.argv)).array('includeLanguages').array('excludeLanguages').boolean('mulOnly')
+const argv: any = yargs(hideBin(process.argv)).array('includeLanguages').array('excludeLanguages').boolean('mulOnly').argv
 
 export const options = {
   catalogsDir: 'state/get/catalogs',
@@ -28,8 +26,6 @@ export const options = {
   verbose: process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false,
   mulOnly: argv.mulOnly,
 }
-
-export const rimrafPromised = promisify(rimraf)
 
 export const loadLanguages = async (): Promise<LanguageItemPair<LanguageDescriptor>> => {
   const langsFile = await fs.promises.readFile(path.join(__dirname, '../../state/get/languages.json'))

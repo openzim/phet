@@ -4,7 +4,6 @@
     "preserveConstEnums": true,
     "sourceMap": false,
     "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true,
     "allowJs": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,

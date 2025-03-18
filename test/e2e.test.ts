@@ -119,7 +119,7 @@ const removeZim = () => {
         // noop
       })
     }
-  } catch (e) {
+  } catch {
     // noop
   }
 }

@@ -3,6 +3,7 @@ import * as ArrayFrom from 'array-from'
 import { Category, Simulation } from '../../lib/types.js'
 import { template as reactiveTemplate } from '../templates/reactive-template'
 import Banana from 'banana-i18n'
+import Ractive from 'ractive'
 
 if (!(Array as any).from) (Array as any).from = ArrayFrom
 
@@ -160,8 +161,8 @@ declare global {
       this.observe('selectedCategory', function (selectedCategory) {
         if (localStorage) localStorage[window.lsPrefix + 'currentCategory'] = selectedCategory
       })
-      this.on('showConfirm', function (ev) {
-        const simulation: Simulation = ev.context
+      this.on('showConfirm', function (context) {
+        const simulation: Simulation = context.get()
 
         const categoryHTML = simulation.categories.map((cat) => `<li>${cat.title}</li>`).join('')
         const topicsHTML = simulation.topics.map((t) => `<li>${t}</li>`).join('')
