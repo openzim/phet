@@ -56,7 +56,7 @@ export const modifyHTML = async (fileName, html): Promise<string> => {
 }
 
 export const removeStrings = (html): string => {
-  html = html.replace(/(\/\/ This simulation uses following third-party resources.*?)(window\.phet\.chipper\.strings)/gms, '$2')
+  html = html.replace(/(\/\/ This simulation uses following third-party resources.*?)(\/\/ ### END THIRD PARTY LICENSE ENTRIES ###)/gms, '$2')
   html = minifier.minify(html, { removeComments: true })
   return html
 }

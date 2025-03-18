@@ -4,6 +4,7 @@ Unreleased:
 * FIX: Rework retrieval of languages list (#216)
 * NEW: Add CLI interface (#231)
 * UPDATE: Upgrade to node-libzim 3.2.3 (libzim 9.2.1) (#239)
+* FIX: Some simulations are failing to load with phet.chipper.localeData is undefined (#237)
 
 2.5.0
 * FIX: Broken 2.4.0 version in Zimfarm (@pavel-karatsiuba #197 198)
