@@ -1,5 +1,5 @@
-Unreleased
-* CHANGE: Use CMD instead of ENTRYPOINT for proper Zimfarm operation
+3.0.1
+* CHANGE: Use CMD instead of ENTRYPOINT for proper Zimfarm operation (#253)
 
 3.0.0
 * UPDATE: Upgrade to node-libzim 3.2.3 (libzim 9.2.1) (#239)
