@@ -1,3 +1,5 @@
+Unreleased
+
 3.0.1
 * CHANGE: Use CMD instead of ENTRYPOINT for proper Zimfarm operation (#253)
 
