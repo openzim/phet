@@ -1,6 +1,6 @@
 {
   "name": "phetscraper",
-  "version": "2.5.0",
+  "version": "3.0.0",
   "description": "Scraper and exporter of PHET simulations",
   "main": "index.js",
   "type": "module",
