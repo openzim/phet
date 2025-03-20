@@ -22,5 +22,5 @@ COPY .babelrc /phet
 # Install phets scrapper
 RUN npm run export-prebuild && npm install && npm link
 
-ENTRYPOINT ["phet2zim"]
+CMD ["phet2zim"]
 
