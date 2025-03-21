@@ -111,7 +111,6 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
         mime.lookup(path.basename(file)) || 'application/octet-stream',
         catalog.getTitle(path.basename(file)),
         {
-          COMPRESS: undefined,
           FRONT_ARTICLE: file.split('.').pop() === 'html' ? 1 : 0,
         },
         await fs.promises.readFile(file),
