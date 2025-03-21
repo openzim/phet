@@ -1,3 +1,5 @@
+Unreleased
+
 3.0.2
 * FIX: Fix compression of documents (#256)
 
