@@ -1,14 +1,16 @@
 export const template = `
 <div id="header" class="shadow-lr">
-	<div id="logoContainer">
-		<div>
-			<img src="./phetlogo.png"/>
+	<div id="header-content">
+		<div id="logoContainer">
+			<div>
+				<img id="logo" src="./phetlogo.png"/>
+			</div>
+			<div id="logoContainerText">
+				PhET Interactive Simulations
+			</div>
 		</div>
-		<div id="logoContainerText">
-			PhET Interactive Simulations
-		</div>
+		<div id="translateSlogan">{{slogan}}</div>
 	</div>
-	<p id="translateSlogan">{{slogan}}</p>
 </div>
 <div id="container">
 	<div id='ractive-target'>
