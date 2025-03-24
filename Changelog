@@ -1,4 +1,7 @@
 Unreleased
+* FIX: Fix responsivness (#260)
+* FIX: Lazy load home page images
+* FIX: stop loading simulation when clicking in the backdrop (outside) of the popup
 
 3.0.2
 * FIX: Fix compression of documents (#256)

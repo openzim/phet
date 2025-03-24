@@ -36,7 +36,7 @@ export const template = `
 		<div class="card-cont">
 			{{#each simulations}}
 				<div class="sim-card" on-click='showConfirm'>
-					<img src="./{{id}}.png" alt="Screenshot of the {{display}}" />
+					<img loading="lazy" src="./{{id}}.png" alt="Screenshot of the {{display}}" />
 					<div class="overlay">
 						<i class="fa fa-info-circle" aria-hidden="true"></i>
 						<h2>{{title}}</h2>
