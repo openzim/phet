@@ -41,7 +41,6 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
 
     const url = `https://phet.colorado.edu/en/simulations/filter?locale=${slug}&type=html`
 
-    const name = ISO6391.getName(slug)
     const localName = ISO6391.getNativeName(slug)
 
     const count = selectedProjects
@@ -57,7 +56,7 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
       const langCode = slug.split('_')[0]
       if (slug === 'zh_CN') {
         log.info(`Using ${slug} simulations for ${langCode} language`)
-        op.set(languages, slug, { slug, langCode, name, localName, url, count })
+        op.set(languages, slug, { slug, langCode, localName, url, count })
         return
       }
 
@@ -65,7 +64,7 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
       if (existedLanguageKey && languages[existedLanguageKey].count < count) {
         delete languages[existedLanguageKey]
         log.info(`Using ${slug} simulations for ${langCode} language`)
-        op.set(languages, slug, { slug, langCode, name, localName, url, count })
+        op.set(languages, slug, { slug, langCode, localName, url, count })
       } else {
         log.info(`Skipping ${slug} language`)
       }
@@ -73,7 +72,7 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
     }
 
     if (!Object.keys(languages)?.includes(slug)) {
-      op.set(languages, slug, { slug, name, localName, url, count, langCode: slug })
+      op.set(languages, slug, { slug, localName, url, count, langCode: slug })
     }
   })
   try {
