@@ -2,6 +2,11 @@ Unreleased
 * FIX: Fix responsivness (#260)
 * FIX: Lazy load home page images
 * FIX: stop loading simulation when clicking in the backdrop (outside) of the popup
+* FIX: Add support for ku_TR, only has a variant
+* FIX: Sort language combobox in UI by locale language name alphabetical order
+* FIX: Include all variants in mul ZIM, not only the ones for which there is only variants
+* FIX: Add fallback for slug without known locale language name (#261)
+* FIX: Remove English name property on language descriptors: property is unused and missing on variants
 
 3.0.2
 * FIX: Fix compression of documents (#256)
