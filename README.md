@@ -27,7 +27,7 @@ It requires Node.js version 16 or higher.
 npm i && phet2zim
 ```
 
-The above will eventually output a ZIM file to ```dist/```
+The above will eventually output a ZIM file to `output/`
 
 ## Command line arguments
 
@@ -36,17 +36,20 @@ See `phet2zim --help` for details.
 `--withoutLanguageVariants` uses to exclude languages with Country variant. For example `en_CA` will not be present in zim with this argument.
 
 Available only on GET step:
+
 ```bash
 --withoutLanguageVariants ...
 ```
 
 Available on GET and EXPORT steps only:
+
 ```bash
 --includeLanguages lang_1 [lang_2] [lang_3] ...
 --excludeLanguages lang_1 [lang_2] [lang_3] ...
 ```
 
 Available on EXPORT step only:
+
 ```bash
 # Skip ZIM files for individual languages
 --mulOnly
@@ -56,6 +59,7 @@ Available on EXPORT step only:
 ```
 
 Example:
+
 ```bash
 phet2zim --includeLanguages en ru fr
 ```
@@ -63,6 +67,7 @@ phet2zim --includeLanguages en ru fr
 ## Config
 
 Another way to configure behaviour is through environment variables. Sample `.env` file (with default values):
+
 ```bash
 # request per second, affects GET step only
 PHET_RPS=8
@@ -77,29 +82,32 @@ PHET_VERBOSE_ERRORS=false
 ## About
 
 This project achieves multiple things:
-* Download PhET content
-* Generate an Index for said content
-* Generate ZIM file(s) containing content and index
+
+- Download PhET content
+- Generate an Index for said content
+- Generate ZIM file(s) containing content and index
 
 Things this project does not yet do, but should:
-* Generate Android APK
+
+- Generate Android APK
 
 ## Usage
 
-The functionality is split into 5 ```npm scripts```:
-* ```npm run setup``` - deletes state from previous runs
-* ```npm run get``` - downloads PhET simulations in specified languages
-* ```npm run transform``` - prepare the content and media files
-* ```npm run export``` - generates ZIM file(s)
-* ```npm start``` - runs all of the above in sequence
+The functionality is split into 5 `npm scripts`:
+
+- `npm run setup` - deletes state from previous runs
+- `npm run get` - downloads PhET simulations in specified languages
+- `npm run transform` - prepare the content and media files
+- `npm run export` - generates ZIM file(s)
+- `npm start` - runs all of the above in sequence
 
 The steps get, transform and export have their own output directories:
-* ```get``` outputs HTML and PNG files to ```state/get```
-* ```transform``` outputs intermediate files to ```state/transform```
-* ```export``` outputs HTML and PNG files to ```state/export``` AND a ZIM file(s) to ```dist/```
 
-License
--------
+- `get` outputs HTML and PNG files to `state/get`
+- `transform` outputs intermediate files to `state/transform`
+- `export` outputs HTML and PNG files to `state/export` AND a ZIM file(s) to `output/`
+
+## License
 
 [Apache](https://www.apache.org/licenses/LICENSE-2.0) or later, see
 [LICENSE](LICENSE) for more details.

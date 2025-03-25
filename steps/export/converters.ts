@@ -33,7 +33,17 @@ export const loadTranslations = async (locale: string) => {
 }
 
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
-  const targetDir = `${options.outDir}${target.output}/`
+  // determine the output directory //
+  const outPutDir = path.resolve(options.outDir || 'output')
+  const targetDir = path.join(outPutDir, target.output)
+
+  if (!fs.existsSync(outPutDir)) {
+    fs.mkdirSync(outPutDir, { recursive: true })
+  }
+
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true })
+  }
 
   await rimraf(targetDir)
   await fs.promises.mkdir(targetDir)
@@ -47,7 +57,7 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   }
 
   // Generate index file
-  await fs.promises.copyFile(options.resDir + 'template.html', targetDir + 'index.html')
+  await fs.promises.copyFile(path.join(options.resDir, 'template.html'), path.join(targetDir, 'index.html'))
 
   // Generate catalog JS
   await fs.promises.writeFile(targetDir + 'catalog.js', catalogJs(catalog, target.output), 'utf8')
@@ -58,7 +68,10 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
         ignore: ['*/templates/*', '*.ts', '*/template.html'],
         nodir: true,
       })
-      .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)),
+      .map(async (file) => {
+        const relativePath = path.relative(options.resDir, file)
+        return fs.promises.copyFile(file, path.join(targetDir, relativePath))
+      }),
   )
 
   const iso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
@@ -78,7 +91,11 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info(`Creating ${target.output}.zim ...`)
 
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`./dist/${target.output}.zim`)
+  // changed the default output folder from dist to output
+  creator
+    .configIndexing(true, iso6393LanguageCode)
+    .configCompression(Compression.Zstd)
+    .startZimCreation(path.join(outPutDir, `${target.output}.zim`))
 
   creator.setMainPath('index.html')
 
@@ -98,10 +115,10 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
     creator.addMetadata(name, content)
   }
 
-  creator.addIllustration(48, createFileContentProvider(targetDir + 'favicon.png'))
+  creator.addIllustration(48, createFileContentProvider(path.join(targetDir, 'favicon.png')))
 
   const bar = new SingleBar({}, Presets.shades_classic)
-  const files = glob.sync(`${targetDir}/*`, {})
+  const files = glob.sync(`${targetDir}/**/*`, { nodir: true })
   bar.start(files.length, 0)
 
   for (const file of files) {

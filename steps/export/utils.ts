@@ -15,8 +15,13 @@ dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-
-const argv: any = yargs(hideBin(process.argv)).array('includeLanguages').array('excludeLanguages').boolean('mulOnly').boolean('createMul').argv
+// added a cli option (__output) //
+const argv: any = yargs(hideBin(process.argv))
+  .array('includeLanguages')
+  .array('excludeLanguages')
+  .boolean('mulOnly')
+  .boolean('createMul')
+  .options('output', { alias: 'o', type: 'string', description: 'output directory for zim file', default: path.join(__dirname, 'output') }).argv
 
 export const options = {
   catalogsDir: 'state/get/catalogs',
