@@ -1,28 +1,26 @@
 {
-	"@metadata": {
-		"authors": [
-			"Ajeje Brazorf"
-		]
-	},
-	"load-button": "Càrrica",
-	"cancel-button": "Annulla",
-	"category-all-categories": "Tutti li catigurìi",
-	"category-biology": "Bioluggìa",
-	"category-biology-biology": "Bioluggìa / Bioluggìa",
-	"category-biology-earth-science": "Bioluggìa / Scienzi dâ Terra",
-	"category-biology-general-chemistry": "Bioluggìa / Chìmica ginirali",
-	"category-chemistry-biology": "Chìmica / Bioluggìa",
-	"category-chemistry-earth-science": "Chìmica / Scienzi dâ Terra",
-	"category-chemistry-general-chemistry": "Chìmica / Chìmica ginirali",
-	"category-earth-science": "Scienzi dâ Terra",
-	"category-earth-science-biology": "Scienzi dâ Terra / Bioluggìa",
-	"category-earth-science-earth-science": "Scienzi dâ Terra / Scienzi dâ Terra",
-	"category-earth-science-general-chemistry": "Scienzi dâ Terra / Chìmica ginirali",
-	"category-math": "Matimàtica",
-	"category-math-biology": "Matimàtica / Bioluggìa",
-	"category-math-earth-science": "Matimàtica / Scienzi dâ Terra",
-	"category-math-general-chemistry": "Matimàtica / Chìmica ginirali",
-	"category-physics": "Fìsica",
-	"category-physics-biology": "Fìsica / Bioluggìa",
-	"category-physics-earth-science": "Fìsica / Scienzi dâ Terra"
+  "@metadata": {
+    "authors": ["Ajeje Brazorf"]
+  },
+  "load-button": "Càrrica",
+  "cancel-button": "Annulla",
+  "category-all-categories": "Tutti li catigurìi",
+  "category-biology": "Bioluggìa",
+  "category-biology-biology": "Bioluggìa / Bioluggìa",
+  "category-biology-earth-science": "Bioluggìa / Scienzi dâ Terra",
+  "category-biology-general-chemistry": "Bioluggìa / Chìmica ginirali",
+  "category-chemistry-biology": "Chìmica / Bioluggìa",
+  "category-chemistry-earth-science": "Chìmica / Scienzi dâ Terra",
+  "category-chemistry-general-chemistry": "Chìmica / Chìmica ginirali",
+  "category-earth-science": "Scienzi dâ Terra",
+  "category-earth-science-biology": "Scienzi dâ Terra / Bioluggìa",
+  "category-earth-science-earth-science": "Scienzi dâ Terra / Scienzi dâ Terra",
+  "category-earth-science-general-chemistry": "Scienzi dâ Terra / Chìmica ginirali",
+  "category-math": "Matimàtica",
+  "category-math-biology": "Matimàtica / Bioluggìa",
+  "category-math-earth-science": "Matimàtica / Scienzi dâ Terra",
+  "category-math-general-chemistry": "Matimàtica / Chìmica ginirali",
+  "category-physics": "Fìsica",
+  "category-physics-biology": "Fìsica / Bioluggìa",
+  "category-physics-earth-science": "Fìsica / Scienzi dâ Terra"
 }

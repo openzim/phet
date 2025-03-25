@@ -1,28 +1,26 @@
 {
-	"@metadata": {
-		"authors": [
-			"Pyscowicz"
-		]
-	},
-	"load-button": "Lataa",
-	"cancel-button": "Peruuta",
-	"category-all-categories": "Kaikki luokat",
-	"category-biology": "Biologia",
-	"category-biology-biology": "Biologia / Biologia",
-	"category-biology-earth-science": "Biologia / Geotieteet",
-	"category-chemistry": "Kemia",
-	"category-chemistry-biology": "Kemia / Biologia",
-	"category-chemistry-earth-science": "Kemia / Geotieteet",
-	"category-earth-science": "Geotieteet",
-	"category-earth-science-biology": "Maantiede / Biologia",
-	"category-earth-science-earth-science": "Geotieteet / Geotieteet",
-	"category-earth-science-general-chemistry": "Geotieteet / Yleinen kemia",
-	"category-earth-science-light-and-radiation": "Geotieteet / Valo ja säteily",
-	"category-earth-science-quantum-chemistry": "Geotieteet / Kvanttikemia",
-	"category-math": "Matematiikka",
-	"category-math-biology": "Matematiikka / Biologia",
-	"category-math-earth-science": "Matematiikka / Geotieteet",
-	"category-physics": "Fysiikka",
-	"category-physics-biology": "Fysiikka / Biologia",
-	"category-physics-earth-science": "Fysiikka / Geotieteet"
+  "@metadata": {
+    "authors": ["Pyscowicz"]
+  },
+  "load-button": "Lataa",
+  "cancel-button": "Peruuta",
+  "category-all-categories": "Kaikki luokat",
+  "category-biology": "Biologia",
+  "category-biology-biology": "Biologia / Biologia",
+  "category-biology-earth-science": "Biologia / Geotieteet",
+  "category-chemistry": "Kemia",
+  "category-chemistry-biology": "Kemia / Biologia",
+  "category-chemistry-earth-science": "Kemia / Geotieteet",
+  "category-earth-science": "Geotieteet",
+  "category-earth-science-biology": "Maantiede / Biologia",
+  "category-earth-science-earth-science": "Geotieteet / Geotieteet",
+  "category-earth-science-general-chemistry": "Geotieteet / Yleinen kemia",
+  "category-earth-science-light-and-radiation": "Geotieteet / Valo ja säteily",
+  "category-earth-science-quantum-chemistry": "Geotieteet / Kvanttikemia",
+  "category-math": "Matematiikka",
+  "category-math-biology": "Matematiikka / Biologia",
+  "category-math-earth-science": "Matematiikka / Geotieteet",
+  "category-physics": "Fysiikka",
+  "category-physics-biology": "Fysiikka / Biologia",
+  "category-physics-earth-science": "Fysiikka / Geotieteet"
 }

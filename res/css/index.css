@@ -1,259 +1,259 @@
 @font-face {
-    font-family: 'Open Sans';
-    font-style: normal;
-    font-weight: 300;
-    src: url('./OpenSans-Light.ttf') format('ttf');
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('./OpenSans-Light.ttf') format('ttf');
 }
 
 html {
-    font-size: 62.5%;
+  font-size: 62.5%;
 }
 
 body {
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: #f2f2f2;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f2f2f2;
 }
 
 div {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 h1 {
-    font-size: 2.6rem;
+  font-size: 2.6rem;
 }
 
 h2 {
-    font-size: 2.0rem;
+  font-size: 2rem;
 }
 
 p,
 label {
-    font-size: 1.6rem;
+  font-size: 1.6rem;
 }
 
 #container {
-    text-align: center;
+  text-align: center;
 }
 
 #header {
-    width: 100%;
-    color: #f2f2f2;
-    padding: 1% 5%;
-    background: #244b59;
-    float: left;
-    text-align: center;
+  width: 100%;
+  color: #f2f2f2;
+  padding: 1% 5%;
+  background: #244b59;
+  float: left;
+  text-align: center;
 }
 
 #header #logoContainer {
-    width: 100%;
-    float: inherit;
-    display: flex;
-    align-items: center;
+  width: 100%;
+  float: inherit;
+  display: flex;
+  align-items: center;
 }
 
-#header #logoContainer img{
-    padding-right: 10px;
-    padding-bottom: 10px;
-    width: 18vw;
-    float: left;
+#header #logoContainer img {
+  padding-right: 10px;
+  padding-bottom: 10px;
+  width: 18vw;
+  float: left;
 }
 
 #header #logoContainerText {
-    font-size: 7vw;
-    text-align: left;
+  font-size: 7vw;
+  text-align: left;
 }
 
 #header #translateSlogan {
-    font-size: 2.5rem;
+  font-size: 2.5rem;
 }
 
 #ractive-target label {
-    color: #fff;
+  color: #fff;
 }
 
 .menu-wrapper {
-    margin: auto;
-    width: 100%;
-    background-color: white;
+  margin: auto;
+  width: 100%;
+  background-color: white;
 }
 
 select {
-    width: calc(100% - 12px);
-    max-width: 300px;
-    font-size: 1.5rem;
-    padding: 10px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    margin: 10px 0;
+  width: calc(100% - 12px);
+  max-width: 300px;
+  font-size: 1.5rem;
+  padding: 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 10px 0;
 }
 
 .language-container select {
-    margin-left: 6px;
-    margin-right: 6px;
+  margin-left: 6px;
+  margin-right: 6px;
 }
 
 .card-cont {
-    width: 90%;
-    margin: 0 auto;
+  width: 90%;
+  margin: 0 auto;
 }
 
 .sim-card {
-    width: 100%;
-    margin: 0 5px 20px;
-    position: relative;
-    display: inline-block;
-    -webkit-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
-    -moz-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
-    box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
-    cursor: pointer;
+  width: 100%;
+  margin: 0 5px 20px;
+  position: relative;
+  display: inline-block;
+  -webkit-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
+  -moz-box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
+  box-shadow: 3px 6px 14px 0 rgba(0, 0, 0, 0.32);
+  cursor: pointer;
 }
 
 .sim-card img {
-    width: 100%;
+  width: 100%;
 }
 
 .sim-card .overlay {
-    cursor: pointer;
-    position: absolute;
-    top: 0;
-    width: 100%;
-    height: 100%;
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .sim-card .overlay h2 {
-    color: #fff;
-    font-weight: 200;
-    position: absolute;
-    bottom: 0;
-    background: rgba(36, 75, 89, 0.85);
-    margin: 0;
-    padding: 15px 10px;
-    left: 0;
-    right: 0;
-    width: auto;
+  color: #fff;
+  font-weight: 200;
+  position: absolute;
+  bottom: 0;
+  background: rgba(36, 75, 89, 0.85);
+  margin: 0;
+  padding: 15px 10px;
+  left: 0;
+  right: 0;
+  width: auto;
 }
 
 .sim-card .fa-info-circle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 8px;
-    color: #fff;
-    font-size: 4.0rem;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 8px;
+  color: #fff;
+  font-size: 4rem;
 }
 
 .language-container {
-    background: #244b59;
-    padding-bottom: 30px;
-    margin-bottom: -20px;
+  background: #244b59;
+  padding-bottom: 30px;
+  margin-bottom: -20px;
 }
 
-.swal2-container>div[role=dialog] {
-    min-width: 700px!important;
-    width: 700px!important;
-    position: relative;
+.swal2-container > div[role='dialog'] {
+  min-width: 700px !important;
+  width: 700px !important;
+  position: relative;
 }
 
 .swal2-modal .swal2-content {
-    height: 100%;
-    text-align: left!important;
+  height: 100%;
+  text-align: left !important;
 }
 
 #swal2-content {
-    height: 100%;
+  height: 100%;
 }
 
 #swal2-content > div {
-    height: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 .swal2-content img {
-    height: 100%;
-    object-fit: fill;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .swal2-container ul {
-    white-space: pre-line;
+  white-space: pre-line;
 }
 
 .swal2-container > div {
-    overflow-y: hidden;
+  overflow-y: hidden;
 }
 
 .swal2-buttonswrapper {
-    margin-top: 30px;
+  margin-top: 30px;
 }
 
 .swal2-actions .swal2-styled.swal2-confirm,
 .swal2-actions .swal2-styled.swal2-cancel {
-    font-size: 17px;
+  font-size: 17px;
 }
 
 .swal2-popup .swal2-close {
-    line-height: 40px;
-    font-size: 36px;
-    width: 38px;
-    top: 5px;
-    right: 8px;
-    position: absolute;
+  line-height: 40px;
+  font-size: 36px;
+  width: 38px;
+  top: 5px;
+  right: 8px;
+  position: absolute;
 }
 
 .swal2-popup #swal2-title {
-    font-size: 30px;
-    padding-top: 10px;    
+  font-size: 30px;
+  padding-top: 10px;
 }
 
 .flex-cont {
-    justify-content: space-around;
-    display: none;
+  justify-content: space-around;
+  display: none;
 }
 
 .vertical-flex-cont {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
 }
 
 .description {
-    text-align: center;
-    display: table;
-    font-size: 2rem;
-    min-width: 660px;
-    padding: 10px 10% 0;
-    margin: auto;
+  text-align: center;
+  display: table;
+  font-size: 2rem;
+  min-width: 660px;
+  padding: 10px 10% 0;
+  margin: auto;
 }
 
 @media only screen and (min-width: 320px) and (max-width: 1023px) and (orientation: landscape) {
-    .sim-card {
-        width: calc(50% - 10px);
-    }
+  .sim-card {
+    width: calc(50% - 10px);
+  }
 }
 
 @media only screen and (min-width: 767px) {
-    .sim-card {
-        width: calc(50% - 10px);
-    }
-    #header img {
-        width: calc(100% - 32px);
-        float: none;
-        display: block;
-    }
+  .sim-card {
+    width: calc(50% - 10px);
+  }
+  #header img {
+    width: calc(100% - 32px);
+    float: none;
+    display: block;
+  }
 }
 
 @media only screen and (min-width: 1023px) {
-    .sim-card {
-        width: calc(33.3% - 15px);
-        margin-left: 7.5px;
-        margin-right: 7.5px;
-    }
-    .card-cont {
-        width: 1000px;
-    }
+  .sim-card {
+    width: calc(33.3% - 15px);
+    margin-left: 7.5px;
+    margin-right: 7.5px;
+  }
+  .card-cont {
+    width: 1000px;
+  }
 }

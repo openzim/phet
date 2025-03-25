@@ -1,12 +1,13 @@
 {
-    "sourceType": "module",
-    "presets": [
-        ["@babel/preset-env",
-            {
-                "targets": {
-                    "esmodules": true
-                }
-            }
-        ],
+  "sourceType": "module",
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "esmodules": true
+        }
+      }
     ]
+  ]
 }
