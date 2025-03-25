@@ -162,10 +162,7 @@ export const prepareTargets = () => {
     targets.push({
       output: `phet_mul_all_${datePostfix}`,
       date: now,
-      languages: Object.keys(languages).filter((lang) => {
-        const langCode = /^(\w{2})_/gm.exec(lang)?.pop()
-        return !langCode || !Object.keys(languages).includes(langCode)
-      }),
+      languages: Object.keys(languages),
     })
   }
 
