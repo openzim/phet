@@ -57,7 +57,7 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
 
     if (options.withoutLanguageVariants && slug.includes('_')) {
       const langCode = slug.split('_')[0]
-      if (slug === 'zh_CN') {
+      if (slug === 'zh_CN' || slug === 'ku_TR') {
         log.info(`Using ${slug} simulations for ${langCode} language`)
         op.set(languages, slug, { slug, langCode, localName, url, count })
         return
