@@ -1,14 +1,18 @@
 {
 	"@metadata": {
 		"authors": [
-			"Hamoudak"
+			"Hamoudak",
+			"Meno25"
 		]
 	},
 	"zim-title": "مشروع فيت للمحاكاة التفاعلية",
 	"zim-description": "المحاكاة التفاعلية للعلوم والرياضيات",
 	"helping-students-engage-in-science-and-mathematics": "مساعدة الطلاب علي تدارس العلوم والرياضيات.",
 	"document-title": "المحاكاة التفاعلية للعلوم والرياضيات",
+	"load-button": "حمولة",
+	"cancel-button": "إلغاء",
 	"logo-text": " مشروع فيت للمحاكاة التفاعلية",
+	"category-all-categories": "جميع التصنيفات",
 	"category-biology": "الأحياء",
 	"category-biology-biology": "‎الأحياء / علم الأحياء",
 	"category-biology-earth-science": "الأحياء / علم الأرض",
