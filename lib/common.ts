@@ -13,7 +13,7 @@ const languageCodesMapping = {
 
 const languagesNativesMapping = {
   ar_KW: 'العربية (الكويت)',
-  ar_KY: 'العربية (ليبيا)',
+  ar_LY: 'العربية (ليبيا)',
   ar_SY: 'العربية (سوريا)',
   ar_MA: 'العربية (المغرب)',
   ar_SA: 'العربية (السعودية)',
@@ -28,9 +28,9 @@ const languagesNativesMapping = {
   fa_DA: 'دری',
   in: 'Bahasa Indonesia',
   iw: 'עברית',
-  ku_tr: 'Kurmancî',
+  ku_TR: 'Kurmancî',
   mo: '	Moldavian',
-  pt_br: 'português (Brasil)',
+  pt_BR: 'português (Brasil)',
   sh: '	Serbo-Croatian',
   sp: 'Sesotho sa Leboa',
   zh_CN: '中文 (中国)',
