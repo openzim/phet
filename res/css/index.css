@@ -26,7 +26,7 @@ h1 {
 }
 
 h2 {
-    font-size: 2.0rem;
+    font-size: 1.5rem;
 }
 
 p,
@@ -49,25 +49,22 @@ label {
 
 #header #logoContainer {
     width: 100%;
-    float: inherit;
     display: flex;
     align-items: center;
 }
 
-#header #logoContainer img{
-    padding-right: 10px;
-    padding-bottom: 10px;
-    width: 18vw;
-    float: left;
+#header #logoContainer img {
+    padding: 10px;
+    width: 75px;
 }
 
 #header #logoContainerText {
-    font-size: 7vw;
+    font-size: 2.5rem;
     text-align: left;
 }
 
 #header #translateSlogan {
-    font-size: 2.5rem;
+    font-size: 1.5rem;
 }
 
 #ractive-target label {
@@ -83,7 +80,7 @@ label {
 select {
     width: calc(100% - 12px);
     max-width: 300px;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     padding: 10px;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -152,10 +149,13 @@ select {
     margin-bottom: -20px;
 }
 
-.swal2-container>div[role=dialog] {
-    min-width: 700px!important;
-    width: 700px!important;
+.swal2-container > div[role=dialog] {
+    width: 90%;
     position: relative;
+}
+
+.swal2-html-container img {
+    width: 50vh;
 }
 
 .swal2-modal .swal2-content {
@@ -193,7 +193,7 @@ select {
 
 .swal2-actions .swal2-styled.swal2-confirm,
 .swal2-actions .swal2-styled.swal2-cancel {
-    font-size: 17px;
+    font-size: 1.5rem
 }
 
 .swal2-popup .swal2-close {
@@ -206,7 +206,7 @@ select {
 }
 
 .swal2-popup #swal2-title {
-    font-size: 30px;
+    font-size: 2rem;
     padding-top: 10px;    
 }
 
@@ -224,36 +224,121 @@ select {
 .description {
     text-align: center;
     display: table;
-    font-size: 2rem;
-    min-width: 660px;
-    padding: 10px 10% 0;
+    font-size: 1.6rem;
+    padding: 10px 5% 0;
     margin: auto;
 }
 
-@media only screen and (min-width: 320px) and (max-width: 1023px) and (orientation: landscape) {
-    .sim-card {
-        width: calc(50% - 10px);
+@media only screen and (min-height: 480px) {
+    .swal2-html-container img {
+        width: 100%;
     }
 }
 
-@media only screen and (min-width: 767px) {
+
+@media only screen and (min-width: 640px) {
     .sim-card {
         width: calc(50% - 10px);
     }
-    #header img {
-        width: calc(100% - 32px);
-        float: none;
-        display: block;
+
+    #header #logoContainer img {
+        padding: 20px;
+        width: 125px;
+    }
+
+    #header #logoContainerText {
+        font-size: 3.5rem;
+    }
+
+    #header #translateSlogan {
+        font-size: 2.5rem;
+    }
+
+    select {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+    }
+
+    .swal2-container > div[role=dialog] {
+        width: 500px;
+    }
+
+    .swal2-popup #swal2-title {
+        font-size: 2.5rem;
+    }
+
+    .swal2-actions .swal2-styled.swal2-confirm,
+    .swal2-actions .swal2-styled.swal2-cancel {
+        font-size: 2rem
+    }
+
+    .description {
+        font-size: 1.8rem
+    }
+
+}
+
+@media only screen and (min-width: 640px) and (max-height: 640px) {
+    .swal2-html-container img {
+        width: 60vh;
     }
 }
 
-@media only screen and (min-width: 1023px) {
+
+@media only screen and (min-width: 1024px) {
     .sim-card {
         width: calc(33.3% - 15px);
         margin-left: 7.5px;
         margin-right: 7.5px;
     }
-    .card-cont {
+
+    .card-cont, #header-content {
         width: 1000px;
+        margin: auto;
+    }
+
+    #header #logoContainer img {
+        padding: 30px;
+        width: 200px;
+    }
+
+    #header #logoContainerText {
+        font-size: 4.5rem;
+        text-align: left;
+    }
+
+    #header #translateSlogan {
+        font-size: 3rem;
+    }
+
+    h2 {
+        font-size: 2.0rem;
+    }
+
+    .swal2-container > div[role=dialog] {
+        width: 700px;
+    }
+
+    .swal2-popup #swal2-title {
+        font-size: 2.8rem;
+    }
+
+    .swal2-actions .swal2-styled.swal2-confirm,
+    .swal2-actions .swal2-styled.swal2-cancel {
+        font-size: 2rem
+    }
+
+    .description {
+        font-size: 2rem
+    }
+
+}
+
+@media only screen and (min-width: 1024px) and (max-height: 750px) {
+    .swal2-html-container img {
+        width: 70vh;
     }
 }
