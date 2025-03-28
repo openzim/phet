@@ -106,7 +106,7 @@ declare global {
     template: reactiveTemplate,
     computed: {
       languages() {
-        return Object.entries(this.get('languageMappings'))
+        return Object.entries(this.get('languageMappings')).sort((a, b) => (a[1] as string).localeCompare(b[1] as string))
       },
       updateCategories() {
         const lang = this.get('selectedLanguage')

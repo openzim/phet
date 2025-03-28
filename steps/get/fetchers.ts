@@ -4,12 +4,11 @@ import * as path from 'path'
 import slugify from 'slugify'
 import op from 'object-path'
 import * as cheerio from 'cheerio'
-import ISO6391 from 'iso-639-1'
 import { Presets, SingleBar } from 'cli-progress'
 import { log } from '../../lib/logger.js'
 import { cats, rootCategories } from '../../lib/const.js'
 import { SimulationsList } from '../../lib/classes.js'
-import { barOptions, getISO6393 } from '../../lib/common.js'
+import { barOptions, getISO6393, getNativeName } from '../../lib/common.js'
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
 import options from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
@@ -41,9 +40,6 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
 
     const url = `https://phet.colorado.edu/en/simulations/filter?locale=${slug}&type=html`
 
-    const name = ISO6391.getName(slug)
-    const localName = ISO6391.getNativeName(slug)
-
     const count = selectedProjects
       .map((project) => project.simulations)
       .reduce((acc, sims) => acc.concat(sims), [])
@@ -53,11 +49,17 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
     if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
     if (options.excludeLanguages && ((options.excludeLanguages as string[]) || []).includes(slug)) return
 
+    const localName = getNativeName(slug)
+
+    if (!localName) {
+      throw new Error(`Failed to get native language name of "${slug}"`)
+    }
+
     if (options.withoutLanguageVariants && slug.includes('_')) {
       const langCode = slug.split('_')[0]
-      if (slug === 'zh_CN') {
+      if (slug === 'zh_CN' || slug === 'ku_TR') {
         log.info(`Using ${slug} simulations for ${langCode} language`)
-        op.set(languages, slug, { slug, langCode, name, localName, url, count })
+        op.set(languages, slug, { slug, langCode, localName, url, count })
         return
       }
 
@@ -65,7 +67,7 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
       if (existedLanguageKey && languages[existedLanguageKey].count < count) {
         delete languages[existedLanguageKey]
         log.info(`Using ${slug} simulations for ${langCode} language`)
-        op.set(languages, slug, { slug, langCode, name, localName, url, count })
+        op.set(languages, slug, { slug, langCode, localName, url, count })
       } else {
         log.info(`Skipping ${slug} language`)
       }
@@ -73,7 +75,7 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
     }
 
     if (!Object.keys(languages)?.includes(slug)) {
-      op.set(languages, slug, { slug, name, localName, url, count, langCode: slug })
+      op.set(languages, slug, { slug, localName, url, count, langCode: slug })
     }
   })
   try {
