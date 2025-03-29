@@ -7,6 +7,7 @@ export const parameterDescriptions = {
   mulOnly: 'Skip ZIM files for individual languages',
   createMul: 'Create a ZIM file with all languages',
   subjects: `List of subjects to download. Use csv format (e.g 'math,physics')`,
+  output: 'Output ZIM files in a specific directory',
 }
 
 export const applyParameterConstraints = (argv): boolean => {
@@ -18,5 +19,8 @@ export const applyParameterConstraints = (argv): boolean => {
     if (!formatLanguages(argv.excludeLanguages).every((lang: string) => languageRegex.test(lang))) throw new Error(`--excludeLanguages must follow this format 'en, pt_BR, ar'`)
   }
   if (argv.subjects && !verifySubjects(argv.subjects)) throw new Error(`--subjects must include valid subjects formated in csv`)
+  if (argv.output && Array.isArray(argv.output)) {
+    throw new Error(`Error: duplicate --output isn't allowed.`)
+  }
   return true
 }

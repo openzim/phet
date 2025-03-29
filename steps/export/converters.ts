@@ -19,6 +19,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const languages = await loadLanguages()
+const zimOutDir = options.zimOutDir || 'output'
 
 export const loadTranslations = async (locale: string) => {
   try {
@@ -77,8 +78,11 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
 
   log.info(`Creating ${target.output}.zim ...`)
 
+  await fs.promises.mkdir(`${zimOutDir}`, { recursive: true })
+  log.info(`Output to ${zimOutDir}/ directory`)
+
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`./dist/${target.output}.zim`)
+  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`./${zimOutDir}/${target.output}.zim`)
 
   creator.setMainPath('index.html')
 

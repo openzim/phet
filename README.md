@@ -27,11 +27,16 @@ It requires Node.js version 16 or higher.
 npm i && phet2zim
 ```
 
-The above will eventually output a ZIM file to ```dist/```
+The above will eventually output a ZIM file to ```output/```
 
 ## Command line arguments
 
 See `phet2zim --help` for details.
+
+`phet2zim --output` generates ZIM files in a specific folder.
+```bash
+phet2zim --output ZimFarm
+```
 
 `--withoutLanguageVariants` uses to exclude languages with Country variant. For example `en_CA` will not be present in zim with this argument.
 
