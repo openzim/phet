@@ -16,7 +16,7 @@ dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const argv: any = yargs(hideBin(process.argv)).array('includeLanguages').array('excludeLanguages').boolean('mulOnly').boolean('createMul').argv
+const argv: any = yargs(hideBin(process.argv)).string('output').array('includeLanguages').array('excludeLanguages').boolean('mulOnly').boolean('createMul').argv
 
 export const options = {
   catalogsDir: 'state/get/catalogs',
@@ -26,6 +26,7 @@ export const options = {
   verbose: process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false,
   mulOnly: argv.mulOnly,
   createMul: argv.createMul,
+  zimOutDir: argv.output,
 }
 
 export const loadLanguages = async (): Promise<LanguageItemPair<LanguageDescriptor>> => {
