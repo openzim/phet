@@ -39,6 +39,7 @@ jspm_packages
 
 state
 dist/*
+output
 ts-node*
 .env
 res/js/i18n/*.js

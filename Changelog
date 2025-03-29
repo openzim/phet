@@ -7,6 +7,7 @@ Unreleased
 * FIX: Include all variants in mul ZIM, not only the ones for which there is only variants
 * FIX: Add fallback for slug without known locale language name (#261)
 * FIX: Remove English name property on language descriptors: property is unused and missing on variants
+* NEW: Standardize output folder and add option to CLI (#248)
 
 3.0.2
 * FIX: Fix compression of documents (#256)
