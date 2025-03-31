@@ -2,7 +2,7 @@
 
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { parameterDescriptions } from './parameterList'
+import { parameterDescriptions, applyParameterConstraints } from './parameterList'
 import { spawn } from 'child_process'
 
 /** **********************************/
@@ -21,6 +21,7 @@ yargs(hideBin(process.argv))
 Usage: phet2zim --help`,
   )
   .describe(parameterDescriptions)
+  .check(applyParameterConstraints)
   .strict().argv
 
 /** **********************************/
