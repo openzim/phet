@@ -10,9 +10,10 @@ import { Presets, SingleBar } from 'cli-progress'
 import { catalogJs } from '../../res/templates/catalog.js'
 import Banana from 'banana-i18n'
 import { iso6393To1 } from 'iso-639-3'
-import { options, extractResources, loadLanguages, createFileContentProvider } from './utils.js'
+import { extractResources, loadLanguages, createFileContentProvider } from './utils.js'
 import { rimraf } from 'rimraf'
 import { fileURLToPath } from 'url'
+import { Command } from 'commander'
 import mime from 'mime-types'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -31,12 +32,16 @@ export const loadTranslations = async (locale: string) => {
     return {}
   }
 }
+// initialize a new command interfce from from the commander library  to sepecify the output directoty
+const program = new Command()
+program.option('--output <path>', 'sepecify output directory', 'output')
+program.parse(process.argv)
+const options = program.opts()
 
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
-  const targetDir = `${options.outDir}${target.output}/`
-
+  const targetDir = path.join(options.output || 'output', target.output)
   await rimraf(targetDir)
-  await fs.promises.mkdir(targetDir)
+  await fs.promises.mkdir(targetDir, { recursive: true })
   await extractResources(target, targetDir)
 
   const catalog = new Catalog({ target, languages, catalogsDir: options.catalogsDir })
@@ -78,7 +83,7 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info(`Creating ${target.output}.zim ...`)
 
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`./dist/${target.output}.zim`)
+  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${targetDir}.zim`)
 
   creator.setMainPath('index.html')
 
