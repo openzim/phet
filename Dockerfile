@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.source=https://github.com/openzim/phet
 WORKDIR /phet
 
 # Output directory, must exists beforehand for now
-RUN mkdir /phet/dist
+RUN mkdir /phet/output
 
 # Copy standalone files, especially package.json
 COPY *.json *.md /phet/
