@@ -1,9 +1,11 @@
 import yargs from 'yargs'
 import * as dotenv from 'dotenv'
 import { hideBin } from 'yargs/helpers'
+import { formatLanguages } from 'steps/utils'
+
 dotenv.config()
 
-const { argv } = yargs(hideBin(process.argv)).boolean('withoutLanguageVariants').array('includeLanguages').array('excludeLanguages')
+const { argv } = yargs(hideBin(process.argv)).boolean('withoutLanguageVariants').string('includeLanguages').string('excludeLanguages')
 
 const defaultOptions = {
   failedDownloadsCountBeforeStop: 10,
@@ -21,7 +23,7 @@ const defaultOptions = {
 }
 
 if (argv.includeLanguages && !argv.includeLanguages.includes('en')) {
-  argv.includeLanguages.unshift('en')
+  argv.includeLanguages += ',en'
 }
 
 export default {
@@ -29,8 +31,8 @@ export default {
   ...(process.env.PHET_RPS ? { rps: parseInt(process.env.PHET_RPS || '', 10) } : {}),
   ...(process.env.PHET_VERBOSE_ERRORS !== undefined ? { verbose: process.env.PHET_VERBOSE_ERRORS === 'true' } : {}),
   ...(argv.withoutLanguageVariants ? { withoutLanguageVariants: argv.withoutLanguageVariants } : {}),
-  ...(argv.includeLanguages ? { includeLanguages: argv.includeLanguages } : {}),
-  ...(argv.excludeLanguages ? { excludeLanguages: argv.excludeLanguages } : {}),
+  ...(argv.includeLanguages ? { includeLanguages: formatLanguages(argv.includeLanguages) } : {}),
+  ...(argv.excludeLanguages ? { excludeLanguages: formatLanguages(argv.excludeLanguages) } : {}),
   gotOptions: {
     ...defaultOptions.gotOptions,
     retry: {
