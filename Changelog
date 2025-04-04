@@ -1,5 +1,7 @@
 Unreleased
 
+* FIX: Standardize output folder (#248)
+
 3.0.2
 * FIX: Fix compression of documents (#256)
 

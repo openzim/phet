@@ -11,8 +11,8 @@ import { catalogJs } from '../../res/templates/catalog.js'
 import Banana from 'banana-i18n'
 import { iso6393To1 } from 'iso-639-3'
 import { options, extractResources, loadLanguages, createFileContentProvider } from './utils.js'
-import { rimraf } from 'rimraf'
 import { fileURLToPath } from 'url'
+import yargs from 'yargs'
 import mime from 'mime-types'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -31,12 +31,25 @@ export const loadTranslations = async (locale: string) => {
     return {}
   }
 }
+// initialize yargs for CLI argument parsing
+interface Argv {
+  output: string
+}
+const argv = yargs.options('output', {
+  alias: 'o',
+  type: 'string',
+  description: 'Specify output folder',
+  default: 'output',
+}).argv as Argv
 
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
-  const targetDir = `${options.outDir}${target.output}/`
+  const targetDir = path.join(argv.output, target.output)
 
-  await rimraf(targetDir)
-  await fs.promises.mkdir(targetDir)
+  if (fs.existsSync(targetDir)) {
+    throw new Error(`output folder "${targetDir}" already exists. Please remove it manually to proceed.`)
+  }
+
+  await fs.promises.mkdir(targetDir, { recursive: true })
   await extractResources(target, targetDir)
 
   const catalog = new Catalog({ target, languages, catalogsDir: options.catalogsDir })
@@ -78,7 +91,10 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info(`Creating ${target.output}.zim ...`)
 
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`./dist/${target.output}.zim`)
+  creator
+    .configIndexing(true, iso6393LanguageCode)
+    .configCompression(Compression.Zstd)
+    .startZimCreation(path.join(targetDir, `${target.output}.zim`))
 
   creator.setMainPath('index.html')
 

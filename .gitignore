@@ -38,11 +38,11 @@ jspm_packages
 
 
 state
-dist/*
+output/*
+output/*
 ts-node*
 .env
 res/js/i18n/*.js
 res/js/index.js
-res/js/dist.js
 lib/types.js
 res/templates/reactive-template.js
