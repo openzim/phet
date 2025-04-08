@@ -6,12 +6,14 @@ import op from 'object-path'
 import * as cheerio from 'cheerio'
 import { Presets, SingleBar } from 'cli-progress'
 import { log } from '../../lib/logger.js'
-import { cats, rootCategories } from '../../lib/const.js'
 import { SimulationsList } from '../../lib/classes.js'
 import { barOptions, getISO6393, getNativeName } from '../../lib/common.js'
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
-import options from './options.js'
+import options, { categories } from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
+
+const cats = categories.cats
+const rootCategories = categories.rootCats
 
 const languages: LanguageItemPair<LanguageDescriptor> = {}
 let meta: Meta
