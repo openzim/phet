@@ -18,3 +18,11 @@ export const cats = {
 }
 
 export const rootCategories = ['Physics', 'Biology', 'Chemistry', 'Earth Science', 'Math']
+
+export const categoriesTree = {
+  Physics: ['motion', 'sound-and-waves', 'work-energy-and-power', 'heat-and-thermodynamics', 'quantum-phenomena', 'light-and-radiation', 'electricity-magnets-and-circuits'],
+  Chemistry: ['general', 'quantum'],
+  Math: ['mathconcepts', 'mathapplications'],
+  'Earth Science': [],
+  Biology: [],
+}
