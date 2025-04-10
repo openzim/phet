@@ -1,0 +1,30 @@
+{
+	"@metadata": {
+		"authors": [
+			"TorgeirS"
+		]
+	},
+	"zim-description": "Interaktive simuleringer for naturfag og matematikk",
+	"helping-students-engage-in-science-and-mathematics": "Hjelper elevene med å engasjere seg i naturfag og matematikk.",
+	"document-title": "PhET interaktive simuleringer for naturfag og matematikk",
+	"load-button": "Last inn",
+	"cancel-button": "Avbryt",
+	"logo-text": "PhET interaktive simuleringer",
+	"category-all-categories": "Alle kategorier",
+	"category-biology": "Biologi",
+	"category-biology-biology": "Biologi / Biologi",
+	"category-biology-electricity-magnets-and-circuits": "Biologi / Elektrisitet, Magneter & Kretser",
+	"category-biology-general-chemistry": "Biologi / Generell kjemi",
+	"category-biology-light-and-radiation": "Biologi / Lys og Stråling",
+	"category-biology-motion": "Biologi / Bevegelse",
+	"category-biology-sound-and-waves": "Biologi / Lyd & Bølger",
+	"category-chemistry-biology": "Kjemi / Biologi",
+	"category-chemistry-electricity-magnets-and-circuits": "Kjemi / Elektrisitet, Magneter & Kretser",
+	"category-chemistry-general-chemistry": "Kjemi / Generell Kjemi",
+	"category-chemistry-light-and-radiation": "Kjemi / Lys & Stråling",
+	"category-chemistry-math-concepts": "Kjemi / Matematiske Konsepter",
+	"category-chemistry-motion": "Kjemi / Bevegelse",
+	"category-chemistry-sound-and-waves": "Kjemi / Lyd & Bølger",
+	"category-math": "Matematikk",
+	"category-math-biology": "Matematikk / Biologi"
+}
