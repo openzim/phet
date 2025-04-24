@@ -189,11 +189,7 @@ export const fetchCatalogsWithUrls = async (bar) => {
       if (project.type !== 2) return
       for (const sim of Object.values(project.simulations)) {
         // exclude sim that doesn't match --subjects values
-        let neededSim = false
-        sim.subjects.forEach((subjectId) => {
-          if (Object.keys(cats).includes(`${subjectId}`)) neededSim = true
-        })
-        if (!neededSim) continue
+        if (!sim.subjects.some((subjectId) => cats.hasOwnProperty(`${subjectId}`))) continue
 
         for (const [lang, { title }] of Object.entries(sim.localizedSimulations)) {
           if (!Object.keys(simsTree)?.includes(lang)) continue
