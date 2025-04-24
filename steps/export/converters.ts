@@ -160,18 +160,20 @@ export const prepareTargets = () => {
 
   if (options.mulOnly || options.createMul) {
     targets.push({
-      output: `phet_mul_all_${datePostfix}`,
+      output: `phet_mul_${options.all ? 'all' : Object.values(options.cats).join('_')}_${datePostfix}`,
       date: now,
       languages: Object.keys(languages),
+      subjects: Object.values(options.cats),
     })
   }
 
   if (!options.mulOnly) {
     for (const { langCode, slug } of Object.values(languages)) {
       targets.push({
-        output: `phet_${langCode.toLowerCase().replace('_', '-')}_all_${datePostfix}`,
+        output: `phet_${langCode.toLowerCase().replace('_', '-')}_${options.all ? 'all' : Object.values(options.cats).join('_')}_${datePostfix}`,
         date: now,
         languages: [slug],
+        subjects: Object.values(options.cats),
       })
     }
   }

@@ -10,14 +10,14 @@ import { hideBin } from 'yargs/helpers'
 import { fileURLToPath } from 'url'
 import { LanguageDescriptor, LanguageItemPair } from '../../lib/types.js'
 import { ContentProvider, Blob } from '@openzim/libzim/dist/index.js'
-import { formatLanguages } from 'steps/utils.js'
+import { formatLanguages, getMatchedCats } from 'steps/utils.js'
 
 dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const argv: any = yargs(hideBin(process.argv)).string('includeLanguages').string('excludeLanguages').boolean('mulOnly').boolean('createMul').argv
+const argv: any = yargs(hideBin(process.argv)).string('includeLanguages').string('excludeLanguages').boolean('mulOnly').boolean('createMul').string('subjects').argv
 
 export const options = {
   catalogsDir: 'state/get/catalogs',
@@ -27,6 +27,8 @@ export const options = {
   verbose: process.env.PHET_VERBOSE_ERRORS !== undefined ? process.env.PHET_VERBOSE_ERRORS === 'true' : false,
   mulOnly: argv.mulOnly,
   createMul: argv.createMul,
+  all: argv.subjects ? false : true,
+  cats: getMatchedCats(argv.subjects),
 }
 
 export const loadLanguages = async (): Promise<LanguageItemPair<LanguageDescriptor>> => {

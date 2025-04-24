@@ -1,11 +1,12 @@
 import yargs from 'yargs'
 import * as dotenv from 'dotenv'
 import { hideBin } from 'yargs/helpers'
-import { formatLanguages } from 'steps/utils'
+import { formatLanguages, formatSubjects, getMatchedCats } from 'steps/utils'
+import { cats, rootCategories } from 'lib/const'
 
 dotenv.config()
 
-const { argv } = yargs(hideBin(process.argv)).boolean('withoutLanguageVariants').string('includeLanguages').string('excludeLanguages')
+const { argv } = yargs(hideBin(process.argv)).boolean('withoutLanguageVariants').string('includeLanguages').string('excludeLanguages').string('subjects')
 
 const defaultOptions = {
   failedDownloadsCountBeforeStop: 10,
@@ -40,4 +41,9 @@ export default {
       ...(process.env.PHET_RETRIES ? { limit: parseInt(process.env.PHET_RETRIES, 10) } : {}),
     },
   },
+}
+
+export const categories = {
+  rootCats: argv.subjects ? formatSubjects(argv.subjects) : rootCategories,
+  cats: argv.subjects ? getMatchedCats(argv.subjects) : cats,
 }

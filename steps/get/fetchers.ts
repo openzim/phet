@@ -6,12 +6,14 @@ import op from 'object-path'
 import * as cheerio from 'cheerio'
 import { Presets, SingleBar } from 'cli-progress'
 import { log } from '../../lib/logger.js'
-import { cats, rootCategories } from '../../lib/const.js'
 import { SimulationsList } from '../../lib/classes.js'
 import { barOptions, getISO6393, getNativeName } from '../../lib/common.js'
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
-import options from './options.js'
+import options, { categories } from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
+
+const cats = categories.cats
+const rootCategories = categories.rootCats
 
 const languages: LanguageItemPair<LanguageDescriptor> = {}
 let meta: Meta
@@ -21,7 +23,12 @@ const categoriesList: LanguageItemPair<any> = {}
 export const fetchMetaAndLanguages = async (): Promise<void> => {
   meta = JSON.parse((await got('services/metadata/1.3/simulations?format=json&summary', { ...options.gotOptions })).body)
   // Filter projects we want to consider
-  const selectedProjects = meta.projects.filter(({ type }) => type === 2)
+  const selectedProjects = meta.projects.filter(({ type, simulations }) => {
+    const isMatchedSubj = simulations.every((sim) => {
+      return sim.subjects.some((subID) => Object.keys(cats).includes(`${subID}`))
+    })
+    return isMatchedSubj && type === 2
+  })
 
   const langSlugs = Array.from(
     new Set(
@@ -181,6 +188,9 @@ export const fetchCatalogsWithUrls = async (bar) => {
     Object.values(meta.projects).map(async (project) => {
       if (project.type !== 2) return
       for (const sim of Object.values(project.simulations)) {
+        // exclude sim that doesn't match --subjects values
+        if (!sim.subjects.some((subjectId) => cats.hasOwnProperty(`${subjectId}`))) continue
+
         for (const [lang, { title }] of Object.entries(sim.localizedSimulations)) {
           if (!Object.keys(simsTree)?.includes(lang)) continue
 

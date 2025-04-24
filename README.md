@@ -35,6 +35,11 @@ See `phet2zim --help` for details.
 
 `--withoutLanguageVariants` uses to exclude languages with Country variant. For example `en_CA` will not be present in zim with this argument.
 
+`--subjects` is used to pass specific subjects to download. Pass values as csv. Sample of valid subjects : 
+```
+physics, biology, earth-science, motion, sound-and-waves, work-energy-and-power, heat-and-thermodynamics, quantum-phenomena
+```
+
 Available only on GET step:
 ```bash
 --withoutLanguageVariants ...
@@ -44,6 +49,7 @@ Available on GET and EXPORT steps only:
 ```bash
 --includeLanguages 'lang_1,lang_2,lang_3' ...
 --excludeLanguages 'lang_1,lang_2,lang_3' ...
+--subjects 'math,physics' ...
 ```
 
 Available on EXPORT step only:

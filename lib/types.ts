@@ -30,6 +30,7 @@ export type Target = {
   output: string
   date: Date
   languages: string[]
+  subjects: string[]
 }
 
 export type LocalizedSimulation = {
