@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Support csv for --includeLanguages and --excludeLanguages and split values by ',' (#257)
 * Support --subjects option and csv format for input (#271)
 
+### Changed
+
+* Standardize output folder and add option to CLI (#248)
+
 ## [3.1.0] - 2025-03-31
 
 ### Fixed

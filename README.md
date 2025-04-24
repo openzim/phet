@@ -27,11 +27,16 @@ It requires Node.js version 16 or higher.
 npm i && phet2zim
 ```
 
-The above will eventually output a ZIM file to ```dist/```
+The above will eventually output a ZIM file to ```output/```
 
 ## Command line arguments
 
 See `phet2zim --help` for details.
+
+`phet2zim --output` generates ZIM files in a specific folder.
+```bash
+phet2zim --output myFolder
+```
 
 `--withoutLanguageVariants` uses to exclude languages with Country variant. For example `en_CA` will not be present in zim with this argument.
 
@@ -102,7 +107,7 @@ The functionality is split into 5 ```npm scripts```:
 The steps get, transform and export have their own output directories:
 * ```get``` outputs HTML and PNG files to ```state/get```
 * ```transform``` outputs intermediate files to ```state/transform```
-* ```export``` outputs HTML and PNG files to ```state/export``` AND a ZIM file(s) to ```dist/```
+* ```export``` outputs HTML and PNG files to ```state/export``` AND a ZIM file(s) to ```output/``` (by default, unless customized with `--output`)
 
 License
 -------
