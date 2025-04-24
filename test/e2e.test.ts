@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename)
 jest.setTimeout(20 * 60 * 1000)
 
 const language = 'cy'
-const targetDir = './dist/'
+const targetDir = './output/'
 
 const now = new Date()
 const datePostfix = `${now.getUTCFullYear()}-${(now.getUTCMonth() + 1).toString().padStart(2, '0')}`

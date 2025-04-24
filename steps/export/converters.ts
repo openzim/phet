@@ -79,10 +79,10 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info(`Creating ${target.output}.zim ...`)
 
   await fs.promises.mkdir(`${zimOutDir}`, { recursive: true })
-  log.info(`Output to ${zimOutDir}/ directory`)
+  log.info(`Output to '${zimOutDir}' directory`)
 
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`./${zimOutDir}/${target.output}.zim`)
+  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${zimOutDir}/${target.output}.zim`)
 
   creator.setMainPath('index.html')
 

@@ -28,7 +28,7 @@ export const options = {
   mulOnly: argv.mulOnly,
   createMul: argv.createMul,
   all: argv.subjects ? false : true,
-  cats: getMatchedCats(argv.subjects),
+  cats: argv.subjects ? getMatchedCats(argv.subjects) : [],
   zimOutDir: argv.output,
 }
 
