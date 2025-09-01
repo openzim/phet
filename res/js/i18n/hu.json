@@ -2,14 +2,15 @@
 	"@metadata": {
 		"authors": [
 			"Eukarióta",
-			"Hanna Tardos"
+			"Hanna Tardos",
+			"Urbalazs"
 		]
 	},
 	"zim-title": "PhET interaktív szimulációk",
 	"zim-description": "Tudományos és matematikai PhET interaktív szimulációk",
 	"document-title": "Tudományos és matematikai interaktív szimulációk a PhET-től",
 	"load-button": "Betöltés",
-	"cancel-button": "Mégsem",
+	"cancel-button": "Mégse",
 	"logo-text": "PhET interaktív szimulációk",
 	"category-all-categories": "Minden kategória",
 	"category-biology": "Biológia",
