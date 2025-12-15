@@ -10,7 +10,7 @@ jobs:
     name: Deploy Docker Image
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build and push
         uses: openzim/docker-publish-action@v10
         with:
