@@ -41,6 +41,9 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
   )
 
   langSlugs.forEach((slug) => {
+    if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
+    if (options.excludeLanguages && ((options.excludeLanguages as string[]) || []).includes(slug)) return
+
     if (!getISO6393(slug)) {
       throw new Error(`Failed to map language "${slug}" into ISO639-3.`)
     }
@@ -52,9 +55,6 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
       .reduce((acc, sims) => acc.concat(sims), [])
       .map((sim) => (Object.keys(sim.localizedSimulations).includes(slug) ? 1 : 0))
       .reduce((sum, value) => sum + value, 0)
-
-    if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
-    if (options.excludeLanguages && ((options.excludeLanguages as string[]) || []).includes(slug)) return
 
     const localName = getNativeName(slug)
 
