@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Standardize output folder and add option to CLI (#248)
 
+### Fixed
+
+* Do not fail on unknown language when not requested for (#304)
+
 ## [3.1.0] - 2025-03-31
 
 ### Fixed
