@@ -68,7 +68,7 @@ Available on EXPORT step only:
 
 Example:
 ```bash
-phet2zim --includeLanguages en ru fr
+phet2zim --includeLanguages en,ru,fr
 ```
 
 ## Config
