@@ -84,7 +84,9 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info(`Output to '${zimOutDir}' directory`)
 
   const creator = new Creator()
-  creator.configIndexing(true, mainIso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${zimOutDir}/${filename}.zim`)
+  creator.configIndexing(false, target.languages.length > 1 ? 'eng' : mainIso6393LanguageCode)
+  creator.configCompression(Compression.Zstd)
+  creator.startZimCreation(`${zimOutDir}/${filename}.zim`)
 
   creator.setMainPath('index.html')
 
