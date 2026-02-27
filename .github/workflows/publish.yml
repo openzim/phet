@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  id-token: write # Required for Trusted Publishing on NPM
+
 jobs:
   build:
     runs-on: ubuntu-24.04
