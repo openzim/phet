@@ -11,6 +11,7 @@ import { barOptions, getISO6393, getNativeName } from '../../lib/common.js'
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
 import options, { categories } from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
+import { Transform } from 'stream'
 
 const cats = categories.cats
 const rootCategories = categories.rootCats
@@ -284,6 +285,18 @@ export const fetchSims = async (): Promise<void> => {
           resolve()
         })
 
+        // Temporary transform to workaround https://github.com/openzim/phet/issues/314
+        const filterStream = new Transform({
+          transform(chunk, encoding, callback) {
+            const content = chunk
+              .toString()
+              .split('\n')
+              .filter((line: string) => !line.includes('<<<<<<< HEAD'))
+              .join('\n')
+            callback(null, content)
+          },
+        })
+
         data
           .on('response', function (response) {
             if (simsToDelete.length > options.failedDownloadsCountBeforeStop) {
@@ -307,6 +320,7 @@ export const fetchSims = async (): Promise<void> => {
             }
             reject()
           })
+          .pipe(filterStream)
           .pipe(writeStream)
       })
     }),
