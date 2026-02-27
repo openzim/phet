@@ -27,7 +27,8 @@ export type LanguageItemPair<T> = {
 }
 
 export type Target = {
-  output: string
+  selection: string
+  datePostfix: string
   date: Date
   languages: string[]
   subjects: string[]
