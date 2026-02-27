@@ -286,6 +286,7 @@ export const fetchSims = async (): Promise<void> => {
         })
 
         // Temporary transform to workaround https://github.com/openzim/phet/issues/314
+        // Only apply to HTML files, not binary files like PNG
         const filterStream = new Transform({
           transform(chunk, encoding, callback) {
             const content = chunk
@@ -297,7 +298,11 @@ export const fetchSims = async (): Promise<void> => {
           },
         })
 
-        data
+        const isHtmlFile = fileName.endsWith('.html')
+
+        const pipeChain = isHtmlFile ? data.pipe(filterStream) : data
+
+        pipeChain
           .on('response', function (response) {
             if (simsToDelete.length > options.failedDownloadsCountBeforeStop) {
               reject(new Error(`Stopped because the count of failed simulation downloads is higher than ${options.failedDownloadsCountBeforeStop}.`))
@@ -320,7 +325,6 @@ export const fetchSims = async (): Promise<void> => {
             }
             reject()
           })
-          .pipe(filterStream)
           .pipe(writeStream)
       })
     }),
