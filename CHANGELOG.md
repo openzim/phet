@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * Do not fail on unknown language when not requested for (#304)
+* Correctly use ISO639 codes in ZIM Name and ZIM filename, and align both (#308)
+* Fix --includeLanguages in export function (#308)
 
 ## [3.1.0] - 2025-03-31
 

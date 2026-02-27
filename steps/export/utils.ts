@@ -17,7 +17,13 @@ dotenv.config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const argv: any = yargs(hideBin(process.argv)).string('output').array('includeLanguages').array('excludeLanguages').boolean('mulOnly').boolean('createMul').string('subjects').argv
+const argv: any = yargs(hideBin(process.argv))
+  .string('output')
+  .string('includeLanguages')
+  .string('excludeLanguages')
+  .boolean('mulOnly')
+  .boolean('createMul')
+  .string('subjects').argv
 
 export const options = {
   catalogsDir: 'state/get/catalogs',

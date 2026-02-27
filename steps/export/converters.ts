@@ -34,24 +34,31 @@ export const loadTranslations = async (locale: string) => {
 }
 
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
-  const targetDir = `${options.outDir}${target.output}/`
+  const iso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
+  const iso6391LanguageCode = target.languages.length > 1 ? 'mul' : iso6393To1[iso6393LanguageCode] || iso6393LanguageCode
+
+  const iso6393LanguageCodes = target.languages.map(getISO6393)
+
+  const filename = `phet_${iso6391LanguageCode}_${target.selection}_${target.datePostfix}`
+
+  const catalog = new Catalog({ target, languages, catalogsDir: options.catalogsDir })
+  await catalog.init()
+  if (catalog.isEmpty()) {
+    log.info(`Skipping ${filename}.zim (empty)`)
+    return
+  }
+
+  const targetDir = `${options.outDir}${filename}/`
 
   await rimraf(targetDir)
   await fs.promises.mkdir(targetDir)
   await extractResources(target, targetDir)
 
-  const catalog = new Catalog({ target, languages, catalogsDir: options.catalogsDir })
-  await catalog.init()
-  if (catalog.isEmpty()) {
-    log.info(`Skipping ${target.output}.zim (empty)`)
-    return
-  }
-
   // Generate index file
   await fs.promises.copyFile(options.resDir + 'template.html', targetDir + 'index.html')
 
   // Generate catalog JS
-  await fs.promises.writeFile(targetDir + 'catalog.js', catalogJs(catalog, target.output), 'utf8')
+  await fs.promises.writeFile(targetDir + 'catalog.js', catalogJs(catalog, filename), 'utf8')
 
   await Promise.all(
     glob
@@ -62,11 +69,6 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
       .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)),
   )
 
-  const iso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
-  const iso6391LanguageCode = target.languages.length > 1 ? 'mul' : iso6393To1[iso6393LanguageCode]
-
-  const iso6393LanguageCodes = target.languages.map(getISO6393)
-
   let locale = iso6393LanguageCode === 'mul' ? 'en' : target.languages[0]
   if (locale !== 'en') {
     const translations = await loadTranslations(locale)
@@ -76,13 +78,13 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   }
   bananaI18n.setLocale(locale)
 
-  log.info(`Creating ${target.output}.zim ...`)
+  log.info(`Creating ${filename}.zim ...`)
 
   await fs.promises.mkdir(`${zimOutDir}`, { recursive: true })
   log.info(`Output to '${zimOutDir}' directory`)
 
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${zimOutDir}/${target.output}.zim`)
+  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${zimOutDir}/${filename}.zim`)
 
   creator.setMainPath('index.html')
 
@@ -161,10 +163,12 @@ export const prepareTargets = () => {
   const datePostfix = `${now.getUTCFullYear()}-${(now.getUTCMonth() + 1).toString().padStart(2, '0')}`
 
   const targets: Target[] = []
+  const selection: string = options.all ? 'all' : Object.values(options.cats).join('-')
 
   if (options.mulOnly || options.createMul) {
     targets.push({
-      output: `phet_mul_${options.all ? 'all' : Object.values(options.cats).join('_')}_${datePostfix}`,
+      selection,
+      datePostfix,
       date: now,
       languages: Object.keys(languages),
       subjects: Object.values(options.cats),
@@ -172,9 +176,10 @@ export const prepareTargets = () => {
   }
 
   if (!options.mulOnly) {
-    for (const { langCode, slug } of Object.values(languages)) {
+    for (const { slug } of Object.values(languages)) {
       targets.push({
-        output: `phet_${langCode.toLowerCase().replace('_', '-')}_${options.all ? 'all' : Object.values(options.cats).join('_')}_${datePostfix}`,
+        selection,
+        datePostfix,
         date: now,
         languages: [slug],
         subjects: Object.values(options.cats),
