@@ -9,7 +9,6 @@ import { getISO6393 } from '../../lib/common.js'
 import { Presets, SingleBar } from 'cli-progress'
 import { catalogJs } from '../../res/templates/catalog.js'
 import Banana from 'banana-i18n'
-import { iso6393To1 } from 'iso-639-3'
 import { options, extractResources, loadLanguages, createFileContentProvider } from './utils.js'
 import { rimraf } from 'rimraf'
 import { fileURLToPath } from 'url'
@@ -34,12 +33,13 @@ export const loadTranslations = async (locale: string) => {
 }
 
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
-  const iso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
-  const iso6391LanguageCode = target.languages.length > 1 ? 'mul' : iso6393To1[iso6393LanguageCode] || iso6393LanguageCode
+  const mainIso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
+  const zimnameLanguageCode = target.languages.length > 1 ? 'mul' : target.languages[0]
 
   const iso6393LanguageCodes = target.languages.map(getISO6393)
 
-  const filename = `phet_${iso6391LanguageCode}_${target.selection}_${target.datePostfix}`
+  const zimname = `phet_${zimnameLanguageCode}_${target.selection}`
+  const filename = `${zimname}_${target.datePostfix}`
 
   const catalog = new Catalog({ target, languages, catalogsDir: options.catalogsDir })
   await catalog.init()
@@ -69,7 +69,7 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
       .map(async (file) => fs.promises.copyFile(file, `${targetDir}${path.basename(file)}`)),
   )
 
-  let locale = iso6393LanguageCode === 'mul' ? 'en' : target.languages[0]
+  let locale = target.languages.length > 1 ? 'en' : target.languages[0]
   if (locale !== 'en') {
     const translations = await loadTranslations(locale)
 
@@ -84,12 +84,12 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   log.info(`Output to '${zimOutDir}' directory`)
 
   const creator = new Creator()
-  creator.configIndexing(true, iso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${zimOutDir}/${filename}.zim`)
+  creator.configIndexing(true, mainIso6393LanguageCode).configCompression(Compression.Zstd).startZimCreation(`${zimOutDir}/${filename}.zim`)
 
   creator.setMainPath('index.html')
 
   const metadata = {
-    Name: `phets_${iso6391LanguageCode}_all`,
+    Name: zimname,
     Title: bananaI18n.getMessage('zim-title'),
     Description: bananaI18n.getMessage('zim-description'),
     Creator: 'University of Colorado',

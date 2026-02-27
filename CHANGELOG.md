@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Correctly use ISO639 codes in ZIM Name and ZIM filename, and align both (#308)
 * Fix --includeLanguages in export function (#308)
 * Workaround bad code inside few upstream HTML pages (#314)
+* Deduplicate ZIM Name by using unique PhET code in ZIM Name (#307)
 
 ## [3.1.0] - 2025-03-31
 
