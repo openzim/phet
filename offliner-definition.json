@@ -32,6 +32,13 @@
       "required": false,
       "title": "Only `mul` ZIM",
       "description": "Create only `mul` ZIM, skip ZIM files for individual languages"
+    },
+    "output": {
+      "type": "string",
+      "required": false,
+      "title": "Output folder",
+      "description": "Output folder for ZIM file(s). Leave it as `/output`",
+      "pattern": "^/output$"
     }
   }
 }
