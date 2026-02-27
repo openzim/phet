@@ -1,6 +1,6 @@
 {
   "offliner_id": "phet",
-  "stdOutput": false,
+  "stdOutput": true,
   "stdStats": false,
   "flags": {
     "includeLanguages": {
