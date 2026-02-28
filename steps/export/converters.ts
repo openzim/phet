@@ -34,7 +34,13 @@ export const loadTranslations = async (locale: string) => {
 
 export const exportTarget = async (target: Target, bananaI18n: Banana) => {
   const mainIso6393LanguageCode = target.languages.length > 1 ? 'mul' : getISO6393(target.languages[0]) || 'mul'
-  const zimnameLanguageCode = target.languages.length > 1 ? 'mul' : target.languages[0]
+  const zimnameLanguageCode =
+    target.languages.length > 1
+      ? 'mul'
+      : target.languages[0]
+          .toLowerCase()
+          .replace(/[^a-z-]/g, '-')
+          .replace(/-+/g, '-')
 
   const iso6393LanguageCodes = target.languages.map(getISO6393)
 
