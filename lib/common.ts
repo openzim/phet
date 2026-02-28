@@ -9,6 +9,8 @@ const languageCodesMapping = {
   mo: 'ron',
   sp: 'nso',
   ef: 'efi',
+  pr: 'tsz',
+  ua: 'nhe',
 }
 
 const languagesNativesMapping = {
@@ -36,6 +38,8 @@ const languagesNativesMapping = {
   zh_CN: '中文 (中国)',
   zh_HK: '中文 (香港)',
   zh_TW: '中文 (台灣)',
+  ua: 'Náhuatl',
+  pr: 'Pʼurhépecha',
 }
 
 export const barOptions = {
