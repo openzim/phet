@@ -30,7 +30,12 @@ export const modifyHTML = async (fileName, html): Promise<string> => {
       .each((indx, elem: cheerio.Element) => {
         const script = $(elem).html().trim()
         const scriptId = $(elem).attr('id')
-        if ((scriptId && scriptId.search('google-analytics') > -1) || script.search('google-analytics.com') > -1) {
+        if ((scriptId && scriptId.search('google-analytics') > -1) || script.search('google-analytics.com') > -1 || script.search('googletagmanager.com') > -1) {
+          $(elem).remove()
+          return
+        }
+        const scriptSrc = $(elem).attr('src')
+        if (scriptSrc && scriptSrc.includes('static.cloudflareinsights.com')) {
           $(elem).remove()
           return
         }
