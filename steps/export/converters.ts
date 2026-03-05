@@ -42,7 +42,14 @@ export const exportTarget = async (target: Target, bananaI18n: Banana) => {
           .replace(/[^a-z-]/g, '-')
           .replace(/-+/g, '-')
 
-  const iso6393LanguageCodes = target.languages.map(getISO6393)
+  const iso6393LanguageCodes = Array.from(
+    new Set(
+      [...target.languages]
+        .sort((a, b) => (languages[b]?.count || 0) - (languages[a]?.count || 0))
+        .map(getISO6393)
+        .filter(Boolean),
+    ),
+  )
 
   const zimname = `phet_${zimnameLanguageCode}_${target.selection}`
   const filename = `${zimname}_${target.datePostfix}`
