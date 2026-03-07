@@ -39,7 +39,12 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
         .map((sim) => Object.keys(sim.localizedSimulations))
         .reduce((acc, keys) => acc.concat(keys), []),
     ),
-  )
+  ).sort((a, b) => {
+    const aIsVariant = a.includes('_')
+    const bIsVariant = b.includes('_')
+    if (aIsVariant === bIsVariant) return 0
+    return aIsVariant ? 1 : -1
+  })
 
   langSlugs.forEach((slug) => {
     if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
@@ -65,17 +70,18 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
 
     if (options.withoutLanguageVariants && slug.includes('_')) {
       const langCode = slug.split('_')[0]
-      if (slug === 'zh_CN' || slug === 'ku_TR') {
+      if (slug === 'zh_CN') {
         log.info(`Using ${slug} simulations for ${langCode} language`)
         op.set(languages, slug, { slug, langCode, localName, url, count })
         return
       }
-
       const existedLanguageKey = Object.keys(languages).find((language) => language.split('_')[0] === langCode)
       if (existedLanguageKey && languages[existedLanguageKey].count < count) {
         delete languages[existedLanguageKey]
-        log.info(`Using ${slug} simulations for ${langCode} language`)
+        log.info(`Using ${slug} instead of ${existedLanguageKey} for ${langCode} language`)
         op.set(languages, slug, { slug, langCode, localName, url, count })
+      } else if (!existedLanguageKey) {
+        log.warn(`Skipping ${slug}: no base language exists for ${langCode} in --withoutLanguageVariants mode`)
       } else {
         log.info(`Skipping ${slug} language`)
       }
@@ -86,6 +92,21 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
       op.set(languages, slug, { slug, localName, url, count, langCode: slug })
     }
   })
+
+  // Failsafe: in --withoutLanguageVariants mode, both a base language and its variant
+  // must never coexist in the languages list
+  if (options.withoutLanguageVariants) {
+    const langKeys = Object.keys(languages)
+    for (const key of langKeys) {
+      if (key.includes('_')) {
+        const baseKey = key.split('_')[0]
+        if (langKeys.includes(baseKey)) {
+          throw new Error(`Both base language "${baseKey}" and variant "${key}" are present in the languages list. This should not happen in --withoutLanguageVariants mode.`)
+        }
+      }
+    }
+  }
+
   try {
     await fs.promises.writeFile(`${options.outDir}languages.json`, JSON.stringify(languages), 'utf8')
     log.info(`Got ${Object.keys(languages).length} languages`)
