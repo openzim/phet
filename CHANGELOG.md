@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix ZIM name (and filename) when we have a language with variants (#326)
 * Remove external dependencies to Cloudflare beacon and Google Tag Manager scripts injected into simulation HTML files (#323)
 * Fix Language metadata sorting and deduplication for multi-language ZIMs (#327)
+* Fix ku_TR incorrectly included in mul ZIM without language variants (#331)
+* Do not select pt_BR variant in --withoutLanguageVariants mode automatically based on sims count (#335)
 
 ## [3.1.1] - 2026-02-27
 

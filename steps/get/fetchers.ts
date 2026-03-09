@@ -7,7 +7,7 @@ import * as cheerio from 'cheerio'
 import { Presets, SingleBar } from 'cli-progress'
 import { log } from '../../lib/logger.js'
 import { SimulationsList } from '../../lib/classes.js'
-import { barOptions, getISO6393, getNativeName } from '../../lib/common.js'
+import { barOptions, getISO6393, getNativeName, withoutVariantsOverrides } from '../../lib/common.js'
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
 import options, { categories } from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
@@ -39,7 +39,12 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
         .map((sim) => Object.keys(sim.localizedSimulations))
         .reduce((acc, keys) => acc.concat(keys), []),
     ),
-  )
+  ).sort((a, b) => {
+    const aIsVariant = a.includes('_')
+    const bIsVariant = b.includes('_')
+    if (aIsVariant === bIsVariant) return 0
+    return aIsVariant ? 1 : -1
+  })
 
   langSlugs.forEach((slug) => {
     if (options.includeLanguages && !((options.includeLanguages as string[]) || []).includes(slug)) return
@@ -65,19 +70,17 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
 
     if (options.withoutLanguageVariants && slug.includes('_')) {
       const langCode = slug.split('_')[0]
-      if (slug === 'zh_CN' || slug === 'ku_TR') {
-        log.info(`Using ${slug} simulations for ${langCode} language`)
-        op.set(languages, slug, { slug, langCode, localName, url, count })
-        return
-      }
-
       const existedLanguageKey = Object.keys(languages).find((language) => language.split('_')[0] === langCode)
-      if (existedLanguageKey && languages[existedLanguageKey].count < count) {
-        delete languages[existedLanguageKey]
-        log.info(`Using ${slug} simulations for ${langCode} language`)
+      if (withoutVariantsOverrides[langCode] === slug) {
+        if (languages[langCode]) {
+          delete languages[langCode]
+        }
+        log.info(`Using ${slug} simulations for ${langCode} language (override in config)`)
         op.set(languages, slug, { slug, langCode, localName, url, count })
-      } else {
-        log.info(`Skipping ${slug} language`)
+      } else if (!languages[langCode] && !withoutVariantsOverrides[langCode]) {
+        log.warn(`Skipping ${slug} because of --withoutLanguageVariants mode but no base language exists for ${langCode}. Language will be absent from the ZIM`)
+      } else if (existedLanguageKey && languages[existedLanguageKey].count < count) {
+        log.warn(`${slug} variant which has more sims than ${existedLanguageKey} will be skipped from the ZIM (${count} vs ${languages[existedLanguageKey].count} sims)`)
       }
       return
     }
@@ -86,6 +89,21 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
       op.set(languages, slug, { slug, localName, url, count, langCode: slug })
     }
   })
+
+  // Failsafe: in --withoutLanguageVariants mode, both a base language and its variant
+  // must never coexist in the languages list
+  if (options.withoutLanguageVariants) {
+    const langKeys = Object.keys(languages)
+    for (const key of langKeys) {
+      if (key.includes('_')) {
+        const baseKey = key.split('_')[0]
+        if (langKeys.includes(baseKey)) {
+          throw new Error(`Both base language "${baseKey}" and variant "${key}" are present in the languages list. This should not happen in --withoutLanguageVariants mode.`)
+        }
+      }
+    }
+  }
+
   try {
     await fs.promises.writeFile(`${options.outDir}languages.json`, JSON.stringify(languages), 'utf8')
     log.info(`Got ${Object.keys(languages).length} languages`)
