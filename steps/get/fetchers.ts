@@ -7,7 +7,7 @@ import * as cheerio from 'cheerio'
 import { Presets, SingleBar } from 'cli-progress'
 import { log } from '../../lib/logger.js'
 import { SimulationsList } from '../../lib/classes.js'
-import { barOptions, getISO6393, getNativeName } from '../../lib/common.js'
+import { barOptions, getISO6393, getNativeName, withoutVariantsOverrides } from '../../lib/common.js'
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
 import options, { categories } from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
@@ -70,20 +70,17 @@ export const fetchMetaAndLanguages = async (): Promise<void> => {
 
     if (options.withoutLanguageVariants && slug.includes('_')) {
       const langCode = slug.split('_')[0]
-      if (slug === 'zh_CN') {
-        log.info(`Using ${slug} simulations for ${langCode} language`)
-        op.set(languages, slug, { slug, langCode, localName, url, count })
-        return
-      }
       const existedLanguageKey = Object.keys(languages).find((language) => language.split('_')[0] === langCode)
-      if (existedLanguageKey && languages[existedLanguageKey].count < count) {
-        delete languages[existedLanguageKey]
-        log.info(`Using ${slug} instead of ${existedLanguageKey} for ${langCode} language`)
+      if (withoutVariantsOverrides[langCode] === slug) {
+        if (languages[langCode]) {
+          delete languages[langCode]
+        }
+        log.info(`Using ${slug} simulations for ${langCode} language (override in config)`)
         op.set(languages, slug, { slug, langCode, localName, url, count })
-      } else if (!existedLanguageKey) {
-        log.warn(`Skipping ${slug}: no base language exists for ${langCode} in --withoutLanguageVariants mode`)
-      } else {
-        log.info(`Skipping ${slug} language`)
+      } else if (!languages[langCode] && !withoutVariantsOverrides[langCode]) {
+        log.warn(`Skipping ${slug} because of --withoutLanguageVariants mode but no base language exists for ${langCode}. Language will be absent from the ZIM`)
+      } else if (existedLanguageKey && languages[existedLanguageKey].count < count) {
+        log.warn(`${slug} variant which has more sims than ${existedLanguageKey} will be skipped from the ZIM (${count} vs ${languages[existedLanguageKey].count} sims)`)
       }
       return
     }

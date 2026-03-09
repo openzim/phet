@@ -62,3 +62,7 @@ export const getISO6393 = (lang = 'en') => {
 export const getNativeName = (lang: string) => {
   return languagesNativesMapping[lang] || ISO6391.getNativeName(lang)
 }
+
+export const withoutVariantsOverrides = {
+  zh: 'zh_CN',
+}
