@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+* Upgrade @openzim/libzim dependency to 4.1.0 (#296)
+
 ### Fixed
 
 * Add mappings for pr and ua languages (#325)
