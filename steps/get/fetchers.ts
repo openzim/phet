@@ -11,7 +11,6 @@ import { barOptions, getISO6393, getNativeName, withoutVariantsOverrides } from 
 import type { Category, LanguageDescriptor, LanguageItemPair, Meta, Simulation } from '../../lib/types.js'
 import options, { categories } from './options.js'
 import { popValueUpIfExists, delay, downloadCatalogData } from './utils.js'
-import { Transform } from 'stream'
 
 const cats = categories.cats
 const rootCategories = categories.rootCats
@@ -303,24 +302,7 @@ export const fetchSims = async (): Promise<void> => {
           resolve()
         })
 
-        // Temporary transform to workaround https://github.com/openzim/phet/issues/314
-        // Only apply to HTML files, not binary files like PNG
-        const filterStream = new Transform({
-          transform(chunk, encoding, callback) {
-            const content = chunk
-              .toString()
-              .split('\n')
-              .filter((line: string) => !line.includes('<<<<<<< HEAD'))
-              .join('\n')
-            callback(null, content)
-          },
-        })
-
-        const isHtmlFile = fileName.endsWith('.html')
-
-        const pipeChain = isHtmlFile ? data.pipe(filterStream) : data
-
-        pipeChain
+        data
           .on('response', function (response) {
             if (simsToDelete.length > options.failedDownloadsCountBeforeStop) {
               reject(new Error(`Stopped because the count of failed simulation downloads is higher than ${options.failedDownloadsCountBeforeStop}.`))
