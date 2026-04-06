@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* Rollback workaround for bad HTML code in upstream PhET simulations, now fixed upstream (#316)
 * Add mappings for pr and ua languages (#325)
 * Fix ZIM name (and filename) when we have a language with variants (#326)
 * Remove external dependencies to Cloudflare beacon and Google Tag Manager scripts injected into simulation HTML files (#323)
