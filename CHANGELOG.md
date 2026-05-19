@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* Upgrade @openzim/libzim dependency to 4.1.0 (#296)
+* Upgrade @openzim/libzim dependency to 4.1.0 (#296) and then 4.2.0 (#353)
+* Upgrade Node.JS dependencies (#354)
 
 ### Fixed
 
