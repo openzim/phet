@@ -2,7 +2,7 @@ import 'ts-jest'
 import * as fs from 'fs'
 import { join } from 'path'
 import { fork } from 'child_process'
-import { ZimReader } from '@openzim/libzim'
+import { Archive } from '@openzim/libzim'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { jest } from '@jest/globals'
@@ -14,50 +14,60 @@ const __dirname = path.dirname(__filename)
 jest.setTimeout(20 * 60 * 1000)
 
 const language = 'cy'
-const targetDir = './output/'
+const rootDir = join(__dirname, '..')
+const targetDir = join(rootDir, 'output')
 
 const now = new Date()
 const datePostfix = `${now.getUTCFullYear()}-${(now.getUTCMonth() + 1).toString().padStart(2, '0')}`
-const files = [`${targetDir}phet_mul_all_${datePostfix}.zim`, `${targetDir}phet_${language}_all_${datePostfix}.zim`]
+const files = [join(targetDir, `phet_mul_all_${datePostfix}.zim`), join(targetDir, `phet_${language}_all_${datePostfix}.zim`)]
 
 const options = {
-  cwd: join(__dirname, '..'),
+  cwd: rootDir,
   silent: false,
-  execPath: 'ts-node-esm',
-  execArgv: [],
+  execPath: process.execPath,
+  execArgv: ['--import', 'tsx'],
 }
+
+const runStep = (script: string, args: string[] = []): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const proc = fork(script, args, options)
+    proc.on('error', reject)
+    proc.on('close', (code, signal) => {
+      if (code !== 0) {
+        reject(new Error(`Script ${script} exited with code ${code}, signal ${signal}`))
+      } else {
+        resolve()
+      }
+    })
+  })
 
 describe('Create ZIM', () => {
   beforeAll(async () => {
     await removeZim()
+    await runStep('./steps/setup.ts')
   })
 
-  beforeAll((done) => {
-    const proc = fork('./steps/setup.ts', [], options)
-    proc.on('close', done)
+  test(`Get [${language}]`, async () => {
+    await runStep('./steps/get/index.ts', ['--includeLanguages', language])
   })
 
-  test(`Get [${language}]`, (done) => {
-    const proc = fork('./steps/get/index.ts', ['--includeLanguages', language], options)
-    proc.on('close', done)
+  test('Transform', async () => {
+    await runStep('./steps/transform/index.ts')
   })
 
-  test('Transform', (done) => {
-    const proc = fork('./steps/transform/index.ts', [], options)
-    proc.on('close', done)
-  })
-
-  test('Export', (done) => {
-    const proc = fork('./steps/export/index.ts', [], options)
-    proc.on('close', done)
+  test('Export', async () => {
+    await runStep('./steps/export/index.ts')
   })
 })
 
 describe('Validate ZIM', () => {
-  let zim: ZimReader
+  let zim: Archive
 
-  beforeAll(() => {
-    zim = new ZimReader(files[0])
+  beforeAll(async () => {
+    for (const file of files) {
+      await fs.promises.access(file)
+    }
+    zim = new Archive(files[0])
   })
 
   test('Two zim files', async () => {
@@ -77,49 +87,51 @@ describe('Validate ZIM', () => {
     }
   })
 
-  test('Count', async () => {
-    const articlesCount = await zim.getCountArticles()
+  test('Count', () => {
+    const articlesCount = zim.allEntryCount
     expect(articlesCount).toBeGreaterThan(500)
   })
 
-  test('Meta records', async () => {
-    const article = await zim.getArticleByUrl('M/Counter')
-    expect(article).toBeDefined()
+  test('Meta records', () => {
+    const counterData = zim.getMetadata('Counter')
+    expect(counterData).toBeDefined()
     const meta: any = {}
-    article.data
-      .toString()
-      .split(';')
-      .forEach((item) => {
-        const x = item.split('=')
-        meta[x[0]] = x[1]
-      })
+    counterData.split(';').forEach((item) => {
+      const x = item.split('=')
+      meta[x[0]] = x[1]
+    })
     expect(parseInt(meta['text/html'], 10)).toBeGreaterThan(80)
     expect(parseInt(meta['image/png'], 10)).toBeGreaterThan(80)
     expect(parseInt(meta['font/ttf'], 10)).toBeGreaterThan(10)
     expect(parseInt(meta['application/javascript'], 10)).toBeGreaterThan(300)
   })
 
-  test('Main page', async () => {
-    const article = await zim.getArticleByUrl('A/index.html')
-    expect(article).toBeDefined()
-    expect(article.mimeType).toEqual('text/html')
-    expect(article.data.length).toBeGreaterThan(1000)
+  test('Main page', () => {
+    const entry = zim.hasMainEntry() ? zim.mainEntry : zim.getEntryByPath('index.html')
+    expect(entry).toBeDefined()
+    const item = entry.item
+    expect(item.mimetype).toEqual('text/html')
+    expect(item.size).toBeGreaterThan(1000)
   })
 
   afterAll(async () => {
-    await zim.destroy()
-    removeZim()
+    zim = null as any
+    await removeZim()
   })
 })
 
-const removeZim = () => {
-  try {
-    for (const file of files) {
-      fs.promises.unlink(path.join(__dirname, file)).catch(() => {
-        // noop
-      })
+const removeZim = async () => {
+  for (const file of files) {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        await fs.promises.unlink(file)
+        break
+      } catch (err: any) {
+        if (err.code === 'ENOENT') break
+        const retryable = ['EBUSY', 'EPERM', 'EACCES'].includes(err.code)
+        if (!retryable || attempt === 4) throw err
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
     }
-  } catch {
-    // noop
   }
 }
