@@ -22,6 +22,9 @@ export const modifyHTML = async (fileName, html): Promise<string> => {
   const simCss = await fs.promises.readFile(path.join(__dirname, '../../res/css/sim.css'), 'utf8')
   const $ = cheerio.load(html)
   $('meta[property^="og:"]').remove()
+  if ($('meta[name="color-scheme"]').length === 0) {
+    $('head').prepend('<meta name="color-scheme" content="light dark">')
+  }
   $('img#splash').attr('src', loadingImage)
   $('script').last().after(`<script>${simScript}</script>`)
   $('head').append(`<style>${simCss}</style>`)
