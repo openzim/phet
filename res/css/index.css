@@ -342,3 +342,38 @@ select {
         width: 70vh;
     }
 }
+
+@media (hover: none) and (pointer: coarse),
+    (max-width: 1100px) and (min-resolution: 2dppx),
+    (max-width: 1100px) and (orientation: portrait) {
+    .swal2-container.swal2-center {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .swal2-container > div[role=dialog] {
+        grid-row: 1 !important;
+        place-self: start center !important;
+        align-self: start !important;
+        margin: 0 auto !important;
+        max-height: calc(100dvh - 3rem) !important;
+        overflow-y: auto !important;
+    }
+
+    #swal2-content,
+    #swal2-content > div {
+        height: auto !important;
+    }
+
+    .swal2-html-container img,
+    .swal2-content img {
+        width: auto !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: 38dvh !important;
+        object-fit: contain !important;
+    }
+}

@@ -170,6 +170,7 @@ declare global {
         swal
           .fire({
             title: `${simulation.title}`,
+            heightAuto: false,
             html: `
             <div>
               <img src='./${simulation.id}.png' />

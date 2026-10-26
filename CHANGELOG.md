@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+* Fix simulation preview modal sizing and scrolling on touch devices (#373)
+
 ## [3.1.2] - 2026-05-19
 
 ### Changed
