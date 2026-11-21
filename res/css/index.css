@@ -5,6 +5,10 @@
     src: url('./OpenSans-Light.ttf') format('ttf');
 }
 
+:root {
+    color-scheme: light dark;
+}
+
 html {
     font-size: 62.5%;
 }
@@ -43,7 +47,6 @@ label {
     color: #f2f2f2;
     padding: 1% 5%;
     background: #244b59;
-    float: left;
     text-align: center;
 }
 
@@ -340,5 +343,84 @@ select {
 @media only screen and (min-width: 1024px) and (max-height: 750px) {
     .swal2-html-container img {
         width: 70vh;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #e8e8e8;
+    }
+
+    #header {
+        background: #182e37;
+        color: #e8e8e8;
+    }
+
+    .language-container {
+        background: #182e37;
+    }
+
+    .menu-wrapper {
+        background-color: #121212;
+    }
+
+    select {
+        background-color: #242424;
+        color: #e8e8e8;
+        border: 1px solid #555555;
+    }
+
+    select option {
+        background-color: #242424;
+        color: #e8e8e8;
+    }
+
+    .sim-card {
+        background-color: #1e1e1e;
+        border: 1px solid #333333;
+        box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.6);
+    }
+
+    .sim-card .overlay h2 {
+        background: rgba(18, 38, 45, 0.9);
+        color: #ffffff;
+    }
+
+    .sim-card .fa-info-circle {
+        color: #e8e8e8;
+    }
+
+    .swal2-popup {
+        background-color: #1e1e1e !important;
+        color: #e8e8e8 !important;
+        border: 1px solid #333333;
+    }
+
+    .swal2-popup #swal2-title {
+        color: #ffffff !important;
+    }
+
+    .swal2-popup .swal2-html-container,
+    .swal2-popup .description {
+        color: #cccccc !important;
+    }
+
+    .swal2-popup .swal2-close {
+        color: #aaaaaa !important;
+    }
+
+    .swal2-popup .swal2-close:hover {
+        color: #ffffff !important;
+    }
+
+    .swal2-actions .swal2-styled.swal2-confirm {
+        background-color: #244b59 !important;
+        color: #ffffff !important;
+    }
+
+    .swal2-actions .swal2-styled.swal2-cancel {
+        background-color: #444444 !important;
+        color: #ffffff !important;
     }
 }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Introduce dark-mode theme (#292)
+
 ## [3.1.2] - 2026-05-19
 
 ### Changed
